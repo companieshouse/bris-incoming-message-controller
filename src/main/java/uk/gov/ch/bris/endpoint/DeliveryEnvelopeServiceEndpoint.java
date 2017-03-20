@@ -10,29 +10,24 @@ import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
 import org.apache.cxf.helpers.IOUtils;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import plugin.domibus.eu.bris.common.aggregate.components._1.MessageContentType;
-import plugin.domibus.eu.bris.delivery.components._1.Acknowledgement;
-import plugin.domibus.eu.bris.delivery.components._1.DeliveryBody;
-import plugin.domibus.eu.bris.delivery.components._1.DeliveryHeader;
-import plugin.domibus.eu.bris.delivery.components._1.DeliveryMessageInfoType;
-import plugin.domibus.eu.bris.wsdl.endpoint.delivery.envelope._1.DeliveryEnvelopeInterface;
-import plugin.domibus.eu.bris.wsdl.endpoint.delivery.envelope._1.FaultResponse;
-import uk.gov.ch.bris.controller.DeliveryEnvelopeServiceController;
+import eu.domibus.plugin.bris.endpoint.delivery.DeliveryEnvelopeInterface;
+import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
+import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryMessageInfoType;
 
 public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterface {
-
-    @Autowired
-    private DeliveryEnvelopeServiceController weatherServiceController;
-    
+ 
     
     @Override
 	public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
     	System.out.println("MessageContent ... " + deliveryBody.getMessageContent());
     	
     	String xmlMessage = "";
-    	MessageContentType message = new MessageContentType();
+    	//MessageContentType message = new MessageContentType();
+    	//BRCompanyDetailsRequest br;
     	
     	DataHandler dataHandler = new DataHandler(deliveryBody.getMessageContent().getValue().getDataSource());
     	try {

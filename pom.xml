@@ -21,6 +21,9 @@
 		<!-- Overriding SpringBoot 1.3.4ff´s logback 1.1.7, because of http://jira.qos.ch/browse/LOGBACK-1164 
 			which is only fixed in the unreleased 1.1.8 -->
 		<logback.version>1.1.6</logback.version>
+		<domibus.bris.jaxb.version>1.0.0-SNAPSHOT</domibus.bris.jaxb.version>
+		<ecp.br.jaxb.version>1.1.0</ecp.br.jaxb.version>
+		<spring-kafka.version>1.1.2.RELEASE</spring-kafka.version>
 	</properties>
 
 	<dependencies>
@@ -35,6 +38,19 @@
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
+		
+		<dependency>
+           <groupId>eu.europa.ec.digit.bris.messages-app</groupId>
+           <artifactId>bris-br-jaxb</artifactId>
+           <version>1.4.0-rc3</version>
+       </dependency>
+       
+       <dependency>
+            <groupId>eu.europa.ec.digit.bris.domibus-plugin</groupId>
+            <artifactId>domibus-bris-jaxb</artifactId>
+            <version>1.0.5</version>
+        </dependency>
+
 	</dependencies>
 
 	<repositories>
@@ -54,7 +70,7 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<plugin>
+			<!--  plugin>
 				<groupId>de.codecentric</groupId>
 				<artifactId>cxf-spring-boot-starter-maven-plugin</artifactId>
 				<version>1.0.7.RELEASE</version>
@@ -65,7 +81,7 @@
 						</goals>
 					</execution>
 				</executions>
-			</plugin>
+			</plugin-->
 		</plugins>
 	</build>
 
