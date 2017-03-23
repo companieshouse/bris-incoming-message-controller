@@ -18,11 +18,6 @@ public class DecodeBase64 {
 		return decodedString;
 	}
 
-	/*
-	<payload payloadId="cid:message">
-		<?xml version="1.0" encoding="UTF-8"?>
-		<hello>world</hello>
-	</payload> 
-	 */
+
 }
 

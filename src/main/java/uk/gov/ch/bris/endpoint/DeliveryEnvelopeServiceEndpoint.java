@@ -8,8 +8,10 @@ import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
 import org.apache.cxf.helpers.IOUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.xml.sax.SAXException;
 import uk.gov.ch.bris.constants.ResourcePathConstants;
+import uk.gov.ch.bris.producer.Sender;
 
 import javax.activation.DataHandler;
 import javax.xml.XMLConstants;
@@ -46,6 +48,10 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
 	 */
     private final Logger loger = LoggerFactory.getLogger(DeliveryEnvelopeServiceEndpoint.class);
 
+    @Autowired
+    private Sender kafkaProducer;
+
+
 
 	/**
      * Service handles all delivery submission messages from BR-ECP
@@ -62,7 +68,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
 
     	String xmlMessage = getXMLmessagefromDeliveryBody(deliveryBody);
 		loger.info("xmlMessage :"+xmlMessage);
-
+		kafkaProducer.sendMessage("bris.incoming.topic",xmlMessage);
 
     	Acknowledgement acknowledgement = new Acknowledgement();
     	DeliveryMessageInfoType messageInfo = new DeliveryMessageInfoType();
