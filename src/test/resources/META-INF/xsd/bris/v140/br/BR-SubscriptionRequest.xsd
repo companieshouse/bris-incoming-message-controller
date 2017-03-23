@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xsd:schema
+	xmlns="http://ec.europa.eu/bris/v1_4/br/SubscriptionRequest"
+	xmlns:xsd="http://www.w3.org/2001/XMLSchema"
+	xmlns:brac="http://ec.europa.eu/bris/v1_4/br/AggregateComponents"
+	xmlns:brbc="http://ec.europa.eu/bris/v1_4/br/BasicComponents"
+	xmlns:bbc="http://ec.europa.eu/bris/v1_4/common/BasicComponents"
+	xmlns:bac="http://ec.europa.eu/bris/v1_4/common/AggregateComponents"
+	targetNamespace="http://ec.europa.eu/bris/v1_4/br/SubscriptionRequest"
+	elementFormDefault="qualified"
+	attributeFormDefault="unqualified"
+	version="1.4.0">
+
+	<xsd:import
+		namespace="http://ec.europa.eu/bris/v1_4/br/AggregateComponents"
+		schemaLocation="BR-AggregateComponents.xsd" />
+	<xsd:import
+		namespace="http://ec.europa.eu/bris/v1_4/br/BasicComponents"
+		schemaLocation="BR-BasicComponents.xsd" />
+	<xsd:import
+		namespace="http://ec.europa.eu/bris/v1_4/common/BasicComponents"
+		schemaLocation="../common/BRIS-BasicComponents.xsd" />
+	<xsd:import
+		namespace="http://ec.europa.eu/bris/v1_4/common/AggregateComponents"
+		schemaLocation="../common/BRIS-AggregateComponents.xsd" />
+
+	<xsd:element name="BR-ManageSubscriptionRequest">
+		<xsd:complexType>
+			<xsd:complexContent>
+				<xsd:extension base="brac:MessageRequestType">
+					<xsd:sequence>
+						<xsd:element ref="bac:BusinessRegisterReference"/>
+						<xsd:element name="Action" type="bac:ManageSubscriptionRequestType" maxOccurs="200"/>
+					</xsd:sequence>
+				</xsd:extension>
+			</xsd:complexContent>
+		</xsd:complexType>
+		<xsd:unique name="UniqueManageSubscriptionIDRequest">
+			<xsd:selector xpath="Action"/>
+			<xsd:field xpath="bbc:ManageSubscriptionID"/>
+		</xsd:unique>
+	</xsd:element>
+
+</xsd:schema>
