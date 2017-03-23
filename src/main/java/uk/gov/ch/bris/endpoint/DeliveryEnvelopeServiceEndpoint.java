@@ -35,85 +35,85 @@ import org.springframework.context.annotation.Bean;
 
 public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterface {
 
-	private final Logger loger = LoggerFactory.getLogger(DeliveryEnvelopeServiceEndpoint.class);
+    private final Logger loger = LoggerFactory.getLogger(DeliveryEnvelopeServiceEndpoint.class);
     
     @Override
-	public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
-    	System.out.println("MessageContent ... " + deliveryBody.getMessageContent());
-    	
-    	String xmlMessage = "";
-    	//MessageContentType message = new MessageContentType();
-    	//BRCompanyDetailsRequest br;
-    	
-    	DataHandler dataHandler = new DataHandler(deliveryBody.getMessageContent().getValue().getDataSource());
-    	try {
-			xmlMessage = IOUtils.toString(dataHandler.getInputStream());
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
+    public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
+        System.out.println("MessageContent ... " + deliveryBody.getMessageContent());
+        
+        String xmlMessage = "";
+        //MessageContentType message = new MessageContentType();
+        //BRCompanyDetailsRequest br;
+        
+        DataHandler dataHandler = new DataHandler(deliveryBody.getMessageContent().getValue().getDataSource());
+        try {
+            xmlMessage = IOUtils.toString(dataHandler.getInputStream());
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
 
-		loger.info("xmlMessage     ... " + xmlMessage);
-    	
-		
-    	//System.out.println("ContentType    ... " + deliveryBody.getMessageContent().getContentType());
-    	//System.out.println("Attachment     ... " + deliveryBody.getAttachment());
+        loger.info("xmlMessage     ... " + xmlMessage);
+        
+        
+        //System.out.println("ContentType    ... " + deliveryBody.getMessageContent().getContentType());
+        //System.out.println("Attachment     ... " + deliveryBody.getAttachment());
 
-		loger.info("@@@@@@@@@@@@@@@@@@");
-		loger.info("Inside submit ... ");
-		loger.info("@@@@@@@@@@@@@@@@@@");
-    	
-    	Acknowledgement ack = new Acknowledgement();
-    	DeliveryMessageInfoType messageInfo = new DeliveryMessageInfoType();
-    	
-    	
+        loger.info("@@@@@@@@@@@@@@@@@@");
+        loger.info("Inside submit ... ");
+        loger.info("@@@@@@@@@@@@@@@@@@");
+        
+        Acknowledgement ack = new Acknowledgement();
+        DeliveryMessageInfoType messageInfo = new DeliveryMessageInfoType();
+        
+        
         messageInfo.setMessageID(deliveryHeader.getDeliveryMessageInfo().getMessageID());
         messageInfo.setTimestamp(getXMLGregorianCalendarNow());
         ack.setDeliveryMessageInfo(messageInfo);
 
-		String strOK = this.convertXmlToObject(xmlMessage);
-		return ack;
-	}
-	public String convertXmlToObject(String xmlMessage) {
-		BRCompanyDetailsRequest brCompanyDetailsRequest = new BRCompanyDetailsRequest();
+        String strOK = this.convertXmlToObject(xmlMessage);
+        return ack;
+    }
+    public String convertXmlToObject(String xmlMessage) {
+        BRCompanyDetailsRequest brCompanyDetailsRequest = new BRCompanyDetailsRequest();
 
-		JAXBContext jaxbContext;
-		try {
-			jaxbContext = getJaxbContext();
-			Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-			JAXBSource source = new JAXBSource(jaxbContext, BRCompanyDetailsRequest.class);
-			SchemaFactory sf = SchemaFactory.newInstance( XMLConstants.W3C_XML_SCHEMA_NS_URI );
-			Schema schema = sf.newSchema(new File("/Users/rkumar/Downloads/A007_SoapCxfApp/src/main/resources/META-INF/xsd/bris/v140/br/BRX-CompanyDetailsRequest.xsd"));
-			jaxbUnmarshaller.setSchema(schema);
-			//jaxbUnmarshaller.setEventHandler(new BRISErrorHandler());
-
-
-
-
-			StringReader reader = new StringReader(xmlMessage);
-			Object obj = jaxbUnmarshaller.unmarshal(reader);
+        JAXBContext jaxbContext;
+        try {
+            jaxbContext = getJaxbContext();
+            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
+            JAXBSource source = new JAXBSource(jaxbContext, BRCompanyDetailsRequest.class);
+            SchemaFactory sf = SchemaFactory.newInstance( XMLConstants.W3C_XML_SCHEMA_NS_URI );
+            Schema schema = sf.newSchema(new File("/Users/rkumar/Downloads/A007_SoapCxfApp/src/main/resources/META-INF/xsd/bris/v140/br/BRX-CompanyDetailsRequest.xsd"));
+            jaxbUnmarshaller.setSchema(schema);
+            //jaxbUnmarshaller.setEventHandler(new BRISErrorHandler());
 
 
 
-			//jaxbUnmarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
 
-			if(obj instanceof BRCompanyDetailsRequest) {
-				brCompanyDetailsRequest = (BRCompanyDetailsRequest) obj;
-			}
+            StringReader reader = new StringReader(xmlMessage);
+            Object obj = jaxbUnmarshaller.unmarshal(reader);
 
-			loger.info("Inside convertXmlToObject ... ");
-			loger.info("brCompanyDetailsRequest   ... " + brCompanyDetailsRequest.getBusinessRegisterReference().getBusinessRegisterID().getValue());
-			loger.info("brCompanyDetailsRequest   ... " + brCompanyDetailsRequest.getBusinessRegisterReference().getBusinessRegisterCountry().getValue());
-			loger.info("END ßInside convertXmlToObject ... ");
 
-		} catch (JAXBException e) {
-			e.printStackTrace();
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
 
-		return "ok";
-	}
+            //jaxbUnmarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, Boolean.TRUE);
+
+            if(obj instanceof BRCompanyDetailsRequest) {
+                brCompanyDetailsRequest = (BRCompanyDetailsRequest) obj;
+            }
+
+            loger.info("Inside convertXmlToObject ... ");
+            loger.info("brCompanyDetailsRequest   ... " + brCompanyDetailsRequest.getBusinessRegisterReference().getBusinessRegisterID().getValue());
+            loger.info("brCompanyDetailsRequest   ... " + brCompanyDetailsRequest.getBusinessRegisterReference().getBusinessRegisterCountry().getValue());
+            loger.info("END ßInside convertXmlToObject ... ");
+
+        } catch (JAXBException e) {
+            e.printStackTrace();
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return "ok";
+    }
     
     public XMLGregorianCalendar getXMLGregorianCalendarNow() {
         try {
@@ -123,21 +123,21 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
             return now;
         } catch (DatatypeConfigurationException exception) {
             //throw new BRISProgramException("message.bris.utils.error.program.001", exception);
-        	return null;
+            return null;
         }
     }
 
-	@Bean
-	public JAXBContext getJaxbContext() {
-		JAXBContext context = null;
-		try {
-			context = JAXBContext.newInstance(
-					MessageObjectType.class
-			);
-		} catch (JAXBException exception) {
-			exception.printStackTrace();
-		}
+    @Bean
+    public JAXBContext getJaxbContext() {
+        JAXBContext context = null;
+        try {
+            context = JAXBContext.newInstance(
+                    MessageObjectType.class
+            );
+        } catch (JAXBException exception) {
+            exception.printStackTrace();
+        }
 
-		return context;
-	}
+        return context;
+    }
 }
