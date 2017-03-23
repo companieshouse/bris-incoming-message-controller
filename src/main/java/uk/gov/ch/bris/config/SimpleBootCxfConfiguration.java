@@ -31,7 +31,7 @@ public class SimpleBootCxfConfiguration {
     
     @Bean
     public DeliveryEnvelopeInterface deliveryEnvelopeService() {
-    	return new DeliveryEnvelopeServiceEndpoint();
+        return new DeliveryEnvelopeServiceEndpoint();
     }
     
     @Bean
@@ -43,7 +43,7 @@ public class SimpleBootCxfConfiguration {
     
     @Bean
     public Endpoint endpoint() {
-    	EndpointImpl endpoint = new EndpointImpl(springBus, deliveryEnvelopeService());
+        EndpointImpl endpoint = new EndpointImpl(springBus, deliveryEnvelopeService());
         endpoint.setServiceName(deliveryEnvelopeServiceClient().getServiceName());
         endpoint.publish(ServiceConstants.DELIVERY_SERVICE_URL + ServiceConstants.UNDERSCORE + getVersionFromEnvironment());
         return endpoint;
@@ -67,16 +67,16 @@ public class SimpleBootCxfConfiguration {
     }
 
     private String getVersionFromEnvironment() {
-    	env = System.getenv();
-    	String strVersion = env.entrySet().stream()
-    			.filter(env -> "VERSION".equals(env.getKey()))
-    			.map(env->env.getValue())
-    			.collect(Collectors.joining());
-    	
-    	if("".equals(strVersion)) {
+        env = System.getenv();
+        String strVersion = env.entrySet().stream()
+                .filter(env -> "VERSION".equals(env.getKey()))
+                .map(env->env.getValue())
+                .collect(Collectors.joining());
+        
+        if("".equals(strVersion)) {
             strVersion = "1.0";
-    	}
-    	
+        }
+        
         return strVersion;
     }
     
