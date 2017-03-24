@@ -1,0 +1,4 @@
+server:
+  port: 8087
+  contextPath: /ch-bris-app
+  

@@ -33,24 +33,46 @@
 			<version>1.0.7.RELEASE</version>
 		</dependency>
 
+
 		<dependency>
 			<groupId>org.springframework.boot</groupId>
 			<artifactId>spring-boot-starter-test</artifactId>
 			<scope>test</scope>
 		</dependency>
-		
+
+
 		<dependency>
            <groupId>eu.europa.ec.digit.bris.messages-app</groupId>
            <artifactId>bris-br-jaxb</artifactId>
            <version>1.4.0-rc4</version>
        </dependency>
-       
+		<dependency>
+			<groupId>javax.mail</groupId>
+			<artifactId>mail</artifactId>
+			<version>1.4</version>
+		</dependency>
        <dependency>
             <groupId>eu.europa.ec.digit.bris.domibus-plugin</groupId>
             <artifactId>domibus-bris-jaxb</artifactId>
             <version>1.0.5</version>
         </dependency>
 
+		<dependency>
+			<groupId>commons-lang</groupId>
+			<artifactId>commons-lang</artifactId>
+			<version>2.6</version>
+		</dependency>
+		<!-- Spring Kafka -->
+		<dependency>
+			<groupId>org.springframework.kafka</groupId>
+			<artifactId>spring-kafka</artifactId>
+
+		</dependency>
+		<dependency>
+			<groupId>org.apache.kafka</groupId>
+			<artifactId>kafka-clients</artifactId>
+			<version>0.10.2.0</version>
+		</dependency>
 	</dependencies>
 
 	<repositories>

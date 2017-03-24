@@ -1,3 +1,8 @@
+.DS_Store
+*.log
+src/main/resources/.DS_Store
+src/main/resources/META-INF/.DS_Store
+src/main/resources/META-INF/xsd/.DS_Store
 *.iml
 target/
 pom.xml.tag
