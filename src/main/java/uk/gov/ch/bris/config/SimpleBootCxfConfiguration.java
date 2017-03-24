@@ -1,6 +1,9 @@
 package uk.gov.ch.bris.config;
 
 import java.net.URL;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
 
 import javax.xml.namespace.QName;
 import javax.xml.ws.Endpoint;
@@ -15,37 +18,37 @@ import org.springframework.context.annotation.Configuration;
 
 import eu.domibus.plugin.bris.endpoint.delivery.DeliveryEnvelopeInterface;
 import eu.domibus.plugin.bris.endpoint.delivery.DeliveryEnvelopeService;
+import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.endpoint.DeliveryEnvelopeServiceEndpoint;
 
 @Configuration
 public class SimpleBootCxfConfiguration {
-
-	public static final String SERVLET_MAPPING_URL_PATH = "/ch-bris-api";
-    public static final String SERVICE_URL = "/DeliverySoapService_1.0";
-
+    
+    private Map<String, String> env = new HashMap<String, String>();
+    
     @Autowired
     private SpringBus springBus;
-
+    
     @Bean
     public DeliveryEnvelopeInterface deliveryEnvelopeService() {
-    	return new DeliveryEnvelopeServiceEndpoint();
+        return new DeliveryEnvelopeServiceEndpoint();
     }
-
+    
     @Bean
     public ServletRegistrationBean cxfServlet() {
-        ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(new CXFServlet(), SERVLET_MAPPING_URL_PATH + "/*");
+        ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(new CXFServlet(), ServiceConstants.SERVLET_MAPPING_URL_PATH + "/*");
         // If necessary add custom Title to CXF´s ServiceList
         return servletRegistrationBean;
     }
     
     @Bean
     public Endpoint endpoint() {
-    	EndpointImpl endpoint = new EndpointImpl(springBus, deliveryEnvelopeService());
+        EndpointImpl endpoint = new EndpointImpl(springBus, deliveryEnvelopeService());
         endpoint.setServiceName(deliveryEnvelopeServiceClient().getServiceName());
-        endpoint.publish(SERVICE_URL);
+        endpoint.publish(ServiceConstants.DELIVERY_SERVICE_URL + ServiceConstants.UNDERSCORE + getVersionFromEnvironment());
         return endpoint;
     }
-
+    
     @Bean
     public DeliveryEnvelopeService deliveryEnvelopeServiceClient() {
         DeliveryEnvelopeService deliveryEnvelopeService = null;
@@ -56,13 +59,25 @@ public class SimpleBootCxfConfiguration {
                     new QName("http://eu.domibus.plugin/bris/wsdl/endpoint/delivery/envelope/1.0", "DeliveryEnvelopeService"));
 
 
-        }catch (Exception e){
+        } catch (Exception e){
             e.printStackTrace();
 
         }
         return deliveryEnvelopeService;
     }
 
+    private String getVersionFromEnvironment() {
+        env = System.getenv();
+        String strVersion = env.entrySet().stream()
+                .filter(env -> "VERSION".equals(env.getKey()))
+                .map(env->env.getValue())
+                .collect(Collectors.joining());
+        
+        if("".equals(strVersion)) {
+            strVersion = "1.0";
+        }
+        
+        return strVersion;
+    }
     
-
 }
