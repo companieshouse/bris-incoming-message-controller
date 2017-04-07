@@ -18,3 +18,5 @@ buildNumber.properties
 .idea/*
 /bin/
 .settings
+bris-incoming-message-controller.jar
+bris-incoming-message-controller-*.zip
