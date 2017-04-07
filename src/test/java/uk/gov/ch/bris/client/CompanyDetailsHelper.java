@@ -50,6 +50,30 @@ public class CompanyDetailsHelper {
         MessageIDType messageIDType = new MessageIDType();
         messageIDType.setValue(messageId);
         messageHeaderType.setMessageID(messageIDType);
+        
+        //***** START --BusinessRegisterReference *******************//
+        BusinessRegisterReferenceType businessRegisterReferenceType=new BusinessRegisterReferenceType();
+        BusinessRegisterNameType businessRegisterNameType=new BusinessRegisterNameType();
+        businessRegisterNameType.setValue("Companies House");
+        
+        BusinessRegisterIDType businessRegisterIDType=new BusinessRegisterIDType();
+        
+        //BusinessRegisterID
+        businessRegisterIDType.setValue("EW");
+        
+        //BusinessRegisterCountry Country
+        CountryType countryType=new CountryType();
+        countryType.setValue("UK");
+        
+        //set BusinessRegisterID
+        businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);
+        
+        // set BusinessRegisterCountry
+        businessRegisterReferenceType.setBusinessRegisterCountry(countryType);
+        // TODO BusinessRegisterName??
+        
+        // set BusinessRegisterReference to CompanyDetailsResponse
+        messageHeaderType.setBusinessRegisterReference(businessRegisterReferenceType);
         return messageHeaderType;
     }
 
