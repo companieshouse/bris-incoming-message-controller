@@ -68,7 +68,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
 
     	String xmlMessage = getXMLmessagefromDeliveryBody(deliveryBody);
 		loger.info("xmlMessage :"+xmlMessage);
-		kafkaProducer.sendMessage("bris.incoming.topic",xmlMessage);
+		kafkaProducer.sendMessage("bris.incoming.topic", xmlMessage);
 
     	Acknowledgement acknowledgement = new Acknowledgement();
     	DeliveryMessageInfoType messageInfo = new DeliveryMessageInfoType();
@@ -166,9 +166,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
 			JAXBSource source = new JAXBSource(jaxbContext, MessageObjectType.class);
 			StringReader reader = new StringReader(xmlMessage);
 			obj = jaxbUnmarshaller.unmarshal(reader);
-
-
-
+			
 		} catch (JAXBException e) {
 			e.printStackTrace();
 		}
@@ -183,12 +181,12 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
 	private String getXSDPathLocation(String className){
 
 		Map<String,String> map=new HashMap<>();
-		map.put("eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest", ResourcePathConstants.COMPANY_DETAILS_SCHEMA_FILE_PATH);
-		map.put("eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotification", ResourcePathConstants.BRANCH_DISCLOUSER_NOTIFICATION_SCHEMA_FILE_PATH);
-		map.put("eu.europa.ec.bris.v140.jaxb.br.connection.BRConnectivityRequest", ResourcePathConstants.CONNECTION_REQ_SCHEMA_FILE_PATH);
-		map.put("eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotification", ResourcePathConstants.CRS_BORDER_MERGER_NOTIFICATION_SCHEMA_FILE_PATH);
-		map.put("eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentRequest", ResourcePathConstants.RETRIEVE_DOCUMENT_SCHEMA_FILE_PATH);
-
+		map.put("eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest", ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_SCHEMA);
+		map.put("eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotification", ResourcePathConstants.XSD_PATH + ResourcePathConstants.BRANCH_DISCLOSURE_NOTIFICATION_SCHEMA);
+		map.put("eu.europa.ec.bris.v140.jaxb.br.connection.BRConnectivityRequest", ResourcePathConstants.XSD_PATH + ResourcePathConstants.CONNECTION_REQ_SCHEMA);
+		map.put("eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotification", ResourcePathConstants.XSD_PATH + ResourcePathConstants.CRS_BORDER_MERGER_NOTIFICATION_SCHEMA);
+		map.put("eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentRequest", ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_SCHEMA);
+		
 		return  map.get(className);
 
 	}

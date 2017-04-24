@@ -60,7 +60,7 @@ public class DeliveryWsApplicationTests {
         BRCompanyDetailsRequest request = CompanyDetailsHelper.newInstance(
                 CORRELATION_ID,
                 MESSAGE_ID,
-                "NF004188",
+                "00006400",
                 "EW",
                 "UK");
         Acknowledgement ack=null;

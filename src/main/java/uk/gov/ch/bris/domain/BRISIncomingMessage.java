@@ -20,34 +20,50 @@ public class BRISIncomingMessage implements Serializable {
     /** No-args constructor */
     public BRISIncomingMessage() {
     }
-
+    
     /** Constructor */
-    public BRISIncomingMessage(String messageId, String message) {
+    public BRISIncomingMessage(String messageId, String correlationId, String message) {
         this.messageId = messageId;
+        this.correlationId = correlationId;
         this.message = message;
     }
     
-    public BRISIncomingMessage(String messageId, String message, String status) {
+    public BRISIncomingMessage(String messageId, String correlationId, String message, String status) {
         this.messageId = messageId;
+        this.correlationId = correlationId;
         this.message = message;
         this.status = status;
+    }
+    
+    public BRISIncomingMessage(String messageId, String correlationId, String message, String status, DateTime timestamp) {
+        this.messageId = messageId;
+        this.correlationId = correlationId;
+        this.message = message;
+        this.status = status;
+        this.createdOn = timestamp;
     }
     
     @Id
     private String id;
 
     @Size(min = 5, max = 100)
-    @Field("messageId")
+    @Field("message_id")
     private String messageId;
 
+    @Field("correlation_id")
+    private String correlationId;
+    
+    @Field("message_type")
+    private String messageType;
+    
     @Field("message")
     private String message;
     
     @Field("status")
     private String status;
     
-    @Field("timestamp")
-    private DateTime timestamp;
+    @Field("created_on")
+    private DateTime createdOn;
     
     public String getId() {
         return id;
@@ -65,6 +81,14 @@ public class BRISIncomingMessage implements Serializable {
         this.messageId = messageId;
     }
 
+    public String getCorrelationId() {
+        return correlationId;
+    }
+
+    public void setCorrelationId(String correlationId) {
+        this.correlationId = correlationId;
+    }
+    
     public String getMessage() {
         return message;
     }
@@ -81,12 +105,20 @@ public class BRISIncomingMessage implements Serializable {
         this.status = status;
     }    
     
-    public DateTime getTimestamp() {
-        return timestamp;
+    public DateTime getCreatedOn() {
+        return createdOn;
     }
 
-    public void setTimestamp(DateTime timestamp) {
-        this.timestamp = timestamp;
+    public void setCreatedOn(DateTime createdOn) {
+        this.createdOn = createdOn;
+    }
+    
+    public String getMessageType() {
+        return messageType;
+    }
+
+    public void setMessageType(String messageType) {
+        this.messageType = messageType;
     }
     
     @Override
@@ -117,7 +149,7 @@ public class BRISIncomingMessage implements Serializable {
                 ", messageId='" + messageId + "'" +
                 ", message='" + message + "'" +
                 ", status='" + status + "'" +
-                ", timestamp='" + timestamp + "'" +
+                ", createdOn='" + createdOn + "'" +
                 '}';
     }
 }
