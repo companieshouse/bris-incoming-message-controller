@@ -68,9 +68,9 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
 
     	String xmlMessage = getXMLmessagefromDeliveryBody(deliveryBody);
 		loger.info("xmlMessage :"+xmlMessage);
-		kafkaProducer.sendMessage("bris.incoming.topic", xmlMessage);
-
-    	Acknowledgement acknowledgement = new Acknowledgement();
+		kafkaProducer.sendMessage("bris_incoming", xmlMessage);
+		
+		Acknowledgement acknowledgement = new Acknowledgement();
     	DeliveryMessageInfoType messageInfo = new DeliveryMessageInfoType();
         messageInfo.setMessageID(deliveryHeader.getDeliveryMessageInfo().getMessageID());
         messageInfo.setTimestamp(getXMLGregorianCalendarNow());
@@ -197,9 +197,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
 	private JAXBContext getJaxbContext() {
 		JAXBContext context = null;
 		try {
-			context = JAXBContext.newInstance(
-					MessageObjectType.class
-			);
+			context = JAXBContext.newInstance(MessageObjectType.class);
 		} catch (JAXBException exception) {
 			exception.printStackTrace();
 		}

@@ -43,5 +43,11 @@ public class BRISIncomingMessageService {
     public void deleteAll() {
         brisIncomingMessageRepository.deleteAll();
     }
+    
+    public BRISIncomingMessage findByMessageId(String messageId) {
+        return brisIncomingMessageRepository.findOneByMessageId(messageId);
+    }
+    
+    
 
 }

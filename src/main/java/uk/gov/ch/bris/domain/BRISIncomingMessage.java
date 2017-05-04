@@ -12,7 +12,7 @@ import org.springframework.data.mongodb.core.mapping.Document;
 import org.springframework.data.mongodb.core.mapping.Field;
 
 @ComponentScan
-@Document(collection = "brisIncomingMessageCollection")
+@Document(collection = "incoming_messages")
 public class BRISIncomingMessage implements Serializable {
     
     private static final long serialVersionUID = 1L;

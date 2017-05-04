@@ -78,12 +78,15 @@ public class Sender {
     private KafkaTemplate<Integer, String> kafkaTemplate;
 
     public void sendMessage(String topic, String message) throws FaultResponse {
+        BRISIncomingMessage brisIncomingMessage = null;
         FaultDetail faultDetail = new FaultDetail();
-        
         DateTime dateTimeResult =  null;
+        String strErrorMessage = "";
         String messageId = "";
         String correlationId = "";
         String id = "";
+        String jsonIncomingId = ""; 
+        
         try {
             // validate xmlMessage with the schema
             BrisMessageType brisMessageType = validateSchema(message);
@@ -93,25 +96,39 @@ public class Sender {
             correlationId  = this.extractCorrelationId(message);
             dateTimeResult = getDateTime();
             
-            // create brisIncomingMessage Object
-            BRISIncomingMessage brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING"); 
+            // check if messageId/correlationId already exists in mongodb
+            brisIncomingMessage = brisIncomingMessageService.findByMessageId(messageId);
             
-            // save brisIncomingMessage Object in Mongo DB
-            brisIncomingMessage.setMessageType(brisMessageType.getClassName());
-            brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
-            brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
+            if(null == brisIncomingMessage) {
+                // create brisIncomingMessage Object
+                brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING"); 
+                
+                // save brisIncomingMessage Object in Mongo DB
+                brisIncomingMessage.setMessageType(brisMessageType.getClassName());
+                brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
+                brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
+                
+                id = brisIncomingMessage.getId();
+                brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
+                
+                jsonIncomingId = "{\"incoming_id\":\"" + id + "\"}";
+                LOGGER.info("Listing brisIncomingMessage with id: " + id + " messageId: " + brisIncomingMessage.getMessageId() + " correlationId: " + brisIncomingMessage.getCorrelationId());
+                
+            } else {
+                strErrorMessage = "The provided MessageID value of this BRIS message " + messageId +  " already exists";
+                Exception ex = new Exception(strErrorMessage);
+                faultDetail.setResponseCode("GEN007");
+                faultDetail.setMessage(strErrorMessage);
+                throw new FaultResponse(strErrorMessage, faultDetail, ex);   
+            }
             
-            id = brisIncomingMessage.getId();
-            brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
-            
-            LOGGER.info("Listing brisIncomingMessage with id: " + id + " messageId: " + brisIncomingMessage.getMessageId() + " correlationId: " + brisIncomingMessage.getCorrelationId());
         } catch (Exception e) {
             throw new FaultResponse("Exception", faultDetail, e);
         }
         
         // the KafkaTemplate provides asynchronous send methods returning a
         // Future
-        ListenableFuture<SendResult<Integer, String>> future = kafkaTemplate.send(topic, id);
+        ListenableFuture<SendResult<Integer, String>> future = kafkaTemplate.send(topic, jsonIncomingId);
         
         // you can register a callback with the listener to receive the result
         // of the send asynchronously
@@ -285,9 +302,9 @@ public class Sender {
        Map<Class, URL> map = new HashMap<>();
        
        map.put(BRCompanyDetailsRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_SCHEMA));
-       map.put(BRBranchDisclosureReceptionNotification.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.XSD_PATH + ResourcePathConstants.BRANCH_DISCLOSURE_NOTIFICATION_SCHEMA));
+       map.put(BRBranchDisclosureReceptionNotification.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BRANCH_DISCLOSURE_NOTIFICATION_SCHEMA));
        map.put(BRCrossBorderMergerReceptionNotification.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CRS_BORDER_MERGER_NOTIFICATION_SCHEMA));
-       map.put(BRRetrieveDocumentRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_SCHEMA));
+       map.put(BRRetrieveDocumentRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_SCHEMA));
        map.put(BRConnectivityRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CONNECTION_REQ_SCHEMA));
        
        BrisMessageType brisMessageType = new BrisMessageType();
