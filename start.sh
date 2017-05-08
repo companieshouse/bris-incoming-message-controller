@@ -7,7 +7,7 @@ if [[ -z "${MESOS_SLAVE_PID}" ]]; then
     source ~/.chs_env/global_env
     source ~/.chs_env/bris-incoming-message-controller/env
 
-    PORT="${BRIS_INCOMING_MESSAGE_CONTROLLER_PORT:=6001}"
+    PORT="${PORT:=6002}"
 else
     PORT="$1"
     CONFIG_URL="$2"
