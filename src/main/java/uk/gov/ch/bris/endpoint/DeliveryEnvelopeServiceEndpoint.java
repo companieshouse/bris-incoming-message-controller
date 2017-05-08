@@ -1,17 +1,12 @@
 package uk.gov.ch.bris.endpoint;
 
 
-import eu.domibus.plugin.bris.endpoint.delivery.DeliveryEnvelopeInterface;
-import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
-import eu.domibus.plugin.bris.jaxb.delivery.*;
-import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
-import org.apache.cxf.helpers.IOUtils;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.xml.sax.SAXException;
-import uk.gov.ch.bris.constants.ResourcePathConstants;
-import uk.gov.ch.bris.producer.Sender;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
+import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.xml.XMLConstants;
@@ -26,12 +21,24 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URL;
-import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.apache.cxf.helpers.IOUtils;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.xml.sax.SAXException;
+
+import eu.domibus.plugin.bris.endpoint.delivery.DeliveryEnvelopeInterface;
+import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
+import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryMessageInfoType;
+import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
+import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
+import uk.gov.ch.bris.constants.ResourcePathConstants;
+import uk.gov.ch.bris.producer.Sender;
 
 
 
@@ -51,7 +58,8 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
     @Autowired
     private Sender kafkaProducer;
 
-
+    @Value("${kafka.producer.topic}")
+    private String brisIncomingTopic;
 
 	/**
      * Service handles all delivery submission messages from BR-ECP
@@ -63,19 +71,19 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
      */
     @Override
 	public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
-
-		loger.info("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID());
-
-    	String xmlMessage = getXMLmessagefromDeliveryBody(deliveryBody);
+        
+        loger.info("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID());
+        
+        String xmlMessage = getXMLmessagefromDeliveryBody(deliveryBody);
 		loger.info("xmlMessage :"+xmlMessage);
-		kafkaProducer.sendMessage("bris_incoming", xmlMessage);
+		kafkaProducer.sendMessage(brisIncomingTopic, xmlMessage);
 		
 		Acknowledgement acknowledgement = new Acknowledgement();
     	DeliveryMessageInfoType messageInfo = new DeliveryMessageInfoType();
         messageInfo.setMessageID(deliveryHeader.getDeliveryMessageInfo().getMessageID());
         messageInfo.setTimestamp(getXMLGregorianCalendarNow());
 		acknowledgement.setDeliveryMessageInfo(messageInfo);
-
+		
 		return acknowledgement;
 	}
 
