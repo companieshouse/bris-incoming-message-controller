@@ -48,17 +48,19 @@ public class DeliveryWsApplicationTests {
     @Autowired
     protected DeliveryEnvelopeServiceEndpoint deliveryEnvelopeServiceEndpoint = null;
 
-    public final static String MESSAGE_ID = UUID.randomUUID().toString();
-    public final static String CORRELATION_ID = MESSAGE_ID; //"COR-000123";
+    public static String MESSAGE_ID = UUID.randomUUID().toString();
+    public static String CORRELATION_ID = MESSAGE_ID; //"COR-000123";
     public final static String DOC_ID = "G8VtZ7UJymaKplxBHLB8XWYOlQHlemtIRIOV5CvTfqY";
     
     @Autowired
     protected Marshaller marshaller = null;
     
     @Test
-    public void sendDocumentDetailsRequestMessage(){
+    public void sendDocumentDetailsRequestMessage() {
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
+        MESSAGE_ID = UUID.randomUUID().toString();
+        CORRELATION_ID = MESSAGE_ID;
         
         BRRetrieveDocumentRequest request = RetrieveDocumentDetailsHelper.newInstance(
                 CORRELATION_ID,
@@ -71,7 +73,6 @@ public class DeliveryWsApplicationTests {
         Acknowledgement ack=null;
         
         try {
-
 
             Reader requestStream = marshal(request).getReader();
             String xmlMessage = IOUtils.toString(requestStream);
@@ -99,16 +100,18 @@ public class DeliveryWsApplicationTests {
             exception.printStackTrace();
 
         }
-
+        
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
-
+        
     }
     
     @Test
     public void sendCompanyDetailsRequestMessage(){
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
+        MESSAGE_ID = UUID.randomUUID().toString();
+        CORRELATION_ID = MESSAGE_ID;
         
         //"00006400", "03977902"
         BRCompanyDetailsRequest request = CompanyDetailsHelper.newInstance(
@@ -118,9 +121,9 @@ public class DeliveryWsApplicationTests {
                 "EW",
                 "UK");
         Acknowledgement ack=null;
+       
         try {
-
-
+            
             Reader requestStream = marshal(request).getReader();
             String xmlMessage = IOUtils.toString(requestStream);
             DataHandler dataHandler = new DataHandler(new ByteArrayDataSource(xmlMessage, "text/plain; charset=UTF-8"));
@@ -144,11 +147,9 @@ public class DeliveryWsApplicationTests {
             deliveryMessageInfoType.setMessageID(MESSAGE_ID);
             deliveryMessageInfoType.setTimestamp(getXMLGregorianCalendarNow());
             deliveryHeader.setDeliveryMessageInfo(deliveryMessageInfoType);
-
-
+            
             ack = deliveryEnvelopeServiceEndpoint.submit(deliveryHeader, body);
-
-
+            
             //cleanup
             requestStream.close();
             //fileStream.close();
@@ -162,7 +163,6 @@ public class DeliveryWsApplicationTests {
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
-
     }
     
     
