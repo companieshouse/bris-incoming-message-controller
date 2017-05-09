@@ -23,6 +23,7 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import eu.europa.ec.bris.v140.jaxb.br.led.full.BRFullUpdateLEDAcknowledgment;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
@@ -127,7 +128,7 @@ public class Sender {
         }
         
         // the KafkaTemplate provides asynchronous send methods returning a
-        // Future
+        // Futurez
         ListenableFuture<SendResult<Integer, String>> future = kafkaTemplate.send(topic, jsonIncomingId);
         
         // you can register a callback with the listener to receive the result
@@ -148,6 +149,8 @@ public class Sender {
         // alternatively, to block the sending thread, to await the result,
         // invoke the future's get() method
     }
+
+
 
     public String extractMessageId(String xmlMessage) throws FaultResponse {
         FaultDetail faultDetail = new FaultDetail();
@@ -232,7 +235,7 @@ public class Sender {
         return context;
     }
 
-    @Bean
+   /* @Bean
     public Marshaller marshaller() throws JAXBException {
         return getJaxbContext().createMarshaller();
     }
@@ -240,7 +243,9 @@ public class Sender {
     @Bean
     public Unmarshaller unmarshaller() throws JAXBException {
         return getJaxbContext().createUnmarshaller();
-    }
+    }*/
+
+
     
     /**
     *
@@ -306,7 +311,11 @@ public class Sender {
        map.put(BRCrossBorderMergerReceptionNotification.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CRS_BORDER_MERGER_NOTIFICATION_SCHEMA));
        map.put(BRRetrieveDocumentRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_SCHEMA));
        map.put(BRConnectivityRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CONNECTION_REQ_SCHEMA));
-       
+       map.put(BRFullUpdateLEDAcknowledgment.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.FULL_UPDATE_LED_ACK_SCHEMA));
+       map.put(BRUpdateLEDStatus.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.UPDATE_LED_STATUS_SCHEMA));
+       map.put(BRCrossBorderMergerReceptionNotificationAcknowledgement.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CROSS_BRDR_MERG_NOTIFICATION_RES_SCHEMA));
+       map.put(BRBusinessError.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BR_BUSINESS_ERR_SCHEMA));
+
        BrisMessageType brisMessageType = new BrisMessageType();
        brisMessageType.setUrl(map.get(clazz));
        brisMessageType.setClassName(clazz.getSimpleName());
