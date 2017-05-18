@@ -5,9 +5,8 @@ APP_DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 if [[ -z "${MESOS_SLAVE_PID}" ]]; then
     source ~/.chs_env/private_env
     source ~/.chs_env/global_env
-    source ~/.chs_env/bris-incoming-message-controller/env
-
-    PORT="${PORT:=6002}"
+    APP_CONFIG_DIR="${APP_CONFIG_DIR:=bris-incoming-message-controller-test}"
+    source ~/.chs_env/${APP_CONFIG_DIR}/env
 else
     PORT="$1"
     CONFIG_URL="$2"

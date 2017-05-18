@@ -86,8 +86,8 @@ public class Sender {
         String messageId = "";
         String correlationId = "";
         String id = "";
-        String jsonIncomingId = ""; 
-        
+        String jsonIncomingId = "";
+
         try {
             // validate xmlMessage with the schema
             BrisMessageType brisMessageType = validateSchema(message);
@@ -96,10 +96,10 @@ public class Sender {
             messageId = this.extractMessageId(message);
             correlationId  = this.extractCorrelationId(message);
             dateTimeResult = getDateTime();
-            
+
             // check if messageId/correlationId already exists in mongodb
             brisIncomingMessage = brisIncomingMessageService.findByMessageId(messageId);
-            
+
             if(null == brisIncomingMessage) {
                 // create brisIncomingMessage Object
                 brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING"); 
@@ -130,7 +130,7 @@ public class Sender {
         // the KafkaTemplate provides asynchronous send methods returning a
         // Futurez
         ListenableFuture<SendResult<Integer, String>> future = kafkaTemplate.send(topic, jsonIncomingId);
-        
+
         // you can register a callback with the listener to receive the result
         // of the send asynchronously
         future.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
@@ -257,11 +257,11 @@ public class Sender {
        FaultDetail faultDetail = new FaultDetail();
        try {
            BrisMessageType brisMessageType = getSchema(xmlMessage);
-           
+
            Schema schema = factory.newSchema(brisMessageType.getUrl());
            Validator validator = schema.newValidator();
            validator.validate(new StreamSource(new StringReader(xmlMessage)));
-           
+
            return brisMessageType;
        } catch (SAXException e) {
            e.printStackTrace();
@@ -315,6 +315,7 @@ public class Sender {
        map.put(BRUpdateLEDStatus.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.UPDATE_LED_STATUS_SCHEMA));
        map.put(BRCrossBorderMergerReceptionNotificationAcknowledgement.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CROSS_BRDR_MERG_NOTIFICATION_RES_SCHEMA));
        map.put(BRBusinessError.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BR_BUSINESS_ERR_SCHEMA));
+       map.put(BRCompanyDetailsResponse.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants. COMPANY_DETAILS_RESPONSE_SCHEMA ));
 
        BrisMessageType brisMessageType = new BrisMessageType();
        brisMessageType.setUrl(map.get(clazz));
