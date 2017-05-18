@@ -60,6 +60,7 @@ public class CompanyDetailsHelper {
         
         //BusinessRegisterID
         businessRegisterIDType.setValue("EW");
+        //businessRegisterIDType.setValue("breg6");
         
         //BusinessRegisterCountry Country
         CountryType countryType=new CountryType();
