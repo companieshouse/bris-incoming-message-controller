@@ -75,7 +75,7 @@ public class DeliveryWsApplicationTests {
     @Autowired
     protected Marshaller marshaller = null;
     
-    //@Test
+    @Test
     public void sendDocumentDetailsRequestMessage() {
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
@@ -99,7 +99,7 @@ public class DeliveryWsApplicationTests {
         
     }
     
-    //@Test
+    @Test
     public void sendCompanyDetailsRequestMessage(){
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
@@ -124,7 +124,7 @@ public class DeliveryWsApplicationTests {
     
     
     
-    //@Test
+    @Test
     public void sendInvalidRequestMessage(){
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
@@ -148,7 +148,7 @@ public class DeliveryWsApplicationTests {
 
     }
     
-    //@Test
+    @Test
     public void sendConnectionDetailsRequestMessage(){
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
@@ -180,6 +180,30 @@ public class DeliveryWsApplicationTests {
         
         //"00006400", "03977902"
         MessageObjectType request = BranchDisclosureReceptionNotificationDetailsHelper.newInstance(
+                CORRELATION_ID,
+                MESSAGE_ID,
+                "03977902",
+                "EW",
+                "UK",
+                DOC_ID);
+        Acknowledgement ack=null;
+        
+        ack = callDeliveryEnvelopeService(body, message, request, ack);
+        
+        assertNotNull(ack);
+        assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
+        
+    }
+    
+    //@Test
+    public void sendBranchDisclosureSubmissionNotificationDetailsRequestMessage(){
+        DeliveryBody body = new DeliveryBody();
+        MessageContentType message = new MessageContentType();
+        MESSAGE_ID = UUID.randomUUID().toString();
+        CORRELATION_ID = MESSAGE_ID;
+        
+        //"00006400", "03977902"
+        MessageObjectType request = BranchDisclosureSubmissionNotificationDetailsHelper.newInstance(
                 CORRELATION_ID,
                 MESSAGE_ID,
                 "03977902",

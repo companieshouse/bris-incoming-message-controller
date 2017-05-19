@@ -17,8 +17,13 @@ import eu.europa.ec.bris.v140.jaxb.components.aggregate.CompanyAlternateIdentifi
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.LegislationReferencesType;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.NotificationCompanyType;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.NotificationContextType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.AddressLine1Type;
+import eu.europa.ec.bris.v140.jaxb.components.basic.AddressLine2Type;
+import eu.europa.ec.bris.v140.jaxb.components.basic.AddressLine3Type;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.CityType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyAlternateIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyEUIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyNameType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyRegistrationNumberType;
@@ -30,6 +35,7 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.EffectiveDateType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.LegalFormCodeType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.PaymentReferenceType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.PostalCodeType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.ProceedingType;
 
 public class BranchDisclosureReceptionNotificationDetailsHelper {
@@ -54,7 +60,7 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
     	request.setMessageHeader(getMessageHeader(correlationId, messageId));
     	
     	request.setNotificationContext(setNotificationContextType());
-        request.setProceeding(setProceedingType("proceedingTypeValue"));
+        request.setProceeding(setProceedingType("WINDING_UP_OPENING"));
         request.setDisclosureCompany(setNotificationCompanyType());
         request.setRecipientOrganisation(setBusinessRegisterType());
         
@@ -146,6 +152,7 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
         NotificationContextType notificationContextType = new NotificationContextType();
         
         LegislationReferencesType legislationReferencesType = new LegislationReferencesType();
+        
         BusinessRegisterType issuingOrganisation = new BusinessRegisterType();
         DateTimeType issuanceDateTime = new DateTimeType();
         EffectiveDateType effectiveDate = new EffectiveDateType();
@@ -172,6 +179,7 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
         // set BusinessRegisterCountry
         issuingOrganisation.setBusinessRegisterID(businessRegisterIDType);
         issuingOrganisation.setBusinessRegisterCountry(countryType);
+        issuingOrganisation.setBusinessRegisterName(businessRegisterNameType);
         
         notificationContextType.setIssuingOrganisation(issuingOrganisation);
         notificationContextType.setIssuanceDateTime(dateTimeType);
@@ -188,23 +196,58 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
     }
     
     private static NotificationCompanyType setNotificationCompanyType() {
+        /*
+        <bbc:BusinessRegisterName>Handelsregister</bbc:BusinessRegisterName>
+        <bbc:CompanyEUID>FRIG.2010012341-Z</bbc:CompanyEUID>
+        <bbc:CompanyName>bbc:CompanyName</bbc:CompanyName>
+        <bac:CompanyRegisteredOffice>
+            <bbc:Country>NL</bbc:Country>
+        </bac:CompanyRegisteredOffice>
+        <bac:CompanyAlternateIdentifiers>
+            <bbc:CompanyAlternateID>34EDED</bbc:CompanyAlternateID>
+        </bac:CompanyAlternateIdentifiers>
+        <bbc:CompanyLegalForm>LF-NL-01</bbc:CompanyLegalForm>
+        */
+        
         BusinessRegisterNameType businessRegisterNameType = new BusinessRegisterNameType();
-        businessRegisterNameType.setValue("");
+        businessRegisterNameType.setValue("EW");
+        
+        CompanyAlternateIDType companyAlternateIDType = new CompanyAlternateIDType();
+        companyAlternateIDType.setValue("34EDED");
         
         CompanyAlternateIdentifiersType companyAlternateIdentifiersType = new CompanyAlternateIdentifiersType();
-        //companyAlternateIdentifiersType.getCompanyAlternateID().
+        companyAlternateIdentifiersType.getCompanyAlternateID().add(companyAlternateIDType);
         
         CompanyEUIDType companyEUIDType = new CompanyEUIDType();
-        companyEUIDType.setValue("");
+        companyEUIDType.setValue("FRIG.2010012341-Z<");
         
         LegalFormCodeType legalFormCodeType = new LegalFormCodeType();
-        legalFormCodeType.setValue("");
+        legalFormCodeType.setValue("LF-NL-001");
         
         CompanyNameType companyNameType = new CompanyNameType();
-        companyNameType.setValue("");        
+        companyNameType.setValue("CompanyName");        
         
         AddressType addressType = new AddressType();
-        //addressType.setAddressLine1("");
+        AddressLine1Type addressLine1 = new AddressLine1Type();
+        AddressLine2Type addressLine2 = new AddressLine2Type();
+        AddressLine3Type addressLine3 = new AddressLine3Type();
+        PostalCodeType postalCode = new PostalCodeType();
+        CityType city = new CityType();
+        CountryType countryType = new CountryType();
+        
+        addressLine1.setValue("1A Broadway Parade");
+        addressLine2.setValue("Pinner Road");
+        addressLine3.setValue("Middx");
+        postalCode.setValue("HA27SY");
+        city.setValue("HARROW");
+        countryType.setValue("UK");
+        
+        addressType.setAddressLine1(addressLine1);
+        addressType.setAddressLine2(addressLine2);
+        addressType.setAddressLine3(addressLine3);
+        addressType.setCity(city);
+        addressType.setPostalCode(postalCode);
+        addressType.setCountry(countryType);
         
         NotificationCompanyType notificationCompanyType = new NotificationCompanyType();
         notificationCompanyType.setBusinessRegisterName(businessRegisterNameType);
@@ -225,12 +268,16 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
         //BusinessRegisterID
         businessRegisterIDType.setValue("EW");
         
+        BusinessRegisterNameType businessRegisterNameType = new BusinessRegisterNameType();
+        businessRegisterNameType.setValue("Companies House");
+        
         //BusinessRegisterCountry Country
         CountryType countryType = new CountryType();
         countryType.setValue("UK");
         
         businessRegisterType.setBusinessRegisterCountry(countryType);
         businessRegisterType.setBusinessRegisterID(businessRegisterIDType); 
+        businessRegisterType.setBusinessRegisterName(businessRegisterNameType);
         
         return businessRegisterType;
     }
