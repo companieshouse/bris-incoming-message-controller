@@ -295,11 +295,11 @@ public class BranchDisclosureSubmissionNotificationDetailsHelper {
             DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
             now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
 
-            System.out.println("" + now);
+            LOGGER.info("XML Gregorian Calendar instance " + now);
         } catch (DatatypeConfigurationException exception) {
-
-            exception.printStackTrace();
+            LOGGER.error("unable to create new XML Gregorian Calendar instance", "Datatype Configuration Exception", exception);
         }
+        
         return now;
     }
     
