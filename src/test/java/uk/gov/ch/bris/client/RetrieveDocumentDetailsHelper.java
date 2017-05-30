@@ -2,6 +2,11 @@
 package uk.gov.ch.bris.client;
 
 
+import javax.xml.datatype.DatatypeConfigurationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentRequest;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
@@ -18,6 +23,8 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.PaymentReferenceType;
 
 public class RetrieveDocumentDetailsHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RetrieveDocumentDetailsHelper.class);
+    
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -34,11 +41,18 @@ public class RetrieveDocumentDetailsHelper {
         String countryCode,
         String documentId) {
     	BRRetrieveDocumentRequest request = new BRRetrieveDocumentRequest();
-    	request.setMessageHeader(getMessageHeader(correlationId, messageId));
-    	request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
-    	request.setPaymentReference(setPaymentReferenceType("PaymentRef"));
-        request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
-    	request.setDocumentID(setDocumentId(documentId));
+    	
+    	try { 
+        	request.setMessageHeader(getMessageHeader(correlationId, messageId));
+        	request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
+        	request.setPaymentReference(setPaymentReferenceType("PaymentRef"));
+            request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
+        	request.setDocumentID(setDocumentId(documentId));
+    	
+        } catch(Exception ex) {
+            LOGGER.error("unable to create new instance", "", ex);
+        }
+        
     	return request;
     }
     

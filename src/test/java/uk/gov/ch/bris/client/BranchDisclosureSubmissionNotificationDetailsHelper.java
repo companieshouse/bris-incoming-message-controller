@@ -6,8 +6,10 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
-import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotification;
 import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureSubmissionNotification;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.AddressType;
@@ -41,6 +43,8 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.ProceedingType;
 
 public class BranchDisclosureSubmissionNotificationDetailsHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BranchDisclosureSubmissionNotificationDetailsHelper.class);
+    
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -58,11 +62,17 @@ public class BranchDisclosureSubmissionNotificationDetailsHelper {
         String documentId) {
     	
         BRBranchDisclosureSubmissionNotification request = new BRBranchDisclosureSubmissionNotification();
-    	request.setMessageHeader(getMessageHeader(correlationId, messageId));
-    	
-    	request.setNotificationContext(setNotificationContextType());
-    	request.setProceeding(setProceedingType("WINDING_UP_OPENING"));
-        request.setDisclosureCompany(setNotificationCompanyType());
+        
+        try {
+        	request.setMessageHeader(getMessageHeader(correlationId, messageId));
+        	
+        	request.setNotificationContext(setNotificationContextType());
+        	request.setProceeding(setProceedingType("WINDING_UP_OPENING"));
+            request.setDisclosureCompany(setNotificationCompanyType());
+            
+        } catch(Exception ex) {
+            LOGGER.error("unable to create new instance", "", ex);
+        }
         
     	return request;
     }

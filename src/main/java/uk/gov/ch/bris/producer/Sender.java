@@ -10,6 +10,7 @@ import java.util.Map;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import javax.activation.DataHandler;
 import javax.inject.Inject;
 import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
@@ -21,12 +22,15 @@ import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
+import org.apache.commons.io.IOUtils;
+import org.bson.types.Binary;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
@@ -76,7 +80,13 @@ public class Sender {
     @Autowired
     private KafkaTemplate<Integer, String> kafkaTemplate;
 
-    public void sendMessage(String topic, String message) throws FaultResponse {
+    @Value("${TEST_MODE}")
+    private int TEST_MODE;
+
+
+    public void sendMessage(String topic, DeliveryBody deliveryBody) throws FaultResponse {
+
+        String message = getXMLmessagefromDeliveryBody(deliveryBody);
         BRISIncomingMessage brisIncomingMessage = null;
         FaultDetail faultDetail = new FaultDetail();
         DateTime dateTimeResult =  null;
@@ -89,25 +99,26 @@ public class Sender {
         try {
             // validate xmlMessage with the schema
             BrisMessageType brisMessageType = validateSchema(message);
-
             // extract messageId from Message
             messageId = this.extractMessageId(message);
             correlationId  = this.extractCorrelationId(message);
             dateTimeResult = getDateTime();
 
             // check if messageId/correlationId already exists in mongodb
-            brisIncomingMessage = brisIncomingMessageService.findByMessageId(messageId);
+           // brisIncomingMessage = brisIncomingMessageService.findByMessageId(messageId);
 
-            if(null == brisIncomingMessage) {
+            if(null == brisIncomingMessageService.findByMessageId(messageId)) {
                 // create brisIncomingMessage Object
-                brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING"); 
+                 brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING");
                 
                 // save brisIncomingMessage Object in Mongo DB
                 brisIncomingMessage.setMessageType(brisMessageType.getClassName());
                 brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
-                
                 id = brisIncomingMessage.getId();
+
+                brisIncomingMessage = TEST_MODE==0?attachBinary(brisIncomingMessage,deliveryBody):brisIncomingMessage;
+                
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
                 
                 jsonIncomingId = "{\"incoming_id\":\"" + id + "\"}";
@@ -146,6 +157,23 @@ public class Sender {
 
         // alternatively, to block the sending thread, to await the result,
         // invoke the future's get() method
+    }
+
+    private BRISIncomingMessage attachBinary(BRISIncomingMessage brisIncomingMessage, DeliveryBody deliveryBody) {
+
+
+        if ((BRRetrieveDocumentResponse.class.getSimpleName().equals(brisIncomingMessage.getMessageType()))){
+            
+            try {
+                brisIncomingMessage.setData(new Binary(IOUtils.toByteArray(deliveryBody.getAttachment().getValue().getInputStream())));                
+            } catch (IOException e) {
+                LOGGER.error("IOException ... Unable to Extract binary data from DeliveryBody: "+e);
+            } catch (Exception e) {
+                LOGGER.error("Exception   ... Unable to Extract binary data from DeliveryBody: "+e);
+            }
+
+        }
+        return brisIncomingMessage;
     }
 
 
@@ -313,7 +341,10 @@ public class Sender {
        map.put(BRUpdateLEDStatus.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.UPDATE_LED_STATUS_SCHEMA));
        map.put(BRCrossBorderMergerReceptionNotificationAcknowledgement.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CROSS_BRDR_MERG_NOTIFICATION_RES_SCHEMA));
        map.put(BRBusinessError.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BR_BUSINESS_ERR_SCHEMA));
+
+       //TODO below are added for testing purpose
        map.put(BRCompanyDetailsResponse.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants. COMPANY_DETAILS_RESPONSE_SCHEMA ));
+       map.put(BRRetrieveDocumentResponse.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants. RETRIEVE_DOCUMENT_RESPONSE_SCHEMA ));
 
        BrisMessageType brisMessageType = new BrisMessageType();
        brisMessageType.setUrl(map.get(clazz));
@@ -321,5 +352,38 @@ public class Sender {
        
        return brisMessageType;
    }
-   
+
+    /**
+     *
+     * @param deliveryBody
+     * @return
+     * @throws FaultResponse
+     */
+    private String getXMLmessagefromDeliveryBody(DeliveryBody deliveryBody) throws FaultResponse{
+        //WebServiceTemplate webServiceTemplate = new WebServiceTemplate();
+        String xmlMessage = "";
+        FaultDetail faultDetail= new FaultDetail();
+        DataHandler dataHandler = new DataHandler(deliveryBody.getMessageContent().getValue().getDataSource());
+
+        try {
+            xmlMessage = IOUtils.toString(dataHandler.getInputStream());
+        } catch (IOException e) {
+            faultDetail.setResponseCode("BR-TECH-ERR-0002");
+            faultDetail.setMessage("IOException oocured while extracting business message"+e.getLocalizedMessage());
+            throw new FaultResponse("IO exception",faultDetail,e);
+        }catch (Exception e) {
+            faultDetail.setResponseCode("BR-TECH-ERR-0001");
+            faultDetail.setMessage("Exception oocured while extracting message: "+e.getLocalizedMessage());
+            throw new FaultResponse("Exception oocured while extracting business message: ",faultDetail,e);
+        }
+        return  xmlMessage;
+    }
+
+    private void pauseAction(int timeMillis) {
+        try {
+            Thread.sleep(timeMillis);
+        } catch (Exception e) {
+        }
+    }
+
 }

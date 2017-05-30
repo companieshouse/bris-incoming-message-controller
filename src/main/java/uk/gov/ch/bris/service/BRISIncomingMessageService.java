@@ -11,6 +11,9 @@ import org.springframework.stereotype.Service;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.repository.BRISIncomingMessageRepository;
 
+/**
+ * Service for the BRISIncomingMessage entity.
+ */
 @ComponentScan
 @Service
 public class BRISIncomingMessageService {
@@ -20,19 +23,31 @@ public class BRISIncomingMessageService {
     @Autowired
     private BRISIncomingMessageRepository brisIncomingMessageRepository;
 
+    /**
+     * Find all BRISIncomingMessage entities from database.
+     */
     public List<BRISIncomingMessage> findAll() {
         List<BRISIncomingMessage> brisIncomingMessageEntries = brisIncomingMessageRepository.findAll();
         return brisIncomingMessageEntries;
     }
     
+    /**
+     * Find one BRISIncomingMessage entity from database using the id
+     */
     public BRISIncomingMessage findById(String id) {
         return brisIncomingMessageRepository.findOneById(id);
     }
 
+    /**
+     * Saves single BRISIncomingMessage entity from database.
+     */
     public BRISIncomingMessage save(BRISIncomingMessage brisIncomingMessage) {
         return brisIncomingMessageRepository.save(brisIncomingMessage);
     }
 
+    /**
+     * Removes single BRISIncomingMessage entity from database.
+     */
     public void delete(BRISIncomingMessage brisIncomingMessage) {
         brisIncomingMessageRepository.delete(brisIncomingMessage);
     }
@@ -44,6 +59,9 @@ public class BRISIncomingMessageService {
         brisIncomingMessageRepository.deleteAll();
     }
     
+    /**
+     * Find one BRISIncomingMessage entity from database using the messageId
+     */
     public BRISIncomingMessage findByMessageId(String messageId) {
         return brisIncomingMessageRepository.findOneByMessageId(messageId);
     }

@@ -5,6 +5,7 @@ import java.util.Objects;
 
 import javax.validation.constraints.Size;
 
+import org.bson.types.Binary;
 import org.joda.time.DateTime;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.data.annotation.Id;
@@ -65,6 +66,9 @@ public class BRISIncomingMessage implements Serializable {
     @Field("created_on")
     private DateTime createdOn;
     
+    @Field("binary_attachment")
+    private Binary data;
+    
     public String getId() {
         return id;
     }
@@ -121,6 +125,14 @@ public class BRISIncomingMessage implements Serializable {
         this.messageType = messageType;
     }
     
+    public Binary getData() {
+        return data;
+    }
+
+    public void setData(Binary data) {
+        this.data = data;
+    }
+
     @Override
     public boolean equals(Object o) {
         if (this == o) {
@@ -147,8 +159,11 @@ public class BRISIncomingMessage implements Serializable {
         return "BRISIncomingMessage{" +
                 "_id=" + id +
                 ", messageId='" + messageId + "'" +
+                ", correlationId='" + correlationId + "'" +
+                ", messageType='" + messageType + "'" +
                 ", message='" + message + "'" +
                 ", status='" + status + "'" +
+                ", data='" + data + "'" +
                 ", createdOn='" + createdOn + "'" +
                 '}';
     }

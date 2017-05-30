@@ -8,12 +8,12 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
-import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotification;
 import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotificationAcknowledgement;
-import eu.europa.ec.bris.v140.jaxb.br.connection.BRConnectivityRequest;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
-import eu.europa.ec.bris.v140.jaxb.br.led.full.BRFullUpdateLEDAcknowledgment;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
@@ -26,6 +26,8 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
 public class BranchDisclosureReceptionNotificationAckDetailsHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BranchDisclosureReceptionNotificationAckDetailsHelper.class);
+    
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -55,9 +57,11 @@ public class BranchDisclosureReceptionNotificationAckDetailsHelper {
         	request.setMessageHeader(getMessageHeader(correlationId, messageId));
         	request.setReceivingDateTime(dateTimeType);
         	
-        } catch(DatatypeConfigurationException dce) {    	    
-    	} catch(Exception ex) {    	    
-    	}
+        } catch(DatatypeConfigurationException dce) {
+            LOGGER.error("unable to create new instance", "", dce);
+        } catch(Exception ex) {
+            LOGGER.error("unable to create new instance", "", ex);
+        }
         
     	return request;
     }

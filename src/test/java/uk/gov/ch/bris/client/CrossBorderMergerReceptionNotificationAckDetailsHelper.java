@@ -8,6 +8,9 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
 import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotificationAcknowledgement;
@@ -23,6 +26,8 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
 public class CrossBorderMergerReceptionNotificationAckDetailsHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CrossBorderMergerReceptionNotificationAckDetailsHelper.class);
+    
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -52,9 +57,11 @@ public class CrossBorderMergerReceptionNotificationAckDetailsHelper {
         	request.setMessageHeader(getMessageHeader(correlationId, messageId));
         	request.setReceivingDateTime(dateTimeType);
         	
-        } catch(DatatypeConfigurationException dce) {    	    
-    	} catch(Exception ex) {    	    
-    	}
+        } catch(DatatypeConfigurationException dce) {
+            LOGGER.error("unable to create new instance", "", dce);
+        } catch(Exception ex) {
+            LOGGER.error("unable to create new instance", "", ex);
+        }
         
     	return request;
     }

@@ -2,15 +2,27 @@
 package uk.gov.ch.bris.client;
 
 
+import javax.xml.datatype.DatatypeConfigurationException;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.*;
+import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyRegistrationNumberType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.CorrelationIDType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
 
 public class CompanyDetailsHelper {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDetailsHelper.class);
+    
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -27,9 +39,16 @@ public class CompanyDetailsHelper {
         String countryCode) {
 
     	BRCompanyDetailsRequest request = new BRCompanyDetailsRequest();
-    	request.setMessageHeader(getMessageHeader(correlationId, messageId));
-    	request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
-    	request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
+    	
+    	try {
+        	request.setMessageHeader(getMessageHeader(correlationId, messageId));
+        	request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
+        	request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
+        	
+    	} catch(Exception ex) {
+            LOGGER.error("unable to create new instance", "", ex);
+        }
+        
         return request;
     }
 
@@ -65,6 +84,7 @@ public class CompanyDetailsHelper {
         //BusinessRegisterCountry Country
         CountryType countryType=new CountryType();
         countryType.setValue("UK");
+        //countryType.setValue("BE");
         
         //set BusinessRegisterID
         businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);
