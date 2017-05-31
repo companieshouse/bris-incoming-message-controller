@@ -10,6 +10,13 @@ import org.springframework.data.mongodb.core.mapping.MongoMappingContext;
 
 public class MongoConfig {
 
+    /**
+     * Generate Mongo Template
+     * @param mongoDbFactory
+     * @param context
+     * @return mongoTemplate
+     * 
+     */
     @Bean
     public MongoTemplate mongoTemplate(MongoDbFactory mongoDbFactory, MongoMappingContext context) {
         

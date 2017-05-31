@@ -84,6 +84,14 @@ public class Sender {
     private int TEST_MODE;
 
 
+    /**
+     * Save incoming message to mongoDB
+     * Send relevant messageId to kafka incoming topic
+     * @param topic
+     * @param deliveryBody
+     * @return void
+     * @throws FaultResponse 
+     */
     public void sendMessage(String topic, DeliveryBody deliveryBody) throws FaultResponse {
 
         String message = getXMLmessagefromDeliveryBody(deliveryBody);
@@ -99,14 +107,13 @@ public class Sender {
         try {
             // validate xmlMessage with the schema
             BrisMessageType brisMessageType = validateSchema(message);
+            
             // extract messageId from Message
             messageId = this.extractMessageId(message);
             correlationId  = this.extractCorrelationId(message);
             dateTimeResult = getDateTime();
 
             // check if messageId/correlationId already exists in mongodb
-           // brisIncomingMessage = brisIncomingMessageService.findByMessageId(messageId);
-
             if(null == brisIncomingMessageService.findByMessageId(messageId)) {
                 // create brisIncomingMessage Object
                  brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING");
@@ -115,6 +122,7 @@ public class Sender {
                 brisIncomingMessage.setMessageType(brisMessageType.getClassName());
                 brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
+                
                 id = brisIncomingMessage.getId();
 
                 brisIncomingMessage = TEST_MODE==0?attachBinary(brisIncomingMessage,deliveryBody):brisIncomingMessage;
@@ -159,6 +167,13 @@ public class Sender {
         // invoke the future's get() method
     }
 
+    /**
+     * Attach Binary Data to BRIS Incoming Message
+     * @param brisIncomingMessage
+     * @param deliveryBody
+     * @return brisIncomingMessage
+     * @throws FaultResponse 
+     */
     private BRISIncomingMessage attachBinary(BRISIncomingMessage brisIncomingMessage, DeliveryBody deliveryBody) {
 
 
@@ -177,7 +192,12 @@ public class Sender {
     }
 
 
-
+    /**
+     * Extract MessageId from the message
+     * @param xmlMessage
+     * @return messageId
+     * @throws FaultResponse 
+     */
     public String extractMessageId(String xmlMessage) throws FaultResponse {
         FaultDetail faultDetail = new FaultDetail();
         String messageId = "";
@@ -198,6 +218,12 @@ public class Sender {
         return messageId;
     }
     
+    /**
+     * Extract CorrelationId from the message
+     * @param xmlMessage
+     * @return correlationId
+     * @throws FaultResponse 
+     */
     public String extractCorrelationId(String xmlMessage) throws FaultResponse {
         FaultDetail faultDetail = new FaultDetail();
         String correlationId = "";
@@ -217,6 +243,11 @@ public class Sender {
         return correlationId;
     }
 
+    /**
+     * Generate DateTime in ISO-8601 string format
+     * @return DateTime
+     * @throws FaultResponse 
+     */
     public DateTime getDateTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         Date dt = new Date();
@@ -228,6 +259,10 @@ public class Sender {
         return dateTimeResult;
     }
     
+    /**
+     * Load JAXBContext
+     * @return JAXBContext
+     */
     @Bean
     public JAXBContext getJaxbContext() {
         JAXBContext context = null;
@@ -260,25 +295,14 @@ public class Sender {
 
         return context;
     }
-
-   /* @Bean
-    public Marshaller marshaller() throws JAXBException {
-        return getJaxbContext().createMarshaller();
-    }
-
-    @Bean
-    public Unmarshaller unmarshaller() throws JAXBException {
-        return getJaxbContext().createUnmarshaller();
-    }*/
-
-
     
     /**
-    *
-    * @param xmlMessage
-    * @throws FaultResponse
-    */
-   private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse {
+     * Validate Schema for the incoming XML Message
+     * @param xmlMessage
+     * @return brisMessageType
+     * @throws FaultResponse
+     */
+    private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse {
        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
        FaultDetail faultDetail = new FaultDetail();
        try {
@@ -303,7 +327,7 @@ public class Sender {
    /**
     *
     * @param xmlMessage
-    * @return
+    * @return BrisMessageType
     */
    private BrisMessageType getSchema(String xmlMessage) {
        JAXBContext jaxbContext;
@@ -325,8 +349,8 @@ public class Sender {
 
    /**
     *
-    * @param
-    * @return
+    * @param clazz
+    * @return brisMessageType
     */
    private BrisMessageType getXSDResource(Class clazz) {
        
@@ -354,9 +378,9 @@ public class Sender {
    }
 
     /**
-     *
+     * Get XML message from DeliveryBody
      * @param deliveryBody
-     * @return
+     * @return xmlMessage
      * @throws FaultResponse
      */
     private String getXMLmessagefromDeliveryBody(DeliveryBody deliveryBody) throws FaultResponse{
@@ -379,10 +403,16 @@ public class Sender {
         return  xmlMessage;
     }
 
+    /**
+     * Pause for parameterized time
+     * @param timeMillis
+     */
     private void pauseAction(int timeMillis) {
         try {
+            //Pause for parameterized time in seconds
             Thread.sleep(timeMillis);
-        } catch (Exception e) {
+        } catch (Exception ex) {
+            LOGGER.error("Error while calling pause Action", Sender.class.getSimpleName(), ex);
         }
     }
 
