@@ -5,19 +5,20 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
-import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
+import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.AttachmentReferenceType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyRegistrationNumberType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CorrelationIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.DocumentIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
-public class CompanyDetailsHelper {
+public class RetrieveDocumentResponseHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDetailsHelper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RetrieveDocumentResponseHelper.class);
 
     /* ---- Constants ---- */
 
@@ -27,23 +28,18 @@ public class CompanyDetailsHelper {
 
     /* ---- Business Methods ---- */
 
-    public static BRCompanyDetailsRequest newInstance(String correlationId, String messageId,
-            String companyRegistrationNumber, String businessRegisterId, String countryCode) {
+    public static BRRetrieveDocumentResponse newInstance(String correlationId, String messageId,
+            String companyRegistrationNumber, String businessRegisterId, String countryCode, String documentId) {
 
-        BRCompanyDetailsRequest request = new BRCompanyDetailsRequest();
+        BRRetrieveDocumentResponse response = new BRRetrieveDocumentResponse();
 
-        request.setMessageHeader(getMessageHeader(correlationId, messageId));
-        request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
-        request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
+        response.setMessageHeader(getMessageHeader(correlationId, messageId));
+        response.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
+        response.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
+        response.setDocumentID(setDocumentId(documentId));
+        response.setAttachmentReference(setAttachmentReferenceType(documentId));
 
-        return request;
-    }
-
-    public static BRBusinessError newInstance(String correlationId, String messageId) {
-
-        BRBusinessError request = new BRBusinessError();
-        request.setMessageHeader(getMessageHeader(correlationId, messageId));
-        return request;
+        return response;
     }
 
     private static MessageHeaderType getMessageHeader(String correlationId, String messageId) {
@@ -64,12 +60,10 @@ public class CompanyDetailsHelper {
 
         // BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        // businessRegisterIDType.setValue("breg6");
 
         // BusinessRegisterCountry Country
         CountryType countryType = new CountryType();
         countryType.setValue("UK");
-        // countryType.setValue("BE");
 
         // set BusinessRegisterID
         businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);
@@ -107,6 +101,18 @@ public class CompanyDetailsHelper {
         BusinessRegisterIDType businessRegisterId = new BusinessRegisterIDType();
         businessRegisterId.setValue(identifier);
         return businessRegisterId;
+    }
+
+    private static DocumentIDType setDocumentId(String documentId) {
+        DocumentIDType documentIdType = new DocumentIDType();
+        documentIdType.setValue(documentId);
+        return documentIdType;
+    }
+
+    private static AttachmentReferenceType setAttachmentReferenceType(String documentId) {
+        AttachmentReferenceType attachmentReferenceType = new AttachmentReferenceType();
+        attachmentReferenceType.setValue(documentId);
+        return attachmentReferenceType;
     }
 
     /* ---- Getters and Setters ---- */

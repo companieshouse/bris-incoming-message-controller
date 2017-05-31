@@ -1,23 +1,30 @@
 
 package uk.gov.ch.bris.client;
 
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
+import eu.europa.ec.bris.v140.jaxb.br.led.full.BRFullUpdateLEDAcknowledgment;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyRegistrationNumberType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CorrelationIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.DateTimeType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
-public class CompanyDetailsHelper {
+public class FullUpdateLEDAckDetailsHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDetailsHelper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(FullUpdateLEDAckDetailsHelper.class);
 
     /* ---- Constants ---- */
 
@@ -27,14 +34,23 @@ public class CompanyDetailsHelper {
 
     /* ---- Business Methods ---- */
 
-    public static BRCompanyDetailsRequest newInstance(String correlationId, String messageId,
-            String companyRegistrationNumber, String businessRegisterId, String countryCode) {
+    public static BRFullUpdateLEDAcknowledgment newInstance(String correlationId, String messageId,
+            String companyRegistrationNumber, String businessRegisterId, String countryCode)
+            throws DatatypeConfigurationException {
 
-        BRCompanyDetailsRequest request = new BRCompanyDetailsRequest();
+        BRFullUpdateLEDAcknowledgment request = new BRFullUpdateLEDAcknowledgment();
 
+        // Current Time
+        GregorianCalendar gregorianCalendar = new GregorianCalendar();
+        DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+        XMLGregorianCalendar now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
+
+        DateTimeType dateTimeType = new DateTimeType();
+        dateTimeType.setValue(now);
+
+        request = new BRFullUpdateLEDAcknowledgment();
         request.setMessageHeader(getMessageHeader(correlationId, messageId));
-        request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
-        request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
+        request.setDataExtractionDateTime(dateTimeType);
 
         return request;
     }
@@ -64,12 +80,10 @@ public class CompanyDetailsHelper {
 
         // BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        // businessRegisterIDType.setValue("breg6");
 
         // BusinessRegisterCountry Country
         CountryType countryType = new CountryType();
         countryType.setValue("UK");
-        // countryType.setValue("BE");
 
         // set BusinessRegisterID
         businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);
@@ -83,8 +97,7 @@ public class CompanyDetailsHelper {
         return messageHeaderType;
     }
 
-    private static BusinessRegisterReferenceType businessRegisterReference(String countryCode,
-            String businessRegisterId) {
+    private static BusinessRegisterReferenceType businessRegisterReference(String countryCode, String businessRegisterId) {
         BusinessRegisterReferenceType businessRegisterReference = new BusinessRegisterReferenceType();
         businessRegisterReference.setBusinessRegisterCountry(country(countryCode));
         businessRegisterReference.setBusinessRegisterID(businessRegisterId(businessRegisterId));

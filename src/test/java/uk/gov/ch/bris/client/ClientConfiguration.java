@@ -5,6 +5,9 @@ import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
 import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsResponse;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -15,11 +18,12 @@ import javax.xml.bind.Unmarshaller;
 
 @Configuration
 public class ClientConfiguration {
-
+    
     /*---- Constants ---- */
 
     /* ---- Instance Variables ---- */
-
+    private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfiguration.class);
+            
     /* ---- Constructors ---- */
 
     /* ---- Configuration Beans ---- */
@@ -36,7 +40,7 @@ public class ClientConfiguration {
                 Acknowledgement.class
 	   		);
 	   	} catch (JAXBException exception) {
-	   		exception.printStackTrace();
+	   	    LOGGER.error("Couldn't create JAXBContext", exception);
 	   	}
 	   	return context;
 	}

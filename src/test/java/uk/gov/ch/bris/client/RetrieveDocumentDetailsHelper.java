@@ -5,7 +5,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
+import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentRequest;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
@@ -13,11 +13,13 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyRegistrationNumberType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CorrelationIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.DocumentIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.PaymentReferenceType;
 
-public class CompanyDetailsHelper {
+public class RetrieveDocumentDetailsHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDetailsHelper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RetrieveDocumentDetailsHelper.class);
 
     /* ---- Constants ---- */
 
@@ -27,14 +29,15 @@ public class CompanyDetailsHelper {
 
     /* ---- Business Methods ---- */
 
-    public static BRCompanyDetailsRequest newInstance(String correlationId, String messageId,
-            String companyRegistrationNumber, String businessRegisterId, String countryCode) {
-
-        BRCompanyDetailsRequest request = new BRCompanyDetailsRequest();
+    public static BRRetrieveDocumentRequest newInstance(String correlationId, String messageId,
+            String companyRegistrationNumber, String businessRegisterId, String countryCode, String documentId) {
+        BRRetrieveDocumentRequest request = new BRRetrieveDocumentRequest();
 
         request.setMessageHeader(getMessageHeader(correlationId, messageId));
         request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
+        request.setPaymentReference(setPaymentReferenceType("PaymentRef"));
         request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
+        request.setDocumentID(setDocumentId(documentId));
 
         return request;
     }
@@ -64,12 +67,10 @@ public class CompanyDetailsHelper {
 
         // BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        // businessRegisterIDType.setValue("breg6");
 
         // BusinessRegisterCountry Country
         CountryType countryType = new CountryType();
         countryType.setValue("UK");
-        // countryType.setValue("BE");
 
         // set BusinessRegisterID
         businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);
@@ -107,6 +108,18 @@ public class CompanyDetailsHelper {
         BusinessRegisterIDType businessRegisterId = new BusinessRegisterIDType();
         businessRegisterId.setValue(identifier);
         return businessRegisterId;
+    }
+
+    private static DocumentIDType setDocumentId(String documentId) {
+        DocumentIDType documentIdType = new DocumentIDType();
+        documentIdType.setValue(documentId);
+        return documentIdType;
+    }
+
+    public static PaymentReferenceType setPaymentReferenceType(String paymentReference) {
+        PaymentReferenceType paymentReferenceType = new PaymentReferenceType();
+        paymentReferenceType.setValue(paymentReference);
+        return paymentReferenceType;
     }
 
     /* ---- Getters and Setters ---- */

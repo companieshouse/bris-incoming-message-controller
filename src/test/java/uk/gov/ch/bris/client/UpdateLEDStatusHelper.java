@@ -1,23 +1,30 @@
 
 package uk.gov.ch.bris.client;
 
+import java.util.GregorianCalendar;
+
+import javax.xml.datatype.DatatypeConfigurationException;
+import javax.xml.datatype.DatatypeFactory;
+import javax.xml.datatype.XMLGregorianCalendar;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
+import eu.europa.ec.bris.v140.jaxb.br.led.BRUpdateLEDStatus;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyRegistrationNumberType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CorrelationIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
+import eu.europa.ec.bris.v140.jaxb.components.basic.DateTimeType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
-public class CompanyDetailsHelper {
+public class UpdateLEDStatusHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDetailsHelper.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(UpdateLEDStatusHelper.class);
 
     /* ---- Constants ---- */
 
@@ -27,14 +34,21 @@ public class CompanyDetailsHelper {
 
     /* ---- Business Methods ---- */
 
-    public static BRCompanyDetailsRequest newInstance(String correlationId, String messageId,
-            String companyRegistrationNumber, String businessRegisterId, String countryCode) {
+    public static BRUpdateLEDStatus newInstance(String correlationId, String messageId,
+            String companyRegistrationNumber, String businessRegisterId, String countryCode) throws DatatypeConfigurationException {
 
-        BRCompanyDetailsRequest request = new BRCompanyDetailsRequest();
+        BRUpdateLEDStatus request = new BRUpdateLEDStatus();
 
+        // Current Time
+        GregorianCalendar gregorianCalendar = new GregorianCalendar();
+        DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+        XMLGregorianCalendar now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
+
+        DateTimeType dateTimeType = new DateTimeType();
+        dateTimeType.setValue(now);
+
+        request = new BRUpdateLEDStatus();
         request.setMessageHeader(getMessageHeader(correlationId, messageId));
-        request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
-        request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
 
         return request;
     }
@@ -64,12 +78,10 @@ public class CompanyDetailsHelper {
 
         // BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        // businessRegisterIDType.setValue("breg6");
 
         // BusinessRegisterCountry Country
         CountryType countryType = new CountryType();
         countryType.setValue("UK");
-        // countryType.setValue("BE");
 
         // set BusinessRegisterID
         businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);

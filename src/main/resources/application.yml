@@ -1,3 +1,0 @@
-server:
-  port: ${BRIS_INCOMING_MESSAGE_CONTROLLER_PORT}
-  contextPath: /ch-bris-app
