@@ -46,10 +46,10 @@ public class BusinessErrorDetailsHelper {
         String companyRegistrationNumber,
         String businessRegisterId,
         String countryCode,
-        String strErrorCode)   {
+        String strErrorCode) throws DatatypeConfigurationException   {
 
         BRBusinessError request = new BRBusinessError();
-        try{
+   
           //Current Time
             GregorianCalendar gregorianCalendar = new GregorianCalendar();
             DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
@@ -80,11 +80,7 @@ public class BusinessErrorDetailsHelper {
             
             request.getFaultError().add(errorType);
             
-        } catch(DatatypeConfigurationException dce) {
-            LOGGER.error("unable to create new instance", "", dce);
-    	} catch(Exception ex) {
-    	    LOGGER.error("unable to create new instance", "", ex);
-    	}
+       
         
     	return request;
     }

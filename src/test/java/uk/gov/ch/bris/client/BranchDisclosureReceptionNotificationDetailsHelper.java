@@ -44,7 +44,7 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.ProceedingType;
 public class BranchDisclosureReceptionNotificationDetailsHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BranchDisclosureReceptionNotificationDetailsHelper.class);
-    
+
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -53,34 +53,22 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
 
     /* ---- Business Methods ---- */
 
-    public static BRBranchDisclosureReceptionNotification newInstance(
-        String correlationId,
-        String messageId,
-        String companyRegistrationNumber,
-        String businessRegisterId,
-        String countryCode,
-        String documentId) {
-    	
+    public static BRBranchDisclosureReceptionNotification newInstance(String correlationId, String messageId,
+            String companyRegistrationNumber, String businessRegisterId, String countryCode, String documentId) {
+
         BRBranchDisclosureReceptionNotification request = new BRBranchDisclosureReceptionNotification();
-    	
-        try {
-            request.setMessageHeader(getMessageHeader(correlationId, messageId));
-        	
-        	request.setNotificationContext(setNotificationContextType());
-            request.setProceeding(setProceedingType("WINDING_UP_OPENING"));
-            request.setDisclosureCompany(setNotificationCompanyType());
-            request.setRecipientOrganisation(setBusinessRegisterType());
-        
-        } catch(Exception ex) {
-            LOGGER.error("unable to create new instance", "", ex);
-        }
-    
-    	return request;
+
+        request.setMessageHeader(getMessageHeader(correlationId, messageId));
+
+        request.setNotificationContext(setNotificationContextType());
+        request.setProceeding(setProceedingType("WINDING_UP_OPENING"));
+        request.setDisclosureCompany(setNotificationCompanyType());
+        request.setRecipientOrganisation(setBusinessRegisterType());
+
+        return request;
     }
-    
-    public static BRBusinessError newInstance(
-            String correlationId,
-            String messageId) {
+
+    public static BRBusinessError newInstance(String correlationId, String messageId) {
 
         BRBusinessError request = new BRBusinessError();
         request.setMessageHeader(getMessageHeader(correlationId, messageId));
@@ -95,64 +83,65 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
         MessageIDType messageIDType = new MessageIDType();
         messageIDType.setValue(messageId);
         messageHeaderType.setMessageID(messageIDType);
-        
-        //***** START --BusinessRegisterReference *******************//
-        BusinessRegisterReferenceType businessRegisterReferenceType=new BusinessRegisterReferenceType();
+
+        // ***** START --BusinessRegisterReference *******************//
+        BusinessRegisterReferenceType businessRegisterReferenceType = new BusinessRegisterReferenceType();
         BusinessRegisterNameType businessRegisterNameType = new BusinessRegisterNameType();
         businessRegisterNameType.setValue("Companies House");
-        
-        BusinessRegisterIDType businessRegisterIDType=new BusinessRegisterIDType();
-        
-        //BusinessRegisterID
+
+        BusinessRegisterIDType businessRegisterIDType = new BusinessRegisterIDType();
+
+        // BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        
-        //BusinessRegisterCountry Country
-        CountryType countryType=new CountryType();
+
+        // BusinessRegisterCountry Country
+        CountryType countryType = new CountryType();
         countryType.setValue("UK");
-        
-        //set BusinessRegisterID
+
+        // set BusinessRegisterID
         businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);
-        
+
         // set BusinessRegisterCountry
         businessRegisterReferenceType.setBusinessRegisterCountry(countryType);
         // TODO BusinessRegisterName??
-        
+
         // set BusinessRegisterReference to CompanyDetailsResponse
         messageHeaderType.setBusinessRegisterReference(businessRegisterReferenceType);
         return messageHeaderType;
     }
 
-    private static BusinessRegisterReferenceType businessRegisterReference(String countryCode, String businessRegisterId) {
-    	BusinessRegisterReferenceType businessRegisterReference = new BusinessRegisterReferenceType();
-    	businessRegisterReference.setBusinessRegisterCountry(country(countryCode));
-    	businessRegisterReference.setBusinessRegisterID(businessRegisterId(businessRegisterId));
-    	return businessRegisterReference;
+    private static BusinessRegisterReferenceType businessRegisterReference(String countryCode,
+            String businessRegisterId) {
+        BusinessRegisterReferenceType businessRegisterReference = new BusinessRegisterReferenceType();
+        businessRegisterReference.setBusinessRegisterCountry(country(countryCode));
+        businessRegisterReference.setBusinessRegisterID(businessRegisterId(businessRegisterId));
+        return businessRegisterReference;
     }
 
     private static CompanyRegistrationNumberType companyRegistrationNumber(String companyRegNumber) {
-    	CompanyRegistrationNumberType companyRegistrationNumber = new CompanyRegistrationNumberType();
-    	companyRegistrationNumber.setValue(companyRegNumber);
-    	return companyRegistrationNumber;
+        CompanyRegistrationNumberType companyRegistrationNumber = new CompanyRegistrationNumberType();
+        companyRegistrationNumber.setValue(companyRegNumber);
+        return companyRegistrationNumber;
     }
 
     private static CountryType country(String countryCode) {
-    	CountryType country = new CountryType();
-    	country.setValue(countryCode);
-    	return country;
+        CountryType country = new CountryType();
+        country.setValue(countryCode);
+        return country;
     }
 
     private static BusinessRegisterIDType businessRegisterId(String identifier) {
-    	BusinessRegisterIDType businessRegisterId = new BusinessRegisterIDType();
-    	businessRegisterId.setValue(identifier);
-    	return businessRegisterId;
+        BusinessRegisterIDType businessRegisterId = new BusinessRegisterIDType();
+        businessRegisterId.setValue(identifier);
+        return businessRegisterId;
     }
-    
+
     private static DocumentIDType setDocumentId(String documentId) {
         DocumentIDType documentIdType = new DocumentIDType();
         documentIdType.setValue(documentId);
         return documentIdType;
     }
-    
+
     public static PaymentReferenceType setPaymentReferenceType(String paymentReference) {
         PaymentReferenceType paymentReferenceType = new PaymentReferenceType();
         paymentReferenceType.setValue(paymentReference);
@@ -161,83 +150,80 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
 
     private static NotificationContextType setNotificationContextType() {
         NotificationContextType notificationContextType = new NotificationContextType();
-        
+
         LegislationReferencesType legislationReferencesType = new LegislationReferencesType();
-        
+
         BusinessRegisterType issuingOrganisation = new BusinessRegisterType();
         DateTimeType issuanceDateTime = new DateTimeType();
         EffectiveDateType effectiveDate = new EffectiveDateType();
-        
+
         DateTimeType dateTimeType = new DateTimeType();
         dateTimeType.setValue(getXMLGregorianCalendarNow());
         effectiveDate.setValue(getXMLGregorianCalendarNow());
-        
+
         BusinessRegisterIDType businessRegisterIDType = new BusinessRegisterIDType();
-        
-        //BusinessRegisterID
+
+        // BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        
+
         BusinessRegisterNameType businessRegisterNameType = new BusinessRegisterNameType();
         businessRegisterNameType.setValue("Companies House");
-        
-        //BusinessRegisterCountry Country
-        CountryType countryType=new CountryType();
+
+        // BusinessRegisterCountry Country
+        CountryType countryType = new CountryType();
         countryType.setValue("UK");
-        
+
         legislationReferencesType.getLegislationReference();
-        
-        //set BusinessRegisterID
+
+        // set BusinessRegisterID
         // set BusinessRegisterCountry
         issuingOrganisation.setBusinessRegisterID(businessRegisterIDType);
         issuingOrganisation.setBusinessRegisterCountry(countryType);
         issuingOrganisation.setBusinessRegisterName(businessRegisterNameType);
-        
+
         notificationContextType.setIssuingOrganisation(issuingOrganisation);
         notificationContextType.setIssuanceDateTime(dateTimeType);
         notificationContextType.setEffectiveDate(effectiveDate);
-        
+
         return notificationContextType;
     }
-    
-    
+
     private static ProceedingType setProceedingType(String proceedingTypeValue) {
         ProceedingType proceedingType = new ProceedingType();
         proceedingType.setValue(proceedingTypeValue);
         return proceedingType;
     }
-    
+
     private static NotificationCompanyType setNotificationCompanyType() {
         /*
-        <bbc:BusinessRegisterName>Handelsregister</bbc:BusinessRegisterName>
-        <bbc:CompanyEUID>FRIG.2010012341-Z</bbc:CompanyEUID>
-        <bbc:CompanyName>bbc:CompanyName</bbc:CompanyName>
-        <bac:CompanyRegisteredOffice>
-            <bbc:Country>NL</bbc:Country>
-        </bac:CompanyRegisteredOffice>
-        <bac:CompanyAlternateIdentifiers>
-            <bbc:CompanyAlternateID>34EDED</bbc:CompanyAlternateID>
-        </bac:CompanyAlternateIdentifiers>
-        <bbc:CompanyLegalForm>LF-NL-01</bbc:CompanyLegalForm>
-        */
-        
+         * <bbc:BusinessRegisterName>Handelsregister</bbc:BusinessRegisterName>
+         * <bbc:CompanyEUID>FRIG.2010012341-Z</bbc:CompanyEUID>
+         * <bbc:CompanyName>bbc:CompanyName</bbc:CompanyName>
+         * <bac:CompanyRegisteredOffice> <bbc:Country>NL</bbc:Country>
+         * </bac:CompanyRegisteredOffice> <bac:CompanyAlternateIdentifiers>
+         * <bbc:CompanyAlternateID>34EDED</bbc:CompanyAlternateID>
+         * </bac:CompanyAlternateIdentifiers>
+         * <bbc:CompanyLegalForm>LF-NL-01</bbc:CompanyLegalForm>
+         */
+
         BusinessRegisterNameType businessRegisterNameType = new BusinessRegisterNameType();
         businessRegisterNameType.setValue("EW");
-        
+
         CompanyAlternateIDType companyAlternateIDType = new CompanyAlternateIDType();
         companyAlternateIDType.setValue("34EDED");
-        
+
         CompanyAlternateIdentifiersType companyAlternateIdentifiersType = new CompanyAlternateIdentifiersType();
         companyAlternateIdentifiersType.getCompanyAlternateID().add(companyAlternateIDType);
-        
+
         CompanyEUIDType companyEUIDType = new CompanyEUIDType();
         companyEUIDType.setValue("FRIG.2010012341-Z<");
-        
+
         LegalFormCodeType legalFormCodeType = new LegalFormCodeType();
         legalFormCodeType.setValue("LF-NL-001");
-        
+
         CompanyNameType companyNameType = new CompanyNameType();
-        companyNameType.setValue("CompanyName");        
-        
+        companyNameType.setValue("CompanyName");
+
         AddressType addressType = new AddressType();
         AddressLine1Type addressLine1 = new AddressLine1Type();
         AddressLine2Type addressLine2 = new AddressLine2Type();
@@ -245,63 +231,61 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
         PostalCodeType postalCode = new PostalCodeType();
         CityType city = new CityType();
         CountryType countryType = new CountryType();
-        
+
         addressLine1.setValue("1A Broadway Parade");
         addressLine2.setValue("Pinner Road");
         addressLine3.setValue("Middx");
         postalCode.setValue("HA27SY");
         city.setValue("HARROW");
         countryType.setValue("UK");
-        
+
         addressType.setAddressLine1(addressLine1);
         addressType.setAddressLine2(addressLine2);
         addressType.setAddressLine3(addressLine3);
         addressType.setCity(city);
         addressType.setPostalCode(postalCode);
         addressType.setCountry(countryType);
-        
+
         NotificationCompanyType notificationCompanyType = new NotificationCompanyType();
         notificationCompanyType.setBusinessRegisterName(businessRegisterNameType);
-        notificationCompanyType.setCompanyAlternateIdentifiers(companyAlternateIdentifiersType); 
+        notificationCompanyType.setCompanyAlternateIdentifiers(companyAlternateIdentifiersType);
         notificationCompanyType.setCompanyEUID(companyEUIDType);
-        notificationCompanyType.setCompanyLegalForm(legalFormCodeType); 
+        notificationCompanyType.setCompanyLegalForm(legalFormCodeType);
         notificationCompanyType.setCompanyName(companyNameType);
         notificationCompanyType.setCompanyRegisteredOffice(addressType);
-        
+
         return notificationCompanyType;
     }
-    
-    
+
     private static BusinessRegisterType setBusinessRegisterType() {
         BusinessRegisterType businessRegisterType = new BusinessRegisterType();
-        BusinessRegisterIDType businessRegisterIDType=new BusinessRegisterIDType();
-        
-        //BusinessRegisterID
+        BusinessRegisterIDType businessRegisterIDType = new BusinessRegisterIDType();
+
+        // BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        
+
         BusinessRegisterNameType businessRegisterNameType = new BusinessRegisterNameType();
         businessRegisterNameType.setValue("Companies House");
-        
-        //BusinessRegisterCountry Country
+
+        // BusinessRegisterCountry Country
         CountryType countryType = new CountryType();
         countryType.setValue("UK");
-        
+
         businessRegisterType.setBusinessRegisterCountry(countryType);
-        businessRegisterType.setBusinessRegisterID(businessRegisterIDType); 
+        businessRegisterType.setBusinessRegisterID(businessRegisterIDType);
         businessRegisterType.setBusinessRegisterName(businessRegisterNameType);
-        
+
         return businessRegisterType;
     }
-    
+
     private static BranchEUIDsType setBranchEUIDsType() {
         BranchEUIDsType branchEUIDsType = new BranchEUIDsType();
         branchEUIDsType.getBranchEUID();
         return branchEUIDsType;
     }
-    
-    
+
     /* ---- Getters and Setters ---- */
-    
+
     private static XMLGregorianCalendar getXMLGregorianCalendarNow() {
         XMLGregorianCalendar now = null;
         try {
@@ -311,10 +295,11 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
 
             LOGGER.info("XML Gregorian Calendar instance " + now);
         } catch (DatatypeConfigurationException exception) {
-            LOGGER.error("unable to create new XML Gregorian Calendar instance", "Datatype Configuration Exception", exception);
+            LOGGER.error("unable to create new XML Gregorian Calendar instance", "Datatype Configuration Exception",
+                    exception);
         }
-        
+
         return now;
     }
-    
+
 }

@@ -1,7 +1,6 @@
 
 package uk.gov.ch.bris.client;
 
-
 import java.util.GregorianCalendar;
 
 import javax.xml.datatype.DatatypeConfigurationException;
@@ -23,11 +22,10 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.DateTimeType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
-
 public class BranchDisclosureSubmissionNotificationAckDetailsHelper {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BranchDisclosureSubmissionNotificationAckDetailsHelper.class);
-    
+
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -36,39 +34,28 @@ public class BranchDisclosureSubmissionNotificationAckDetailsHelper {
 
     /* ---- Business Methods ---- */
 
-    public static BRBranchDisclosureSubmissionNotificationAcknowledgement  newInstance(
-        String correlationId,
-        String messageId,
-        String companyRegistrationNumber,
-        String businessRegisterId,
-        String countryCode)   {
+    public static BRBranchDisclosureSubmissionNotificationAcknowledgement newInstance(String correlationId,
+            String messageId, String companyRegistrationNumber, String businessRegisterId, String countryCode)
+            throws DatatypeConfigurationException {
 
         BRBranchDisclosureSubmissionNotificationAcknowledgement request = new BRBranchDisclosureSubmissionNotificationAcknowledgement();
-        try{
-          //Current Time
-            GregorianCalendar gregorianCalendar = new GregorianCalendar();
-            DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
-            XMLGregorianCalendar now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
-            
-            DateTimeType dateTimeType = new DateTimeType();
-            dateTimeType.setValue(now);
-            
-            request = new BRBranchDisclosureSubmissionNotificationAcknowledgement();
-        	request.setMessageHeader(getMessageHeader(correlationId, messageId));
-        	request.setReceivingDateTime(dateTimeType);
-        	
-        } catch(DatatypeConfigurationException dce) {
-            LOGGER.error("unable to create new instance", "", dce);
-        } catch(Exception ex) {
-            LOGGER.error("unable to create new instance", "", ex);
-        }
-        
-    	return request;
+
+        // Current Time
+        GregorianCalendar gregorianCalendar = new GregorianCalendar();
+        DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+        XMLGregorianCalendar now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
+
+        DateTimeType dateTimeType = new DateTimeType();
+        dateTimeType.setValue(now);
+
+        request = new BRBranchDisclosureSubmissionNotificationAcknowledgement();
+        request.setMessageHeader(getMessageHeader(correlationId, messageId));
+        request.setReceivingDateTime(dateTimeType);
+
+        return request;
     }
 
-    public static BRBusinessError newInstance(
-            String correlationId,
-            String messageId) {
+    public static BRBusinessError newInstance(String correlationId, String messageId) {
 
         BRBusinessError request = new BRBusinessError();
         request.setMessageHeader(getMessageHeader(correlationId, messageId));
@@ -83,56 +70,57 @@ public class BranchDisclosureSubmissionNotificationAckDetailsHelper {
         MessageIDType messageIDType = new MessageIDType();
         messageIDType.setValue(messageId);
         messageHeaderType.setMessageID(messageIDType);
-        
-        //***** START --BusinessRegisterReference *******************//
-        BusinessRegisterReferenceType businessRegisterReferenceType=new BusinessRegisterReferenceType();
-        BusinessRegisterNameType businessRegisterNameType=new BusinessRegisterNameType();
+
+        // ***** START --BusinessRegisterReference *******************//
+        BusinessRegisterReferenceType businessRegisterReferenceType = new BusinessRegisterReferenceType();
+        BusinessRegisterNameType businessRegisterNameType = new BusinessRegisterNameType();
         businessRegisterNameType.setValue("Companies House");
-        
-        BusinessRegisterIDType businessRegisterIDType=new BusinessRegisterIDType();
-        
-        //BusinessRegisterID
+
+        BusinessRegisterIDType businessRegisterIDType = new BusinessRegisterIDType();
+
+        // BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        
-        //BusinessRegisterCountry Country
-        CountryType countryType=new CountryType();
+
+        // BusinessRegisterCountry Country
+        CountryType countryType = new CountryType();
         countryType.setValue("UK");
-        
-        //set BusinessRegisterID
+
+        // set BusinessRegisterID
         businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);
-        
+
         // set BusinessRegisterCountry
         businessRegisterReferenceType.setBusinessRegisterCountry(countryType);
         // TODO BusinessRegisterName??
-        
+
         // set BusinessRegisterReference to CompanyDetailsResponse
         messageHeaderType.setBusinessRegisterReference(businessRegisterReferenceType);
         return messageHeaderType;
     }
 
-    private static BusinessRegisterReferenceType businessRegisterReference(String countryCode, String businessRegisterId) {
-    	BusinessRegisterReferenceType businessRegisterReference = new BusinessRegisterReferenceType();
-    	businessRegisterReference.setBusinessRegisterCountry(country(countryCode));
-    	businessRegisterReference.setBusinessRegisterID(businessRegisterId(businessRegisterId));
-    	return businessRegisterReference;
+    private static BusinessRegisterReferenceType businessRegisterReference(String countryCode,
+            String businessRegisterId) {
+        BusinessRegisterReferenceType businessRegisterReference = new BusinessRegisterReferenceType();
+        businessRegisterReference.setBusinessRegisterCountry(country(countryCode));
+        businessRegisterReference.setBusinessRegisterID(businessRegisterId(businessRegisterId));
+        return businessRegisterReference;
     }
 
     private static CompanyRegistrationNumberType companyRegistrationNumber(String companyRegNumber) {
-    	CompanyRegistrationNumberType companyRegistrationNumber = new CompanyRegistrationNumberType();
-    	companyRegistrationNumber.setValue(companyRegNumber);
-    	return companyRegistrationNumber;
+        CompanyRegistrationNumberType companyRegistrationNumber = new CompanyRegistrationNumberType();
+        companyRegistrationNumber.setValue(companyRegNumber);
+        return companyRegistrationNumber;
     }
 
     private static CountryType country(String countryCode) {
-    	CountryType country = new CountryType();
-    	country.setValue(countryCode);
-    	return country;
+        CountryType country = new CountryType();
+        country.setValue(countryCode);
+        return country;
     }
 
     private static BusinessRegisterIDType businessRegisterId(String identifier) {
-    	BusinessRegisterIDType businessRegisterId = new BusinessRegisterIDType();
-    	businessRegisterId.setValue(identifier);
-    	return businessRegisterId;
+        BusinessRegisterIDType businessRegisterId = new BusinessRegisterIDType();
+        businessRegisterId.setValue(identifier);
+        return businessRegisterId;
     }
 
     /* ---- Getters and Setters ---- */

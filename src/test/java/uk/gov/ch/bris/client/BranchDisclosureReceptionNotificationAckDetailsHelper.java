@@ -41,10 +41,9 @@ public class BranchDisclosureReceptionNotificationAckDetailsHelper {
         String messageId,
         String companyRegistrationNumber,
         String businessRegisterId,
-        String countryCode)   {
+        String countryCode) throws DatatypeConfigurationException   {
 
         BRBranchDisclosureReceptionNotificationAcknowledgement request = new BRBranchDisclosureReceptionNotificationAcknowledgement();
-        try{
           //Current Time
             GregorianCalendar gregorianCalendar = new GregorianCalendar();
             DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
@@ -57,11 +56,7 @@ public class BranchDisclosureReceptionNotificationAckDetailsHelper {
         	request.setMessageHeader(getMessageHeader(correlationId, messageId));
         	request.setReceivingDateTime(dateTimeType);
         	
-        } catch(DatatypeConfigurationException dce) {
-            LOGGER.error("unable to create new instance", "", dce);
-        } catch(Exception ex) {
-            LOGGER.error("unable to create new instance", "", ex);
-        }
+        
         
     	return request;
     }

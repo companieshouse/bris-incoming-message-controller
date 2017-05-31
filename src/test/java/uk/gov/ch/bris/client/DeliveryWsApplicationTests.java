@@ -79,8 +79,7 @@ public class DeliveryWsApplicationTests {
         MESSAGE_ID = UUID.randomUUID().toString();
         CORRELATION_ID = MESSAGE_ID;
 
-        MessageObjectType request = RetrieveDocumentDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902",
-                "EW", "UK", DOC_ID);
+        MessageObjectType request = RetrieveDocumentDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
 
         Acknowledgement ack = null;
 
@@ -127,7 +126,8 @@ public class DeliveryWsApplicationTests {
         // CORRELATION_ID = "51d38d70-0a84-4719-8dc2-e059113a1004";
 
         // "00006400", "03977902"
-        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK");
+        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
+                "UK");
         Acknowledgement ack = null;
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
@@ -145,7 +145,8 @@ public class DeliveryWsApplicationTests {
         // CORRELATION_ID = "51d38d70-0a84-4719-8dc2-e059113a1004";
 
         // "00006400", "03977902", "03977902aaa",
-        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "BE");
+        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
+                "BE");
         Acknowledgement ack = null;
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
@@ -156,15 +157,17 @@ public class DeliveryWsApplicationTests {
     }
 
     // @Test
-    public void sendConnectionDetailsRequestMessage() {
+    public void sendConnectionDetailsRequestMessage() throws DatatypeConfigurationException {
+        Acknowledgement ack = null;
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
+
         MESSAGE_ID = UUID.randomUUID().toString();
         CORRELATION_ID = MESSAGE_ID;
 
         // "00006400", "03977902"
-        MessageObjectType request = ConnectionDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK");
-        Acknowledgement ack = null;
+        MessageObjectType request = ConnectionDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
+                "UK");
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
 
@@ -181,7 +184,8 @@ public class DeliveryWsApplicationTests {
         CORRELATION_ID = MESSAGE_ID;
 
         // "00006400", "03977902"
-        MessageObjectType request = BranchDisclosureReceptionNotificationDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
+        MessageObjectType request = BranchDisclosureReceptionNotificationDetailsHelper.newInstance(CORRELATION_ID,
+                MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
         Acknowledgement ack = null;
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
@@ -199,7 +203,8 @@ public class DeliveryWsApplicationTests {
         CORRELATION_ID = MESSAGE_ID;
 
         // "00006400", "03977902"
-        MessageObjectType request = BranchDisclosureSubmissionNotificationDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
+        MessageObjectType request = BranchDisclosureSubmissionNotificationDetailsHelper.newInstance(CORRELATION_ID,
+                MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
         Acknowledgement ack = null;
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
@@ -210,15 +215,32 @@ public class DeliveryWsApplicationTests {
     }
 
     // @Test
-    public void sendFullUpdateLEDAcknowledgmentMessage() {
+    public void sendFullUpdateLEDAcknowledgmentMessage() throws DatatypeConfigurationException {
+        Acknowledgement ack = null;
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
+
         MESSAGE_ID = UUID.randomUUID().toString();
         CORRELATION_ID = MESSAGE_ID;
 
         MessageObjectType request = FullUpdateLEDAckDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK");
 
+        ack = callDeliveryEnvelopeService(body, message, request, ack);
+
+        assertNotNull(ack);
+        assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
+    }
+
+    // @Test
+    public void sendUpdateLEDStatusMessage() throws DatatypeConfigurationException {
         Acknowledgement ack = null;
+        DeliveryBody body = new DeliveryBody();
+        MessageContentType message = new MessageContentType();
+        MESSAGE_ID = UUID.randomUUID().toString();
+        CORRELATION_ID = MESSAGE_ID;
+
+        MessageObjectType request = FullUpdateLEDAckDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902",
+                "EW", "UK");
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
 
@@ -227,32 +249,15 @@ public class DeliveryWsApplicationTests {
     }
 
     // @Test
-    public void sendUpdateLEDStatusMessage() {
+    public void sendBusinessErrorMessage() throws DatatypeConfigurationException {
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
         MESSAGE_ID = UUID.randomUUID().toString();
         CORRELATION_ID = MESSAGE_ID;
-
-        MessageObjectType request = FullUpdateLEDAckDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK");
-
         Acknowledgement ack = null;
 
-        ack = callDeliveryEnvelopeService(body, message, request, ack);
-
-        assertNotNull(ack);
-        assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
-    }
-
-    // @Test
-    public void sendBusinessErrorMessage() {
-        DeliveryBody body = new DeliveryBody();
-        MessageContentType message = new MessageContentType();
-        MESSAGE_ID = UUID.randomUUID().toString();
-        CORRELATION_ID = MESSAGE_ID;
-
-        MessageObjectType request = BusinessErrorDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", "ERR_BR_0100");
-
-        Acknowledgement ack = null;
+        MessageObjectType request = BusinessErrorDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
+                "UK", "ERR_BR_0100");
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
 
@@ -269,7 +274,7 @@ public class DeliveryWsApplicationTests {
             message.setValue(dataHandler);
 
             body.setMessageContent(message);
-            
+
             // method under test
             DeliveryHeader deliveryHeader = new DeliveryHeader();
             DeliveryMessageInfoType deliveryMessageInfoType = new DeliveryMessageInfoType();
