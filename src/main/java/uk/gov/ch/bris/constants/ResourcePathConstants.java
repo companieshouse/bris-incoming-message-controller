@@ -1,12 +1,15 @@
 package uk.gov.ch.bris.constants;
 
-import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
-import eu.europa.ec.bris.v140.jaxb.br.led.BRUpdateLEDStatus;
-
 /**
  * Created by rkumar on 21/03/2017.
  */
 public interface ResourcePathConstants {
+    
+    /* ---- Constants ---- */
+
+    /**
+     * List of Resource Path Constants.
+     */
     
     public static final String XSD_PATH = "xsd/bris/v140/br/";
 
@@ -19,8 +22,7 @@ public interface ResourcePathConstants {
     public static final String CONNECTION_REQ_SCHEMA = "BR-ConnectionRequest.xsd";
     public static final String CROSS_BRDR_MERG_NOTIFICATION_RES_SCHEMA = "BR-CrossBorderMergerReceptionNotificationResponse.xsd";
     public static final String BR_BUSINESS_ERR_SCHEMA = "BR-BusinessError.xsd";
-
-
+    
     public static final String BUSINESS_ERROR_SCHEMA = "BR-BusinessError.xsd";
     public static final String FAULT_SCHEMA = "BR-FaultResponse.xsd";
     
