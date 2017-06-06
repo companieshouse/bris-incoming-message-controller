@@ -1,43 +1,5 @@
 package uk.gov.ch.bris.producer;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.activation.DataHandler;
-import javax.inject.Inject;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
-import org.apache.commons.io.IOUtils;
-import org.bson.types.Binary;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
-import org.xml.sax.SAXException;
-
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
 import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
@@ -65,10 +27,47 @@ import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerSubmissionNotifi
 import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerSubmissionNotificationAcknowledgement;
 import eu.europa.ec.bris.v140.jaxb.br.subscription.BRManageSubscriptionRequest;
 import eu.europa.ec.bris.v140.jaxb.br.subscription.BRManageSubscriptionStatus;
+import org.apache.commons.io.IOUtils;
+import org.bson.types.Binary;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+import org.xml.sax.SAXException;
 import uk.gov.ch.bris.constants.ResourcePathConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.domain.BrisMessageType;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
+
+import javax.activation.DataHandler;
+import javax.inject.Inject;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Sender {
 
@@ -122,7 +121,7 @@ public class Sender {
                 brisIncomingMessage.setMessageType(brisMessageType.getClassName());
                 brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
-                
+
                 id = brisIncomingMessage.getId();
 
                 brisIncomingMessage = TEST_MODE==0?attachBinary(brisIncomingMessage,deliveryBody):brisIncomingMessage;
@@ -176,12 +175,14 @@ public class Sender {
      */
     private BRISIncomingMessage attachBinary(BRISIncomingMessage brisIncomingMessage, DeliveryBody deliveryBody) {
 
-
         if ((BRRetrieveDocumentResponse.class.getSimpleName().equals(brisIncomingMessage.getMessageType()))){
             
             try {
-                brisIncomingMessage.setData(new Binary(IOUtils.toByteArray(deliveryBody.getAttachment().getValue().getInputStream())));                
-            } catch (IOException e) {
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                DataHandler dh =  deliveryBody.getAttachment().getValue();
+                dh.writeTo(output);
+                brisIncomingMessage.setData(new Binary(output.toByteArray()));
+          } catch (IOException e) {
                 LOGGER.error("IOException ... Unable to Extract binary data from DeliveryBody: "+e);
             } catch (Exception e) {
                 LOGGER.error("Exception   ... Unable to Extract binary data from DeliveryBody: "+e);
