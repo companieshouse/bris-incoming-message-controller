@@ -1,6 +1,5 @@
 package uk.gov.ch.bris.producer;
 
-import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
@@ -39,7 +38,6 @@ import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.xml.sax.SAXException;
 
 import com.mongodb.gridfs.GridFS;
-import com.mongodb.gridfs.GridFSDBFile;
 import com.mongodb.gridfs.GridFSInputFile;
 
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
@@ -116,7 +114,7 @@ public class Sender {
         String message = getXMLmessagefromDeliveryBody(deliveryBody);
         
         // increment counter for every message received/consumed
-        //metricsCounterService.incrementConsumedMessageCounter();
+        metricsCounterService.incrementConsumedMessageCounter();
         
         try {
             // validate xmlMessage with the schema
@@ -138,7 +136,7 @@ public class Sender {
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
                 
                 // increment counter for every brisIncomingMessage saved into MongoDB
-                //metricsCounterService.incrementWriteToMongoDBCounter();
+                metricsCounterService.incrementWriteToIncomingMongoDBCounter();
                 
                 id = brisIncomingMessage.getId();
                 
@@ -166,7 +164,7 @@ public class Sender {
         ListenableFuture<SendResult<Integer, String>> future = kafkaTemplate.send(topic, jsonIncomingId);
         
         // increment counter for every brisIncomingMessage sent to Kafka Incoming Topic
-        //metricsCounterService.incrementWriteToKafkaIncomingCounter();
+        metricsCounterService.incrementWriteToKafkaIncomingCounter();
         
         // you can register a callback with the listener to receive the result
         // of the send asynchronously

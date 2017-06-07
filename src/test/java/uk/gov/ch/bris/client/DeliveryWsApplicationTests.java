@@ -138,8 +138,6 @@ public class DeliveryWsApplicationTests {
        
     }
     
-
-
     //@Test
     public void sendCompanyDetailsRequestMessage() {
         DeliveryBody body = new DeliveryBody();
@@ -149,8 +147,25 @@ public class DeliveryWsApplicationTests {
         // CORRELATION_ID = "51d38d70-0a84-4719-8dc2-e059113a1004";
 
         // "00006400", "03977902"
-        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
-                "UK");
+        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK");
+        Acknowledgement ack = null;
+
+        ack = callDeliveryEnvelopeService(body, message, request, ack);
+
+        assertNotNull(ack);
+        assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
+    }
+    
+    //@Test
+    public void sendCompanyDetailsInvalidRequestMessage() {
+        DeliveryBody body = new DeliveryBody();
+        MessageContentType message = new MessageContentType();
+        MESSAGE_ID = UUID.randomUUID().toString();
+        CORRELATION_ID = MESSAGE_ID;
+        // CORRELATION_ID = "51d38d70-0a84-4719-8dc2-e059113a1004";
+
+        // "00006400", "03977902"
+        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "Wales", "UK");
         Acknowledgement ack = null;
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
@@ -168,8 +183,7 @@ public class DeliveryWsApplicationTests {
         // CORRELATION_ID = "51d38d70-0a84-4719-8dc2-e059113a1004";
 
         // "00006400", "03977902", "03977902aaa",
-        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
-                "BE");
+        MessageObjectType request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "BE");
         Acknowledgement ack = null;
 
         ack = callDeliveryEnvelopeService(body, message, request, ack);
