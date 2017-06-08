@@ -108,10 +108,9 @@ public class Sender {
             BrisMessageType brisMessageType = validateSchema(message);
             
             // extract messageId from Message
-            messageId = this.extractMessageId(message);
-            correlationId  = this.extractCorrelationId(message);
+            messageId = brisMessageType.getMessageObjectType().getMessageHeader().getMessageID().getValue();
+            correlationId  = brisMessageType.getMessageObjectType().getMessageHeader().getCorrelationID().getValue();
             dateTimeResult = getDateTime();
-
             
             // check if messageId/correlationId already exists in mongodb
             if(null == brisIncomingMessageService.findByMessageId(messageId)) {
@@ -190,58 +189,6 @@ public class Sender {
 
         }
         return brisIncomingMessage;
-    }
-
-
-    /**
-     * Extract MessageId from the message
-     * @param xmlMessage
-     * @return messageId
-     * @throws FaultResponse 
-     */
-    public String extractMessageId(String xmlMessage) throws FaultResponse {
-        FaultDetail faultDetail = new FaultDetail();
-        String messageId = "";
-        
-        try {
-            Pattern p = Pattern.compile(".*\\<*<MessageID> *(.*) *\\</MessageID>*");
-            Matcher m = p.matcher(xmlMessage);
-            m.find();
-            messageId = m.group(1);
-            LOGGER.info("brCompanyDetailsRequest   ... ");
-            LOGGER.info("brCompanyDetailsRequest messageId      ... " + messageId);
-        } catch (Exception e) {
-            faultDetail.setResponseCode("GEN000");
-            faultDetail.setMessage("Parsing exception" + e.getLocalizedMessage());
-            throw new FaultResponse("Exception", faultDetail, e);
-        }
-        
-        return messageId;
-    }
-    
-    /**
-     * Extract CorrelationId from the message
-     * @param xmlMessage
-     * @return correlationId
-     * @throws FaultResponse 
-     */
-    public String extractCorrelationId(String xmlMessage) throws FaultResponse {
-        FaultDetail faultDetail = new FaultDetail();
-        String correlationId = "";
-        
-        try {
-            Pattern p = Pattern.compile(".*\\<*<CorrelationID> *(.*) *\\</CorrelationID>*");
-            Matcher m = p.matcher(xmlMessage);
-            m.find();
-            correlationId = m.group(1);
-            LOGGER.info("brCompanyDetailsRequest correlationId  ... " + correlationId);
-        } catch (Exception e) {
-            faultDetail.setResponseCode("GEN000");
-            faultDetail.setMessage("Parsing exception" + e.getLocalizedMessage());
-            throw new FaultResponse("Exception", faultDetail, e);
-        }
-        
-        return correlationId;
     }
 
     /**
@@ -333,19 +280,19 @@ public class Sender {
     */
    private BrisMessageType getSchema(String xmlMessage) {
        JAXBContext jaxbContext;
-       Object obj = null;
+       MessageObjectType messageObjectType = null;
        try {
            jaxbContext = getJaxbContext();
            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-           JAXBSource source = new JAXBSource(jaxbContext, MessageObjectType.class);
+           //JAXBSource source = new JAXBSource(jaxbContext, MessageObjectType.class);
            StringReader reader = new StringReader(xmlMessage);
-           obj = jaxbUnmarshaller.unmarshal(reader);
+           messageObjectType = (MessageObjectType)jaxbUnmarshaller.unmarshal(reader);
 
        } catch (JAXBException e) {
            e.printStackTrace();
        }
 
-       return getXSDResource(obj.getClass());
+       return getXSDResource(messageObjectType);
 
    }
 
@@ -354,8 +301,9 @@ public class Sender {
     * @param clazz
     * @return brisMessageType
     */
-   private BrisMessageType getXSDResource(Class clazz) {
+   private BrisMessageType getXSDResource(MessageObjectType messageObjectType) {
        
+       Class clazz = messageObjectType.getClass();
        Map<Class, URL> map = new HashMap<>();
        
        map.put(BRCompanyDetailsRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_SCHEMA));
@@ -375,6 +323,7 @@ public class Sender {
        BrisMessageType brisMessageType = new BrisMessageType();
        brisMessageType.setUrl(map.get(clazz));
        brisMessageType.setClassName(clazz.getSimpleName());
+       brisMessageType.setMessageObjectType(messageObjectType);
        
        return brisMessageType;
    }
