@@ -42,6 +42,7 @@ public class BRISIncomingMessageService {
      * Saves single BRISIncomingMessage entity from database.
      */
     public BRISIncomingMessage save(BRISIncomingMessage brisIncomingMessage) {
+        logger.info("Saving incoming message " + brisIncomingMessage);
         return brisIncomingMessageRepository.save(brisIncomingMessage);
     }
 

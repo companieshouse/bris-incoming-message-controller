@@ -101,7 +101,6 @@ public class Sender {
         String strErrorMessage = "";
         String messageId = "";
         String correlationId = "";
-        String id = "";
         String jsonIncomingId = "";
 
         try {
@@ -113,22 +112,22 @@ public class Sender {
             correlationId  = this.extractCorrelationId(message);
             dateTimeResult = getDateTime();
 
+            
             // check if messageId/correlationId already exists in mongodb
             if(null == brisIncomingMessageService.findByMessageId(messageId)) {
                 // create brisIncomingMessage Object
-                 brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING");
+                brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING");
                 
                 // save brisIncomingMessage Object in Mongo DB
                 brisIncomingMessage.setMessageType(brisMessageType.getClassName());
                 brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
+                
+                if (TEST_MODE==1) {
+                    brisIncomingMessage = attachBinary(brisIncomingMessage,deliveryBody);
+                }
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
                 
-                id = brisIncomingMessage.getId();
-
-                brisIncomingMessage = TEST_MODE==0?attachBinary(brisIncomingMessage,deliveryBody):brisIncomingMessage;
-                
-                brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
-                
+                String id = brisIncomingMessage.getId();
                 jsonIncomingId = "{\"incoming_id\":\"" + id + "\"}";
                 LOGGER.info("Listing brisIncomingMessage with id: " + id + " messageId: " + brisIncomingMessage.getMessageId() + " correlationId: " + brisIncomingMessage.getCorrelationId());
                 
@@ -137,11 +136,13 @@ public class Sender {
                 Exception ex = new Exception(strErrorMessage);
                 faultDetail.setResponseCode("GEN007");
                 faultDetail.setMessage(strErrorMessage);
+                LOGGER.error("Throwing FaultResponse : " + strErrorMessage);
                 throw new FaultResponse(strErrorMessage, faultDetail, ex);   
             }
             
         } catch (Exception e) {
-            throw new FaultResponse("Exception", faultDetail, e);
+            LOGGER.error("Exception " + e, e);
+            throw new FaultResponse("Exception" + e.getMessage(), faultDetail, e);
         }
         
         // the KafkaTemplate provides asynchronous send methods returning a
@@ -306,6 +307,7 @@ public class Sender {
        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
        FaultDetail faultDetail = new FaultDetail();
        try {
+           LOGGER.info("Validating schema for xml message " + xmlMessage);
            BrisMessageType brisMessageType = getSchema(xmlMessage);
 
            Schema schema = factory.newSchema(brisMessageType.getUrl());
