@@ -3,12 +3,14 @@ package uk.gov.ch.bris.client;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertNotNull;
 
+import java.io.InputStream;
 import java.io.Reader;
 import java.io.StringReader;
 import java.util.GregorianCalendar;
 import java.util.UUID;
 
 import javax.activation.DataHandler;
+import javax.activation.DataSource;
 import javax.mail.util.ByteArrayDataSource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
@@ -26,6 +28,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.context.annotation.Bean;
+import org.springframework.core.io.ClassPathResource;
 import org.springframework.test.context.junit4.SpringRunner;
 
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
@@ -72,7 +75,7 @@ public class DeliveryWsApplicationTests {
     @Autowired
     protected Marshaller marshaller = null;
 
-    // @Test
+    //@Test
     public void sendDocumentDetailsRequestMessage() {
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
@@ -97,16 +100,34 @@ public class DeliveryWsApplicationTests {
         MESSAGE_ID = UUID.randomUUID().toString();
         CORRELATION_ID = MESSAGE_ID;
 
-        MessageObjectType request = RetrieveDocumentResponseHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902",
-                "EW", "UK", DOC_ID);
+       MessageObjectType request = RetrieveDocumentResponseHelper.newInstance(
+                CORRELATION_ID,
+                MESSAGE_ID,
+                "03977902",
+                "EW",
+                "UK",
+                DOC_ID);
 
-        Acknowledgement ack = null;
+       Acknowledgement ack=null;
 
-        AttachmentType attachment = new AttachmentType();
+
+       AttachmentType attachment = new AttachmentType();
+       attachment.setContentType("application/pdf");
         attachment.setFileName("filename");
         attachment.setReference("a1");
-
-        DataHandler fileDataHandler = new DataHandler(new ByteArrayDataSource("get".getBytes(), "application/pdf"));
+        byte[] expectedPdf = null;
+        DataSource source = null;
+        
+        try {
+            InputStream expectedPdfStream = new ClassPathResource("SamplePDF.pdf").getInputStream();
+            expectedPdf = org.apache.commons.io.IOUtils.toByteArray(expectedPdfStream);
+             source= new ByteArrayDataSource(expectedPdf,"application/octet-stream");
+        }catch (Exception e){
+            e.printStackTrace();
+        }
+        
+        DataHandler fileDataHandler = new DataHandler(source);
+        
         attachment.setValue(fileDataHandler);
         body.setAttachment(attachment);
 
@@ -114,10 +135,12 @@ public class DeliveryWsApplicationTests {
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
-
+       
     }
+    
 
-    // @Test
+
+    //@Test
     public void sendCompanyDetailsRequestMessage() {
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();
@@ -156,7 +179,7 @@ public class DeliveryWsApplicationTests {
 
     }
 
-    // @Test
+    //@Test
     public void sendConnectionDetailsRequestMessage() throws DatatypeConfigurationException {
         Acknowledgement ack = null;
         DeliveryBody body = new DeliveryBody();
@@ -176,7 +199,7 @@ public class DeliveryWsApplicationTests {
 
     }
 
-    // @Test
+    //@Test
     public void sendBranchDisclosureReceptionNotificationDetailsRequestMessage() {
         DeliveryBody body = new DeliveryBody();
         MessageContentType message = new MessageContentType();

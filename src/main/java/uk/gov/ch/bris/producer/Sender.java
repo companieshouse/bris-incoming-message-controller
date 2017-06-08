@@ -1,5 +1,6 @@
 package uk.gov.ch.bris.producer;
 
+import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
@@ -23,20 +24,23 @@ import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
 
 import org.apache.commons.io.IOUtils;
-import org.bson.types.Binary;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
+import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.support.SendResult;
 import org.springframework.util.concurrent.ListenableFuture;
 import org.springframework.util.concurrent.ListenableFutureCallback;
 import org.xml.sax.SAXException;
+
+import com.mongodb.gridfs.GridFS;
+import com.mongodb.gridfs.GridFSDBFile;
+import com.mongodb.gridfs.GridFSInputFile;
 
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
 import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
@@ -68,6 +72,7 @@ import eu.europa.ec.bris.v140.jaxb.br.subscription.BRManageSubscriptionStatus;
 import uk.gov.ch.bris.constants.ResourcePathConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.domain.BrisMessageType;
+import uk.gov.ch.bris.metrics.MetricsCounterService;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
 
 public class Sender {
@@ -80,9 +85,14 @@ public class Sender {
     @Autowired
     private KafkaTemplate<Integer, String> kafkaTemplate;
 
-    @Value("${TEST_MODE}")
-    private int TEST_MODE;
+    @Autowired
+    private MetricsCounterService metricsCounterService;
+    
+    //@Value("${TEST_MODE}")
+    private int TEST_MODE = 0;
 
+    @Autowired
+    MongoTemplate mongoTemplate;
 
     /**
      * Save incoming message to mongoDB
@@ -94,7 +104,6 @@ public class Sender {
      */
     public void sendMessage(String topic, DeliveryBody deliveryBody) throws FaultResponse {
 
-        String message = getXMLmessagefromDeliveryBody(deliveryBody);
         BRISIncomingMessage brisIncomingMessage = null;
         FaultDetail faultDetail = new FaultDetail();
         DateTime dateTimeResult =  null;
@@ -104,6 +113,11 @@ public class Sender {
         String id = "";
         String jsonIncomingId = "";
 
+        String message = getXMLmessagefromDeliveryBody(deliveryBody);
+        
+        // increment counter for every message received/consumed
+        //metricsCounterService.incrementConsumedMessageCounter();
+        
         try {
             // validate xmlMessage with the schema
             BrisMessageType brisMessageType = validateSchema(message);
@@ -123,8 +137,11 @@ public class Sender {
                 brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
                 
+                // increment counter for every brisIncomingMessage saved into MongoDB
+                //metricsCounterService.incrementWriteToMongoDBCounter();
+                
                 id = brisIncomingMessage.getId();
-
+                
                 brisIncomingMessage = TEST_MODE==0?attachBinary(brisIncomingMessage,deliveryBody):brisIncomingMessage;
                 
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
@@ -147,7 +164,10 @@ public class Sender {
         // the KafkaTemplate provides asynchronous send methods returning a
         // Futurez
         ListenableFuture<SendResult<Integer, String>> future = kafkaTemplate.send(topic, jsonIncomingId);
-
+        
+        // increment counter for every brisIncomingMessage sent to Kafka Incoming Topic
+        //metricsCounterService.incrementWriteToKafkaIncomingCounter();
+        
         // you can register a callback with the listener to receive the result
         // of the send asynchronously
         future.addCallback(new ListenableFutureCallback<SendResult<Integer, String>>() {
@@ -180,7 +200,13 @@ public class Sender {
         if ((BRRetrieveDocumentResponse.class.getSimpleName().equals(brisIncomingMessage.getMessageType()))){
             
             try {
-                brisIncomingMessage.setData(new Binary(IOUtils.toByteArray(deliveryBody.getAttachment().getValue().getInputStream())));                
+                GridFS gridFS= new GridFS(mongoTemplate.getDb());
+                GridFSInputFile gridFSInputFile = gridFS.createFile(IOUtils.toByteArray(deliveryBody.getAttachment().getValue().getInputStream()));
+                
+                gridFSInputFile.setContentType("application/pdf");
+                gridFSInputFile.setFilename(brisIncomingMessage.getCorrelationId() + ".pdf");
+                gridFSInputFile.save();
+                
             } catch (IOException e) {
                 LOGGER.error("IOException ... Unable to Extract binary data from DeliveryBody: "+e);
             } catch (Exception e) {
@@ -190,6 +216,7 @@ public class Sender {
         }
         return brisIncomingMessage;
     }
+
 
 
     /**
@@ -416,4 +443,6 @@ public class Sender {
         }
     }
 
+
+        
 }
