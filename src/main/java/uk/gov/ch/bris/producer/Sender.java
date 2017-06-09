@@ -131,6 +131,8 @@ public class Sender {
                 String id = brisIncomingMessage.getId();
                 jsonIncomingId = "{\"incoming_id\":\"" + id + "\"}";
                 LOGGER.info("Listing brisIncomingMessage with id: " + id + " messageId: " + brisIncomingMessage.getMessageId() + " correlationId: " + brisIncomingMessage.getCorrelationId());
+                LOGGER.info(" messageToSave: " + messageToSave + " getMessageType: " + brisIncomingMessage.getMessageType());
+               // LOGGER.info(" messageToSave: " + messageToSave + " correlationId: " + brisIncomingMessage.getCorrelationId());
                 
             } else {
                 strErrorMessage = "The provided MessageID value of this BRIS message " + messageId +  " already exists";
@@ -217,7 +219,7 @@ public class Sender {
     public JAXBContext getJaxbContext() {
         JAXBContext context = null;
         try {
-            context = JAXBContext.newInstance(MessageObjectType.class);
+            context = JAXBContext.newInstance(MessageObjectType.class,ValidationError.class);
         } catch (JAXBException exception) {
             exception.printStackTrace();
         }
@@ -266,7 +268,6 @@ public class Sender {
        try {
            jaxbContext = getJaxbContext();
            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-           //JAXBSource source = new JAXBSource(jaxbContext, MessageObjectType.class);
            StringReader reader = new StringReader(xmlMessage);
            messageObjectType = (MessageObjectType)jaxbUnmarshaller.unmarshal(reader);
            validateMessageID(messageObjectType);
@@ -366,8 +367,8 @@ public class Sender {
     private String getXMLValidationMessage(MessageObjectType messageObjectType) throws JAXBException {
         ValidationError validationError = new ValidationError();
         validationError.setMessageHeader(messageObjectType.getMessageHeader());
-       // JAXBContext jaxbContext =getJaxbContext() ;
-        JAXBContext jaxbContext = JAXBContext.newInstance(ValidationError.class);
+       JAXBContext jaxbContext =getJaxbContext() ;
+      //  JAXBContext jaxbContext = JAXBContext.newInstance(ValidationError.class);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         StringWriter sw = new StringWriter();
