@@ -1,43 +1,5 @@
 package uk.gov.ch.bris.producer;
 
-import java.io.IOException;
-import java.io.StringReader;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
-
-import javax.activation.DataHandler;
-import javax.inject.Inject;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Unmarshaller;
-import javax.xml.bind.util.JAXBSource;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-
-import org.apache.commons.io.IOUtils;
-import org.bson.types.Binary;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.springframework.kafka.core.KafkaTemplate;
-import org.springframework.kafka.support.SendResult;
-import org.springframework.util.concurrent.ListenableFuture;
-import org.springframework.util.concurrent.ListenableFutureCallback;
-import org.xml.sax.SAXException;
-
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
 import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
@@ -65,10 +27,47 @@ import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerSubmissionNotifi
 import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerSubmissionNotificationAcknowledgement;
 import eu.europa.ec.bris.v140.jaxb.br.subscription.BRManageSubscriptionRequest;
 import eu.europa.ec.bris.v140.jaxb.br.subscription.BRManageSubscriptionStatus;
+import org.apache.commons.io.IOUtils;
+import org.bson.types.Binary;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.springframework.kafka.core.KafkaTemplate;
+import org.springframework.kafka.support.SendResult;
+import org.springframework.util.concurrent.ListenableFuture;
+import org.springframework.util.concurrent.ListenableFutureCallback;
+import org.xml.sax.SAXException;
 import uk.gov.ch.bris.constants.ResourcePathConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.domain.BrisMessageType;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
+
+import javax.activation.DataHandler;
+import javax.inject.Inject;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Unmarshaller;
+import javax.xml.bind.util.JAXBSource;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class Sender {
 
@@ -101,6 +100,7 @@ public class Sender {
         String strErrorMessage = "";
         String messageId = "";
         String correlationId = "";
+        String id = "";
         String jsonIncomingId = "";
 
         try {
@@ -108,25 +108,26 @@ public class Sender {
             BrisMessageType brisMessageType = validateSchema(message);
             
             // extract messageId from Message
-            messageId = brisMessageType.getMessageObjectType().getMessageHeader().getMessageID().getValue();
-            correlationId  = brisMessageType.getMessageObjectType().getMessageHeader().getCorrelationID().getValue();
+            messageId = this.extractMessageId(message);
+            correlationId  = this.extractCorrelationId(message);
             dateTimeResult = getDateTime();
-            
+
             // check if messageId/correlationId already exists in mongodb
             if(null == brisIncomingMessageService.findByMessageId(messageId)) {
                 // create brisIncomingMessage Object
-                brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING");
+                 brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, "PENDING");
                 
                 // save brisIncomingMessage Object in Mongo DB
                 brisIncomingMessage.setMessageType(brisMessageType.getClassName());
                 brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
+                brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
+
+                id = brisIncomingMessage.getId();
+
+                brisIncomingMessage = TEST_MODE==0?attachBinary(brisIncomingMessage,deliveryBody):brisIncomingMessage;
                 
-                if (TEST_MODE==1) {
-                    brisIncomingMessage = attachBinary(brisIncomingMessage,deliveryBody);
-                }
                 brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
                 
-                String id = brisIncomingMessage.getId();
                 jsonIncomingId = "{\"incoming_id\":\"" + id + "\"}";
                 LOGGER.info("Listing brisIncomingMessage with id: " + id + " messageId: " + brisIncomingMessage.getMessageId() + " correlationId: " + brisIncomingMessage.getCorrelationId());
                 
@@ -135,13 +136,11 @@ public class Sender {
                 Exception ex = new Exception(strErrorMessage);
                 faultDetail.setResponseCode("GEN007");
                 faultDetail.setMessage(strErrorMessage);
-                LOGGER.error("Throwing FaultResponse : " + strErrorMessage);
                 throw new FaultResponse(strErrorMessage, faultDetail, ex);   
             }
             
         } catch (Exception e) {
-            LOGGER.error("Exception " + e, e);
-            throw new FaultResponse("Exception" + e.getMessage(), faultDetail, e);
+            throw new FaultResponse("Exception", faultDetail, e);
         }
         
         // the KafkaTemplate provides asynchronous send methods returning a
@@ -176,12 +175,14 @@ public class Sender {
      */
     private BRISIncomingMessage attachBinary(BRISIncomingMessage brisIncomingMessage, DeliveryBody deliveryBody) {
 
-
         if ((BRRetrieveDocumentResponse.class.getSimpleName().equals(brisIncomingMessage.getMessageType()))){
             
             try {
-                brisIncomingMessage.setData(new Binary(IOUtils.toByteArray(deliveryBody.getAttachment().getValue().getInputStream())));                
-            } catch (IOException e) {
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                DataHandler dh =  deliveryBody.getAttachment().getValue();
+                dh.writeTo(output);
+                brisIncomingMessage.setData(new Binary(output.toByteArray()));
+          } catch (IOException e) {
                 LOGGER.error("IOException ... Unable to Extract binary data from DeliveryBody: "+e);
             } catch (Exception e) {
                 LOGGER.error("Exception   ... Unable to Extract binary data from DeliveryBody: "+e);
@@ -189,6 +190,58 @@ public class Sender {
 
         }
         return brisIncomingMessage;
+    }
+
+
+    /**
+     * Extract MessageId from the message
+     * @param xmlMessage
+     * @return messageId
+     * @throws FaultResponse 
+     */
+    public String extractMessageId(String xmlMessage) throws FaultResponse {
+        FaultDetail faultDetail = new FaultDetail();
+        String messageId = "";
+        
+        try {
+            Pattern p = Pattern.compile(".*\\<*<MessageID> *(.*) *\\</MessageID>*");
+            Matcher m = p.matcher(xmlMessage);
+            m.find();
+            messageId = m.group(1);
+            LOGGER.info("brCompanyDetailsRequest   ... ");
+            LOGGER.info("brCompanyDetailsRequest messageId      ... " + messageId);
+        } catch (Exception e) {
+            faultDetail.setResponseCode("GEN000");
+            faultDetail.setMessage("Parsing exception" + e.getLocalizedMessage());
+            throw new FaultResponse("Exception", faultDetail, e);
+        }
+        
+        return messageId;
+    }
+    
+    /**
+     * Extract CorrelationId from the message
+     * @param xmlMessage
+     * @return correlationId
+     * @throws FaultResponse 
+     */
+    public String extractCorrelationId(String xmlMessage) throws FaultResponse {
+        FaultDetail faultDetail = new FaultDetail();
+        String correlationId = "";
+        
+        try {
+            Pattern p = Pattern.compile(".*\\<*<CorrelationID> *(.*) *\\</CorrelationID>*");
+            Matcher m = p.matcher(xmlMessage);
+            m.find();
+            correlationId = m.group(1);
+            LOGGER.info("brCompanyDetailsRequest correlationId  ... " + correlationId);
+        } catch (Exception e) {
+            faultDetail.setResponseCode("GEN000");
+            faultDetail.setMessage("Parsing exception" + e.getLocalizedMessage());
+            throw new FaultResponse("Exception", faultDetail, e);
+        }
+        
+        return correlationId;
     }
 
     /**
@@ -254,7 +307,6 @@ public class Sender {
        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
        FaultDetail faultDetail = new FaultDetail();
        try {
-           LOGGER.info("Validating schema for xml message " + xmlMessage);
            BrisMessageType brisMessageType = getSchema(xmlMessage);
 
            Schema schema = factory.newSchema(brisMessageType.getUrl());
@@ -280,19 +332,19 @@ public class Sender {
     */
    private BrisMessageType getSchema(String xmlMessage) {
        JAXBContext jaxbContext;
-       MessageObjectType messageObjectType = null;
+       Object obj = null;
        try {
            jaxbContext = getJaxbContext();
            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-           //JAXBSource source = new JAXBSource(jaxbContext, MessageObjectType.class);
+           JAXBSource source = new JAXBSource(jaxbContext, MessageObjectType.class);
            StringReader reader = new StringReader(xmlMessage);
-           messageObjectType = (MessageObjectType)jaxbUnmarshaller.unmarshal(reader);
+           obj = jaxbUnmarshaller.unmarshal(reader);
 
        } catch (JAXBException e) {
            e.printStackTrace();
        }
 
-       return getXSDResource(messageObjectType);
+       return getXSDResource(obj.getClass());
 
    }
 
@@ -301,9 +353,8 @@ public class Sender {
     * @param clazz
     * @return brisMessageType
     */
-   private BrisMessageType getXSDResource(MessageObjectType messageObjectType) {
+   private BrisMessageType getXSDResource(Class clazz) {
        
-       Class clazz = messageObjectType.getClass();
        Map<Class, URL> map = new HashMap<>();
        
        map.put(BRCompanyDetailsRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_SCHEMA));
@@ -323,7 +374,6 @@ public class Sender {
        BrisMessageType brisMessageType = new BrisMessageType();
        brisMessageType.setUrl(map.get(clazz));
        brisMessageType.setClassName(clazz.getSimpleName());
-       brisMessageType.setMessageObjectType(messageObjectType);
        
        return brisMessageType;
    }
