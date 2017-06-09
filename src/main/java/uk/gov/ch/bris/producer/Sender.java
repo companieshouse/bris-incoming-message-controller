@@ -366,7 +366,8 @@ public class Sender {
     private String getXMLValidationMessage(MessageObjectType messageObjectType) throws JAXBException {
         ValidationError validationError = new ValidationError();
         validationError.setMessageHeader(messageObjectType.getMessageHeader());
-        JAXBContext jaxbContext = getJaxbContext();
+       // JAXBContext jaxbContext =getJaxbContext() ;
+        JAXBContext jaxbContext = JAXBContext.newInstance(ValidationError.class);
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         StringWriter sw = new StringWriter();
