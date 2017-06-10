@@ -16,8 +16,6 @@ import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
-
-
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -94,7 +92,6 @@ public class Sender {
         BRISIncomingMessage brisIncomingMessage = null;
         FaultDetail faultDetail = new FaultDetail();
         DateTime dateTimeResult =  null;
-        String strErrorMessage = "";
         String messageId = "";
         String correlationId = "";
         String jsonIncomingId = "";
@@ -107,41 +104,28 @@ public class Sender {
             if(brisMessageType.getValidationXML()!=null){
                 messageToSave = brisMessageType.getValidationXML();
             }
-
-            
+          
             // extract messageId from Message
             messageId = brisMessageType.getMessageObjectType().getMessageHeader().getMessageID().getValue();
             correlationId  = brisMessageType.getMessageObjectType().getMessageHeader().getCorrelationID().getValue();
             dateTimeResult = getDateTime();
 
-            // check if messageId/correlationId already exists in mongodb
-            if(null == brisIncomingMessageService.findByMessageId(messageId)) {
-                // create brisIncomingMessage Object
-                brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, messageToSave, "PENDING");
-                
-                // save brisIncomingMessage Object in Mongo DB
-                brisIncomingMessage.setMessageType(brisMessageType.getClassName());
-                brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
-                
-                if (TEST_MODE==1) {
-                    brisIncomingMessage = attachBinary(brisIncomingMessage,deliveryBody);
-                }
-                brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
-                
-                String id = brisIncomingMessage.getId();
-                jsonIncomingId = "{\"incoming_id\":\"" + id + "\"}";
-                LOGGER.info("Listing brisIncomingMessage with id: " + id + " messageId: " + brisIncomingMessage.getMessageId() + " correlationId: " + brisIncomingMessage.getCorrelationId());
-                LOGGER.info(" messageToSave: " + messageToSave + " getMessageType: " + brisIncomingMessage.getMessageType());
-               // LOGGER.info(" messageToSave: " + messageToSave + " correlationId: " + brisIncomingMessage.getCorrelationId());
-                
-            } else {
-                strErrorMessage = "The provided MessageID value of this BRIS message " + messageId +  " already exists";
-                Exception ex = new Exception(strErrorMessage);
-                faultDetail.setResponseCode("GEN007");
-                faultDetail.setMessage(strErrorMessage);
-                LOGGER.error("Throwing FaultResponse : " + strErrorMessage);
-                throw new FaultResponse(strErrorMessage, faultDetail, ex);   
+            // create brisIncomingMessage Object
+            brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, messageToSave, "PENDING");
+            
+            // save brisIncomingMessage Object in Mongo DB
+            brisIncomingMessage.setMessageType(brisMessageType.getClassName());
+            brisIncomingMessage.setCreatedOn(dateTimeResult.toDateTimeISO());
+            
+            if (TEST_MODE==1) {
+                brisIncomingMessage = attachBinary(brisIncomingMessage,deliveryBody);
             }
+            brisIncomingMessage = brisIncomingMessageService.save(brisIncomingMessage);
+            
+            String id = brisIncomingMessage.getId();
+            jsonIncomingId = "{\"incoming_id\":\"" + id + "\"}";
+            LOGGER.info("Listing brisIncomingMessage with id: " + id + " messageId: " + brisIncomingMessage.getMessageId() + " correlationId: " + brisIncomingMessage.getCorrelationId());
+            LOGGER.info(" messageToSave: " + messageToSave + " getMessageType: " + brisIncomingMessage.getMessageType());
             
         } catch (Exception e) {
             LOGGER.error("Exception " + e, e);
@@ -166,7 +150,6 @@ public class Sender {
                 LOGGER.error("unable to send message='{}'", message, ex);
             }
         });
-
         // alternatively, to block the sending thread, to await the result,
         // invoke the future's get() method
     }
@@ -236,10 +219,10 @@ public class Sender {
     private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse,JAXBException {
        SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
        FaultDetail faultDetail = new FaultDetail();
-        BrisMessageType brisMessageType=null;
+       BrisMessageType brisMessageType=null;
        try {
            LOGGER.info("Validating schema for xml message " + xmlMessage);
-            brisMessageType = getSchema(xmlMessage);
+           brisMessageType = getSchema(xmlMessage);
 
            Schema schema = factory.newSchema(brisMessageType.getUrl());
            Validator validator = schema.newValidator();
@@ -250,7 +233,7 @@ public class Sender {
            loger.error("XSD Validation Error on: "+brisMessageType.getClassName());
            brisMessageType.setClassName(ValidationError.class.getSimpleName());
            brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageObjectType()));
-          return brisMessageType;
+           return brisMessageType;
        } catch (IOException e) {
            e.printStackTrace();
            throw new FaultResponse("IO exception", faultDetail, e);
@@ -289,8 +272,8 @@ public class Sender {
 
        if(messageObjectType.getMessageHeader().getMessageID().getValue()!=null){
 
-           int messageLenght=messageObjectType.getMessageHeader().getMessageID().getValue().length();
-           if(messageLenght < 1 || messageLenght > 64 ){
+           int messageLength=messageObjectType.getMessageHeader().getMessageID().getValue().length();
+           if(messageLength < 1 || messageLength > 64 ){
                FaultDetail faultDetail = new FaultDetail();
                faultDetail.setResponseCode("GEN000");
                faultDetail.setMessage("Validation error: Error while processing messageID ");
@@ -367,26 +350,12 @@ public class Sender {
     private String getXMLValidationMessage(MessageObjectType messageObjectType) throws JAXBException {
         ValidationError validationError = new ValidationError();
         validationError.setMessageHeader(messageObjectType.getMessageHeader());
-       JAXBContext jaxbContext =getJaxbContext() ;
-      //  JAXBContext jaxbContext = JAXBContext.newInstance(ValidationError.class);
+        JAXBContext jaxbContext =getJaxbContext() ;
         Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         StringWriter sw = new StringWriter();
         jaxbMarshaller.marshal(validationError, sw);
         return sw.toString();
-    }
-
-    /**
-     * Pause for parameterized time
-     * @param timeMillis
-     */
-    private void pauseAction(int timeMillis) {
-        try {
-            //Pause for parameterized time in seconds
-            Thread.sleep(timeMillis);
-        } catch (Exception ex) {
-            LOGGER.error("Error while calling pause Action", Sender.class.getSimpleName(), ex);
-        }
     }
 
 }
