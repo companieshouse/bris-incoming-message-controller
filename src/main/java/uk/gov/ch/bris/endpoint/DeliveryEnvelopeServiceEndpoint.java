@@ -10,7 +10,6 @@ import javax.xml.datatype.XMLGregorianCalendar;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
 
 import eu.domibus.plugin.bris.endpoint.delivery.DeliveryEnvelopeInterface;
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
@@ -18,8 +17,7 @@ import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryMessageInfoType;
-import uk.gov.ch.bris.producer.Sender;
-
+import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 
 
 /**
@@ -33,13 +31,10 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
     /*
         logger instance for debug/log any messages.
      */
-    private final Logger loger = LoggerFactory.getLogger(DeliveryEnvelopeServiceEndpoint.class);
+    private final Logger LOGGER = LoggerFactory.getLogger(DeliveryEnvelopeServiceEndpoint.class);
 
     @Autowired
-    private Sender kafkaProducer;
-
-    @Value("${kafka.producer.topic}")
-    private String brisIncomingTopic;
+    private IncomingMessageProcessor messageProcessor;
 
     /**
      * Service handles all delivery submission messages from BR-ECP
@@ -52,9 +47,9 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
     @Override
     public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
         
-        loger.info("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID());
+        LOGGER.info("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID());
 
-        kafkaProducer.sendMessage(brisIncomingTopic, deliveryBody);
+        messageProcessor.processIncomingMessage(deliveryBody);
         Acknowledgement acknowledgement = new Acknowledgement();
         DeliveryMessageInfoType messageInfo = new DeliveryMessageInfoType();
         messageInfo.setMessageID(deliveryHeader.getDeliveryMessageInfo().getMessageID());
