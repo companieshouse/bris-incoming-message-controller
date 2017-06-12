@@ -30,7 +30,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     @Override
     public void send(Message kafkaMessage) {
         kafkaMessage.setTopic(BRIS_INCOMING_TOPIC);
-        LOGGER.info("Sending kafka message value " + kafkaMessage + " to topic " + kafkaMessage.getTopic());       
+        LOGGER.info("Sending kafka message value " + kafkaMessage + " to topic " + kafkaMessage.getTopic());
         producer.send(kafkaMessage);
     }
     
