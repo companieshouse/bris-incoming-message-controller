@@ -1,5 +1,6 @@
 package uk.gov.ch.bris.producer;
 
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -167,7 +168,10 @@ public class Sender {
         if ((BRRetrieveDocumentResponse.class.getSimpleName().equals(brisIncomingMessage.getMessageType()))){
             
             try {
-                brisIncomingMessage.setData(new Binary(IOUtils.toByteArray(deliveryBody.getAttachment().getValue().getInputStream())));                
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                DataHandler dh =  deliveryBody.getAttachment().getValue();
+                dh.writeTo(output);
+                brisIncomingMessage.setData(new Binary(output.toByteArray()));
             } catch (IOException e) {
                 LOGGER.error("IOException ... Unable to Extract binary data from DeliveryBody: "+e);
             } catch (Exception e) {
@@ -282,11 +286,11 @@ public class Sender {
        }
    }
 
-    /**
-     * ßReturn BrisMessageType based on MessageObjectType
-     * @param messageObjectType
-     * @return BrisMessageType
-     */
+   /**
+    *
+    * @param messageObjectType
+    * @return brisMessageType
+    */
    private BrisMessageType getXSDResource(MessageObjectType messageObjectType) {
        
        Class clazz = messageObjectType.getClass();
