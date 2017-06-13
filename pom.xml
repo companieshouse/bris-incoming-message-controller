@@ -23,7 +23,7 @@
 		<logback.version>1.1.6</logback.version>
 		<domibus.bris.jaxb.version>1.0.0-SNAPSHOT</domibus.bris.jaxb.version>
 		<ecp.br.jaxb.version>1.1.0</ecp.br.jaxb.version>
-		<spring-kafka.version>1.0.6.RELEASE</spring-kafka.version>
+		<ch.kafka.version>fe0d287</ch.kafka.version>
 	</properties>
 
 	<dependencies>
@@ -68,16 +68,11 @@
 			<version>2.6</version>
 		</dependency>
 		
-		<!-- Spring Kafka -->
+		<!-- CH Kafka -->
 		<dependency>
-			<groupId>org.springframework.kafka</groupId>
-			<artifactId>spring-kafka</artifactId>
-
-		</dependency>
-		<dependency>
-			<groupId>org.apache.kafka</groupId>
-			<artifactId>kafka-clients</artifactId>
-			<version>0.9.0.1</version>
+			<groupId>uk.gov.companieshouse</groupId>
+			<artifactId>ch-kafka</artifactId>
+			<version>${ch.kafka.version}</version>
 		</dependency>
 		
         <!-- Spring Data MongoDB -->
@@ -108,6 +103,14 @@
 			<id>joinup-releases</id>
 			<url>https://joinup.ec.europa.eu/nexus/content/repositories/releases/</url>
 		</repository>
+		<repository>
+			<id>artifactory-releases</id>
+			<url>http://ch-jenkins-2k8.internal.ch:8081/artifactory/libs-release-local</url>
+		</repository>
+		<repository>
+			<id>artifactory-snapshots</id>
+			<url>http://ch-jenkins-2k8.internal.ch:8081/artifactory/libs-snapshot-local</url>
+		</repository>
 	</repositories>
 
 	<build>
@@ -116,18 +119,6 @@
 				<groupId>org.springframework.boot</groupId>
 				<artifactId>spring-boot-maven-plugin</artifactId>
 			</plugin>
-			<!--  plugin>
-				<groupId>de.codecentric</groupId>
-				<artifactId>cxf-spring-boot-starter-maven-plugin</artifactId>
-				<version>1.0.7.RELEASE</version>
-				<executions>
-					<execution>
-						<goals>
-							<goal>generate</goal>
-						</goals>
-					</execution>
-				</executions>
-			</plugin-->
 		</plugins>
 	</build>
 
