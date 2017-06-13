@@ -12,6 +12,7 @@ public class BrisMessageType {
     private URL url;
     private String className;
     private MessageObjectType messageObjectType;
+    private String validationXML;
 
     public URL getUrl() {
         return url;
@@ -37,14 +38,21 @@ public class BrisMessageType {
         this.messageObjectType = messageObjectType;
     }
 
+    public String getValidationXML() {
+        return validationXML;
+    }
+
+    public void setValidationXML(String validationXML) {
+        this.validationXML = validationXML;
+    }
 
     @Override
     public String toString() {
         return "BrisMessageType{" +
                 "url=" + url +
                 ", className='" + className + '\'' +
+                ", messageObjectType=" + messageObjectType +
+                ", validationXML='" + validationXML + '\'' +
                 '}';
     }
-
-
 }
