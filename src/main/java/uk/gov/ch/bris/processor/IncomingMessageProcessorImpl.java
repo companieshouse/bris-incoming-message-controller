@@ -39,7 +39,6 @@ import javax.xml.XMLConstants;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
-import javax.xml.bind.Unmarshaller;
 import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
@@ -70,6 +69,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     @Autowired
     private SenderImpl kafkaProducer;
 
+    private Map<Class, URL> map;
+
 
     /**
      * Save incoming message to mongoDB
@@ -87,7 +88,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                 message.setStatus(STATUS_FAILED);
                 brisIncomingMessageService.save(message);
             } catch (Exception exc) {
-                LOGGER.error("Exception caught updating status to FAILED for message with id" + message.getId());
+                LOGGER.error("Exception caught updating status to FAILED for message with id" + message.getId(), exc);
             }
         }
     }
@@ -142,7 +143,6 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @param brisIncomingMessage
      * @param deliveryBody
      * @return brisIncomingMessage
-     * @throws FaultResponse
      */
     private BRISIncomingMessage attachBinary(BRISIncomingMessage brisIncomingMessage, DeliveryBody deliveryBody) {
 
@@ -155,9 +155,9 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                 dh.writeTo(output);
                 brisIncomingMessage.setData(new Binary(output.toByteArray()));
             } catch (IOException e) {
-                LOGGER.error("IOException ... Unable to Extract binary data from DeliveryBody: "+e);
+                LOGGER.error("IOException ... Unable to Extract binary data from DeliveryBody", e);
             } catch (Exception e) {
-                LOGGER.error("Exception   ... Unable to Extract binary data from DeliveryBody: "+e);
+                LOGGER.error("Exception   ... Unable to Extract binary data from DeliveryBody", e);
             }
 
         }
@@ -167,7 +167,6 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     /**
      * Generate DateTime in ISO-8601 string format
      * @return DateTime
-     * @throws FaultResponse
      */
     public DateTime getDateTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -201,6 +200,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @param xmlMessage
      * @return brisMessageType
      * @throws FaultResponse
+     * @throws JAXBException
      */
     private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse,JAXBException {
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
@@ -213,36 +213,32 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             Schema schema = factory.newSchema(brisMessageType.getUrl());
             Validator validator = schema.newValidator();
             validator.validate(new StreamSource(new StringReader(xmlMessage)));
-
-            return brisMessageType;
         } catch (SAXException e) {
-            LOGGER.error("XSD Validation Error on: "+brisMessageType.getClassName());
+            LOGGER.error("XSD Validation Error caught validating schema brisMessageType=" + brisMessageType, e);
             brisMessageType.setClassName(ValidationError.class.getSimpleName());
             brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageObjectType()));
-            return brisMessageType;
+        } catch (JAXBException e) {
+            LOGGER.error("JAXBException caught validating schema. FaultResponse will be thrown", e);
+            throw new FaultResponse("JAXBException", faultDetail, e);
         } catch (IOException e) {
-            e.printStackTrace();
+            LOGGER.error("IOException caught validating schema. FaultResponse will be thrown", e);
             throw new FaultResponse("IO exception", faultDetail, e);
         }
+
+        return brisMessageType;
     }
 
     /**
      *
      * @param xmlMessage
      * @return BrisMessageType
+     * @throws FaultResponse
+     * @throws JAXBException
      */
-    private BrisMessageType getSchema(String xmlMessage) throws FaultResponse {
-        JAXBContext jaxbContext;
-        MessageObjectType messageObjectType = null;
-        try {
-            jaxbContext = getJaxbContext();
-            Unmarshaller jaxbUnmarshaller = jaxbContext.createUnmarshaller();
-            StringReader reader = new StringReader(xmlMessage);
-            messageObjectType = (MessageObjectType)jaxbUnmarshaller.unmarshal(reader);
-            validateMessageID(messageObjectType);
-        } catch (JAXBException e) {
-            e.printStackTrace();
-        }
+    private BrisMessageType getSchema(String xmlMessage) throws FaultResponse, JAXBException {
+        StringReader reader = new StringReader(xmlMessage);
+        MessageObjectType messageObjectType = (MessageObjectType)getJaxbContext().createUnmarshaller().unmarshal(reader);
+        validateMessageID(messageObjectType);
 
         return getXSDResource(messageObjectType);
 
@@ -260,6 +256,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
             int messageLength=messageObjectType.getMessageHeader().getMessageID().getValue().length();
             if(messageLength < 1 || messageLength > 64 ){
+                LOGGER.warn("Invalid messageLength for messageId. messageLength=" + messageLength + ", messageId=" + messageObjectType.getMessageHeader().getMessageID().getValue());
                 FaultDetail faultDetail = new FaultDetail();
                 faultDetail.setResponseCode("GEN000");
                 faultDetail.setMessage("Validation error: Error while processing messageID ");
@@ -274,24 +271,26 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @return brisMessageType
      */
     private BrisMessageType getXSDResource(MessageObjectType messageObjectType) {
+        if (map == null) {
+            map = new HashMap<>();
+
+            ClassLoader classLoader = getClass().getClassLoader();
+            map.put(BRCompanyDetailsRequest.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_SCHEMA));
+            map.put(BRBranchDisclosureReceptionNotification.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BRANCH_DISCLOSURE_NOTIFICATION_SCHEMA));
+            map.put(BRCrossBorderMergerReceptionNotification.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CRS_BORDER_MERGER_NOTIFICATION_SCHEMA));
+            map.put(BRRetrieveDocumentRequest.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_SCHEMA));
+            map.put(BRConnectivityRequest.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CONNECTION_REQ_SCHEMA));
+            map.put(BRFullUpdateLEDAcknowledgment.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.FULL_UPDATE_LED_ACK_SCHEMA));
+            map.put(BRUpdateLEDStatus.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.UPDATE_LED_STATUS_SCHEMA));
+            map.put(BRCrossBorderMergerReceptionNotificationAcknowledgement.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CROSS_BRDR_MERG_NOTIFICATION_RES_SCHEMA));
+            map.put(BRBusinessError.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BR_BUSINESS_ERR_SCHEMA));
+
+            //TODO below are added for testing purpose
+            map.put(BRCompanyDetailsResponse.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_RESPONSE_SCHEMA));
+            map.put(BRRetrieveDocumentResponse.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_RESPONSE_SCHEMA));
+        }
 
         Class clazz = messageObjectType.getClass();
-        Map<Class, URL> map = new HashMap<>();
-
-        map.put(BRCompanyDetailsRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_SCHEMA));
-        map.put(BRBranchDisclosureReceptionNotification.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BRANCH_DISCLOSURE_NOTIFICATION_SCHEMA));
-        map.put(BRCrossBorderMergerReceptionNotification.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CRS_BORDER_MERGER_NOTIFICATION_SCHEMA));
-        map.put(BRRetrieveDocumentRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_SCHEMA));
-        map.put(BRConnectivityRequest.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CONNECTION_REQ_SCHEMA));
-        map.put(BRFullUpdateLEDAcknowledgment.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.FULL_UPDATE_LED_ACK_SCHEMA));
-        map.put(BRUpdateLEDStatus.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.UPDATE_LED_STATUS_SCHEMA));
-        map.put(BRCrossBorderMergerReceptionNotificationAcknowledgement.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CROSS_BRDR_MERG_NOTIFICATION_RES_SCHEMA));
-        map.put(BRBusinessError.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BR_BUSINESS_ERR_SCHEMA));
-
-        //TODO below are added for testing purpose
-        map.put(BRCompanyDetailsResponse.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants. COMPANY_DETAILS_RESPONSE_SCHEMA ));
-        map.put(BRRetrieveDocumentResponse.class, clazz.getClassLoader().getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants. RETRIEVE_DOCUMENT_RESPONSE_SCHEMA ));
-
         BrisMessageType brisMessageType = new BrisMessageType();
         brisMessageType.setUrl(map.get(clazz));
         brisMessageType.setClassName(clazz.getSimpleName());
