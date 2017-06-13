@@ -65,7 +65,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     private BRISIncomingMessageService brisIncomingMessageService;
 
     @Value("${TEST_MODE}")
-    private int TEST_MODE;
+    private static int TEST_MODE;
 
     @Autowired
     private SenderImpl kafkaProducer;
