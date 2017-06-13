@@ -44,6 +44,7 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
+import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
@@ -215,7 +216,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
             return brisMessageType;
         } catch (SAXException e) {
-            loger.error("XSD Validation Error on: "+brisMessageType.getClassName());
+            LOGGER.error("XSD Validation Error on: "+brisMessageType.getClassName());
             brisMessageType.setClassName(ValidationError.class.getSimpleName());
             brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageObjectType()));
             return brisMessageType;
