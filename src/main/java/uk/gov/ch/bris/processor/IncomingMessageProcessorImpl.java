@@ -141,6 +141,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @param brisIncomingMessage
      * @param deliveryBody
      * @return brisIncomingMessage
+     * @throws FaultResponse
      */
     private BRISIncomingMessage attachBinary(BRISIncomingMessage brisIncomingMessage, DeliveryBody deliveryBody) {
 
@@ -148,7 +149,10 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         if ((BRRetrieveDocumentResponse.class.getSimpleName().equals(brisIncomingMessage.getMessageType()))){
 
             try {
-                brisIncomingMessage.setData(new Binary(IOUtils.toByteArray(deliveryBody.getAttachment().getValue().getInputStream())));
+                ByteArrayOutputStream output = new ByteArrayOutputStream();
+                DataHandler dh =  deliveryBody.getAttachment().getValue();
+                dh.writeTo(output);
+                brisIncomingMessage.setData(new Binary(output.toByteArray()));
             } catch (IOException e) {
                 LOGGER.error("IOException ... Unable to Extract binary data from DeliveryBody: "+e);
             } catch (Exception e) {
@@ -162,6 +166,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     /**
      * Generate DateTime in ISO-8601 string format
      * @return DateTime
+     * @throws FaultResponse
      */
     public DateTime getDateTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
@@ -210,7 +215,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
             return brisMessageType;
         } catch (SAXException e) {
-            LOGGER.error("XSD Validation Error on: "+brisMessageType.getClassName());
+            loger.error("XSD Validation Error on: "+brisMessageType.getClassName());
             brisMessageType.setClassName(ValidationError.class.getSimpleName());
             brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageObjectType()));
             return brisMessageType;
@@ -263,9 +268,9 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     }
 
     /**
-     * ßReturn BrisMessageType based on MessageObjectType
+     *
      * @param messageObjectType
-     * @return BrisMessageType
+     * @return brisMessageType
      */
     private BrisMessageType getXSDResource(MessageObjectType messageObjectType) {
 
