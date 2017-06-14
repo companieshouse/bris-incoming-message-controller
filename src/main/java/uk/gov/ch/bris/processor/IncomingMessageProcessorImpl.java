@@ -1,5 +1,38 @@
 package uk.gov.ch.bris.processor;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
+
+import javax.activation.DataHandler;
+import javax.inject.Inject;
+import javax.xml.XMLConstants;
+import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBException;
+import javax.xml.bind.Marshaller;
+import javax.xml.transform.stream.StreamSource;
+import javax.xml.validation.Schema;
+import javax.xml.validation.SchemaFactory;
+import javax.xml.validation.Validator;
+
+import org.apache.commons.io.IOUtils;
+import org.bson.types.Binary;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.xml.sax.SAXException;
+
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
 import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
@@ -15,17 +48,7 @@ import eu.europa.ec.bris.v140.jaxb.br.led.BRUpdateLEDStatus;
 import eu.europa.ec.bris.v140.jaxb.br.led.full.BRFullUpdateLEDAcknowledgment;
 import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotification;
 import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotificationAcknowledgement;
-import org.apache.commons.io.IOUtils;
-import org.bson.types.Binary;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.xml.sax.SAXException;
+import uk.gov.ch.bris.constants.MongoStatus;
 import uk.gov.ch.bris.constants.ResourcePathConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.domain.BrisMessageType;
@@ -33,32 +56,9 @@ import uk.gov.ch.bris.domain.ValidationError;
 import uk.gov.ch.bris.producer.SenderImpl;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
 
-import javax.activation.DataHandler;
-import javax.inject.Inject;
-import javax.xml.XMLConstants;
-import javax.xml.bind.JAXBContext;
-import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
-import javax.xml.transform.stream.StreamSource;
-import javax.xml.validation.Schema;
-import javax.xml.validation.SchemaFactory;
-import javax.xml.validation.Validator;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
-
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IncomingMessageProcessorImpl.class);
-
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_FAILED = "FAILED";
 
     @Inject
     private BRISIncomingMessageService brisIncomingMessageService;
@@ -82,10 +82,10 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         BRISIncomingMessage message = saveIncomingMessage(deliveryBody);
 
         if (!kafkaProducer.sendMessage(message.getId())) {
-            LOGGER.warn("Could not send message to kafka. Setting status to " + STATUS_FAILED + " for message with id " + message.getId());
+            LOGGER.warn("Could not send message to kafka. Setting status to " + MongoStatus.FAILED + " for message with id " + message.getId());
             try {
                 // Set status to FAILED in MongoDB so that the message will be processed manually
-                message.setStatus(STATUS_FAILED);
+                message.setStatus(MongoStatus.FAILED);
                 brisIncomingMessageService.save(message);
             } catch (Exception exc) {
                 LOGGER.error("Exception caught updating status to FAILED for message with id" + message.getId(), exc);
@@ -119,7 +119,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             String correlationId = brisMessageType.getMessageObjectType().getMessageHeader().getCorrelationID().getValue();
 
             // create brisIncomingMessage Object
-            brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, STATUS_PENDING);
+            brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, MongoStatus.PENDING);
 
             // save brisIncomingMessage Object in Mongo DB
             brisIncomingMessage.setMessageType(brisMessageType.getClassName());
