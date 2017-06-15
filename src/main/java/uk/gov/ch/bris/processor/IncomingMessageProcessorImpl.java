@@ -1,37 +1,13 @@
 package uk.gov.ch.bris.processor;
 
-import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
-import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
-import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
-import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
-import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotification;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsResponse;
-import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentRequest;
-import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
-import eu.europa.ec.bris.v140.jaxb.br.connection.BRConnectivityRequest;
-import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
-import eu.europa.ec.bris.v140.jaxb.br.led.BRUpdateLEDStatus;
-import eu.europa.ec.bris.v140.jaxb.br.led.full.BRFullUpdateLEDAcknowledgment;
-import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotification;
-import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotificationAcknowledgement;
-import org.apache.commons.io.IOUtils;
-import org.bson.types.Binary;
-import org.joda.time.DateTime;
-import org.joda.time.format.DateTimeFormatter;
-import org.joda.time.format.ISODateTimeFormat;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.context.annotation.Bean;
-import org.xml.sax.SAXException;
-import uk.gov.ch.bris.constants.ResourcePathConstants;
-import uk.gov.ch.bris.domain.BRISIncomingMessage;
-import uk.gov.ch.bris.domain.BrisMessageType;
-import uk.gov.ch.bris.domain.ValidationError;
-import uk.gov.ch.bris.producer.SenderImpl;
-import uk.gov.ch.bris.service.BRISIncomingMessageService;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.net.URL;
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Map;
 
 import javax.activation.DataHandler;
 import javax.inject.Inject;
@@ -43,15 +19,30 @@ import javax.xml.transform.stream.StreamSource;
 import javax.xml.validation.Schema;
 import javax.xml.validation.SchemaFactory;
 import javax.xml.validation.Validator;
-import java.io.ByteArrayOutputStream;
-import java.io.IOException;
-import java.io.StringReader;
-import java.io.StringWriter;
-import java.net.URL;
-import java.text.SimpleDateFormat;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
+
+import org.apache.commons.codec.CharEncoding;
+import org.apache.commons.io.IOUtils;
+import org.bson.types.Binary;
+import org.joda.time.DateTime;
+import org.joda.time.format.DateTimeFormatter;
+import org.joda.time.format.ISODateTimeFormat;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.context.annotation.Bean;
+import org.xml.sax.SAXException;
+
+import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
+import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
+import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
+import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
+import uk.gov.ch.bris.domain.BRISIncomingMessage;
+import uk.gov.ch.bris.domain.BrisMessageType;
+import uk.gov.ch.bris.domain.ValidationError;
+import uk.gov.ch.bris.producer.SenderImpl;
+import uk.gov.ch.bris.service.BRISIncomingMessageService;
 
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
@@ -69,8 +60,11 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     @Autowired
     private SenderImpl kafkaProducer;
 
-    private Map<Class, URL> map;
+    private Map<Class<?>, URL> businessRegisterClassMap;
 
+    public IncomingMessageProcessorImpl(Map<Class<?>, URL> businessRegisterClassMap) {
+        this.businessRegisterClassMap = businessRegisterClassMap;
+    }
 
     /**
      * Save incoming message to mongoDB
@@ -271,28 +265,9 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @return brisMessageType
      */
     private BrisMessageType getXSDResource(MessageObjectType messageObjectType) {
-        if (map == null) {
-            map = new HashMap<>();
-
-            ClassLoader classLoader = getClass().getClassLoader();
-            map.put(BRCompanyDetailsRequest.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_SCHEMA));
-            map.put(BRBranchDisclosureReceptionNotification.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BRANCH_DISCLOSURE_NOTIFICATION_SCHEMA));
-            map.put(BRCrossBorderMergerReceptionNotification.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CRS_BORDER_MERGER_NOTIFICATION_SCHEMA));
-            map.put(BRRetrieveDocumentRequest.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_SCHEMA));
-            map.put(BRConnectivityRequest.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CONNECTION_REQ_SCHEMA));
-            map.put(BRFullUpdateLEDAcknowledgment.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.FULL_UPDATE_LED_ACK_SCHEMA));
-            map.put(BRUpdateLEDStatus.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.UPDATE_LED_STATUS_SCHEMA));
-            map.put(BRCrossBorderMergerReceptionNotificationAcknowledgement.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.CROSS_BRDR_MERG_NOTIFICATION_RES_SCHEMA));
-            map.put(BRBusinessError.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.BR_BUSINESS_ERR_SCHEMA));
-
-            //TODO below are added for testing purpose
-            map.put(BRCompanyDetailsResponse.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.COMPANY_DETAILS_RESPONSE_SCHEMA));
-            map.put(BRRetrieveDocumentResponse.class, classLoader.getResource(ResourcePathConstants.XSD_PATH + ResourcePathConstants.RETRIEVE_DOCUMENT_RESPONSE_SCHEMA));
-        }
-
-        Class clazz = messageObjectType.getClass();
+        Class<?> clazz = messageObjectType.getClass();
         BrisMessageType brisMessageType = new BrisMessageType();
-        brisMessageType.setUrl(map.get(clazz));
+        brisMessageType.setUrl(businessRegisterClassMap.get(clazz));
         brisMessageType.setClassName(clazz.getSimpleName());
         brisMessageType.setMessageObjectType(messageObjectType);
 
@@ -312,7 +287,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         DataHandler dataHandler = new DataHandler(deliveryBody.getMessageContent().getValue().getDataSource());
 
         try {
-            xmlMessage = IOUtils.toString(dataHandler.getInputStream());
+            xmlMessage = IOUtils.toString(dataHandler.getInputStream(), CharEncoding.UTF_8);
         } catch (IOException e) {
             faultDetail.setResponseCode("BR-TECH-ERR-0002");
             faultDetail.setMessage("IOException oocured while extracting business message"+e.getLocalizedMessage());
