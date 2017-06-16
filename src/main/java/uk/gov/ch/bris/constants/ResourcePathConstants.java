@@ -13,29 +13,38 @@ public interface ResourcePathConstants {
     
     public static final String XSD_PATH = "xsd/bris/v140/br/";
 
-    public static final String COMPANY_DETAILS_SCHEMA = "BR-CompanyDetailsRequest.xsd";
-    public static final String RETRIEVE_DOCUMENT_SCHEMA = "BR-RetrieveDocumentRequest.xsd";
-    public static final String BRANCH_DISCLOSURE_NOTIFICATION_SCHEMA = "BR-BranchDisclosureReceptionNotificationRequest.xsd";
-    public static final String CRS_BORDER_MERGER_NOTIFICATION_SCHEMA = "BR-CrossBorderMergerReceptionNotificationRequest.xsd";
-    public static final String FULL_UPDATE_LED_ACK_SCHEMA = "BR-FullUpdateLEDResponse.xsd";
-    public static final String UPDATE_LED_STATUS_SCHEMA = "BR-UpdateLEDResponse.xsd";
-    public static final String CONNECTION_REQ_SCHEMA = "BR-ConnectionRequest.xsd";
-    public static final String CROSS_BRDR_MERG_NOTIFICATION_RES_SCHEMA = "BR-CrossBorderMergerReceptionNotificationResponse.xsd";
-    public static final String BR_BUSINESS_ERR_SCHEMA = "BR-BusinessError.xsd";
-    
+    //SCHEMAS
+    //Branch Disclosure
+    public static final String BRANCH_DISCLOSURE_RECEPTION_NOTIFICATION_REQUEST_SCHEMA = "BR-BranchDisclosureReceptionNotificationRequest.xsd";
+    public static final String BRANCH_DISCLOSURE_RECEPTION_NOTIFICATION_RESPONSE_SCHEMA = "BR-BranchDisclosureReceptionNotificationResponse.xsd";
+    public static final String BRANCH_DISCLOSURE_SUBMISSION_NOTIFICATION_REQUEST_SCHEMA = "BR-BranchDisclosureSubmissionNotificationRequest.xsd";
+    public static final String BRANCH_DISCLOSURE_SUBMISSION_NOTIFICATION_RESPONSE_SCHEMA = "BR-BranchDisclosureSubmissionNotificationResponse.xsd";
+    //Business Error
     public static final String BUSINESS_ERROR_SCHEMA = "BR-BusinessError.xsd";
-    public static final String FAULT_SCHEMA = "BR-FaultResponse.xsd";
-    
-    public static final String COMPANY_DETAILS_REQUEST = "BR-CompanyDetailsRequest";
-    public static final String RETRIEVE_DOCUMENT_REQUEST = "BR-RetrieveDocumentRequest";
-    public static final String BRANCH_DISCLOSURE_NOTIFICATION_REQUEST = "BR-BranchDisclosureReceptionNotificationRequest";
-    public static final String CRS_BORDER_MERGER_NOTIFICATION_REQUEST = "BR-CrossBorderMergerReceptionNotificationRequest";
-    public static final String CONNECTION_REQUEST = "BR-ConnectionRequest";
-    
+    //Company details
+    public static final String COMPANY_DETAILS_REQUEST_SCHEMA =  "BR-CompanyDetailsRequest.xsd";
     public static final String COMPANY_DETAILS_RESPONSE_SCHEMA = "BR-CompanyDetailsResponse.xsd";
-    public static final String RETRIEVE_DOCUMENT_RESPONSE_SCHEMA = "BR-RetrieveDocumentResponse.xsd";
-    public static final String BRANCH_DISCLOSURE_NOTIFICATION_RESPONSE_SCHEMA = "BR-BranchDisclosureReceptionNotificationResponse.xsd";
-    public static final String CRS_BORDER_MERGER_NOTIFICATION_RESPONSE_SCHEMA = "BR-CrossBorderMergerReceptionNotificationResponse.xsd";
+    //Connectivity
+    public static final String CONNECTION_REQUEST_SCHEMA = "BR-ConnectionRequest.xsd";
     public static final String CONNECTION_RESPONSE_SCHEMA = "BR-ConnectionResponse.xsd";
+    //Cross Border Merger
+    public static final String CROSS_BORDER_RECEPTION_NOTIFICATION_REQUEST_SCHEMA = "BR-CrossBorderMergerReceptionNotificationRequest.xsd";
+    public static final String CROSS_BORDER_RECEPTION_NOTIFICATION_RESPONSE_SCHEMA = "BR-CrossBorderMergerReceptionNotificationResponse.xsd";
+    public static final String CROSS_BORDER_SUBMISSION_NOTIFICATION_REQUEST_SCHEMA = "BR-CrossBorderMergerSubmissionNotificationRequest.xsd";
+    public static final String CROSS_BORDER_SUBMISSION_NOTIFICATION_RESPONSE_SCHEMA = "BR-CrossBorderMergerSubmissionNotificationResponse.xsd";
+    //Fault Response
+    public static final String FAULT_SCHEMA = "BR-FaultResponse.xsd";
+    //Full Update LED
+    public static final String FULL_UPDATE_LED_REQUEST_SCHEMA = "BR-FullUpdateLEDRequest.xsd";
+    public static final String FULL_UPDATE_LED_RESPONSE_SCHEMA = "BR-FullUpdateLEDResponse.xsd";
+    //Document
+    public static final String RETRIEVE_DOCUMENT_REQUEST_SCHEMA = "BR-RetrieveDocumentRequest.xsd";
+    public static final String RETRIEVE_DOCUMENT_RESPONSE_SCHEMA = "BR-RetrieveDocumentResponse.xsd";
+    //Subscription
+    public static final String SUBSCRIPTION_REQUEST_SCHEMA = "BR-SubscriptionRequest.xsd";
+    public static final String SUBSCRIPTION_RESPONSE_SCHEMA = "BR-SubscriptionResponse.xsd";
+    //Full Update LED
+    public static final String UPDATE_LED_REQUEST_SCHEMA = "BR-UpdateLEDRequest.xsd";
+    public static final String UPDATE_LED_RESPONSE_SCHEMA = "BR-UpdateLEDResponse.xsd";
 
 }
