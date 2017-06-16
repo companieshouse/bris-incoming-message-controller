@@ -38,6 +38,7 @@ import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
 import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
 import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
+import uk.gov.ch.bris.constants.MongoStatus;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.domain.BrisMessageType;
 import uk.gov.ch.bris.domain.ValidationError;
@@ -47,9 +48,6 @@ import uk.gov.ch.bris.service.BRISIncomingMessageService;
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(IncomingMessageProcessorImpl.class);
-
-    private static final String STATUS_PENDING = "PENDING";
-    private static final String STATUS_FAILED = "FAILED";
 
     @Inject
     private BRISIncomingMessageService brisIncomingMessageService;
@@ -76,10 +74,10 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         BRISIncomingMessage message = saveIncomingMessage(deliveryBody);
 
         if (!kafkaProducer.sendMessage(message.getId())) {
-            LOGGER.warn("Could not send message to kafka. Setting status to " + STATUS_FAILED + " for message with id " + message.getId());
+            LOGGER.warn("Could not send message to kafka. Setting status to " + MongoStatus.FAILED + " for message with id " + message.getId());
             try {
                 // Set status to FAILED in MongoDB so that the message will be processed manually
-                message.setStatus(STATUS_FAILED);
+                message.setStatus(MongoStatus.FAILED);
                 brisIncomingMessageService.save(message);
             } catch (Exception exc) {
                 LOGGER.error("Exception caught updating status to FAILED for message with id" + message.getId(), exc);
@@ -113,7 +111,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             String correlationId = brisMessageType.getMessageObjectType().getMessageHeader().getCorrelationID().getValue();
 
             // create brisIncomingMessage Object
-            brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, STATUS_PENDING);
+            brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, MongoStatus.PENDING);
 
             // save brisIncomingMessage Object in Mongo DB
             brisIncomingMessage.setMessageType(brisMessageType.getClassName());
