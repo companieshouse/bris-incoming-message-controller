@@ -6,15 +6,20 @@ import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsResponse;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.bind.Unmarshaller;
+
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
 
 @Configuration
 public class ClientConfiguration {
@@ -22,7 +27,7 @@ public class ClientConfiguration {
     /*---- Constants ---- */
 
     /* ---- Instance Variables ---- */
-    private static final Logger LOGGER = LoggerFactory.getLogger(ClientConfiguration.class);
+    private final static Logger log = LoggerFactory.getLogger();
             
     /* ---- Constructors ---- */
 
@@ -30,6 +35,8 @@ public class ClientConfiguration {
 
     @Bean
 	public JAXBContext jaxbContext() {
+        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
+        
 	  	JAXBContext context = null;
 	   	try {
 	   		context = JAXBContext.newInstance(
@@ -40,7 +47,10 @@ public class ClientConfiguration {
                 Acknowledgement.class
 	   		);
 	   	} catch (JAXBException exception) {
-	   	    LOGGER.error("Couldn't create JAXBContext", exception);
+	   	    Map<String, Object> data = new HashMap<String, Object>();
+            data.put("message", "JAXBException: Couldn't create JAXBContext");
+            
+            log.error(exception, data);
 	   	}
 	   	return context;
 	}

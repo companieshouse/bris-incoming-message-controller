@@ -4,8 +4,6 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
@@ -34,10 +32,15 @@ import uk.gov.ch.bris.constants.ResourcePathConstants;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 import uk.gov.ch.bris.processor.IncomingMessageProcessorImpl;
 
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
+
 @Configuration
 public class IncomingMessageProcessorConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(IncomingMessageProcessorConfig.class);
+    private static final Logger log = LoggerFactory.getLogger();
+    
     /**
      * Bean config for incoming message processor
      * Load schemas for message types into map used by message processor class
@@ -45,6 +48,8 @@ public class IncomingMessageProcessorConfig {
      */
     @Bean
     public IncomingMessageProcessor messageProcessor() {
+        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
+        
         Map<Class<?>, URL>businessRegisterClassMap = new HashMap<>();
 
         ClassLoader classLoader = getClass().getClassLoader();
@@ -90,7 +95,7 @@ public class IncomingMessageProcessorConfig {
         businessRegisterClassMap.put(BRUpdateLEDRequest.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_REQUEST_SCHEMA));
         businessRegisterClassMap.put(BRUpdateLEDStatus.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_RESPONSE_SCHEMA));
 
-        LOGGER.info("Creating class map for BR Messages types: " + businessRegisterClassMap);
+        log.debug("Creating class map for BR Messages types: " + businessRegisterClassMap, new HashMap<String, Object>());
         
         return new IncomingMessageProcessorImpl(businessRegisterClassMap);
     }

@@ -1,15 +1,22 @@
 package uk.gov.ch.bris.util;
 
+import java.util.HashMap;
+
 import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
+
+
 
 public class DecodeBase64 {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DecodeBase64.class);
+    private final static Logger log = LoggerFactory.getLogger();
     
 	public static String decodeInput(String encodedString) {
-		
+	    ((StructuredLogger) log).setNamespace("bris.incoming.controller");
+	    
 		// Get bytes from string
 		byte[] byteArray = Base64.decodeBase64(encodedString.getBytes());
 		
@@ -17,7 +24,8 @@ public class DecodeBase64 {
 		String decodedString = new String(byteArray);
 		
 		// Print the decoded String
-		LOGGER.info(encodedString + " = ");
+		log.debug(encodedString + " = " + encodedString, new HashMap<String, Object>());
+		log.debug(decodedString + " = " + decodedString, new HashMap<String, Object>());
 		
 		return decodedString;
 	}

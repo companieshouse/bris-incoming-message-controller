@@ -1,18 +1,24 @@
 package uk.gov.ch.bris.producer;
 
+import java.util.HashMap;
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.springframework.beans.factory.annotation.Autowired;
 
 import uk.gov.ch.bris.service.KafkaProducerService;
 import uk.gov.ch.bris.transformer.IncomingMessage;
 import uk.gov.companieshouse.kafka.message.Message;
 
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
+
 public class SenderImpl implements Sender {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(SenderImpl.class);
+    private final static Logger log = LoggerFactory.getLogger();
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
@@ -34,7 +40,12 @@ public class SenderImpl implements Sender {
             kafkaProducerService.send(kafkaMessage);
             successful=true;
         } catch (JsonProcessingException jpe) {
-            LOGGER.error("Unable to create kafka message id " + messageId, jpe);
+            ((StructuredLogger) log).setNamespace("bris.incoming.controller");
+            Map<String, Object> data = new HashMap<String, Object>();
+            
+            data.put("message", "Unable to create kafka message id " + messageId);
+            
+            log.error(jpe, data);
 
         }
 

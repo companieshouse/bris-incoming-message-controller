@@ -1,20 +1,23 @@
 package uk.gov.ch.bris.service;
 
-import javax.annotation.PreDestroy;
+import java.util.HashMap;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import javax.annotation.PreDestroy;
 
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
+
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
 
 public class KafkaProducerServiceImpl implements KafkaProducerService {
 
     private CHKafkaProducer producer; 
 
     private static final String BRIS_INCOMING_TOPIC = System.getenv("BRIS_INCOMING_TOPIC");
-    private static final Logger LOGGER = LoggerFactory.getLogger(KafkaProducerServiceImpl.class);    
+    private final static Logger log = LoggerFactory.getLogger();  
 
     /**
      * 
@@ -29,14 +32,18 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
      */
     @Override
     public void send(Message kafkaMessage) {
+        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
+        
         kafkaMessage.setTopic(BRIS_INCOMING_TOPIC);
-        LOGGER.info("Sending kafka message value " + kafkaMessage + " to topic " + kafkaMessage.getTopic());
+        log.debug("Sending kafka message value " + kafkaMessage + " to topic " + kafkaMessage.getTopic(), new HashMap<String, Object>());
         producer.send(kafkaMessage);
     }
     
     @PreDestroy
     public void close() {
-        LOGGER.info("Closing kafka producer");
+        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
+        
+        log.debug("Closing kafka producer", new HashMap<String, Object>());
         producer.close();
     }
 
