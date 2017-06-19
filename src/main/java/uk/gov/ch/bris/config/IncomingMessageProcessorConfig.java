@@ -31,10 +31,8 @@ import eu.europa.ec.bris.v140.jaxb.br.subscription.BRManageSubscriptionStatus;
 import uk.gov.ch.bris.constants.ResourcePathConstants;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 import uk.gov.ch.bris.processor.IncomingMessageProcessorImpl;
-
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 @Configuration
 public class IncomingMessageProcessorConfig {
@@ -48,7 +46,6 @@ public class IncomingMessageProcessorConfig {
      */
     @Bean
     public IncomingMessageProcessor messageProcessor() {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
         
         Map<Class<?>, URL>businessRegisterClassMap = new HashMap<>();
 

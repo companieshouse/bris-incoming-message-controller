@@ -7,10 +7,8 @@ import javax.annotation.PreDestroy;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.kafka.producer.CHKafkaProducer;
 import uk.gov.companieshouse.kafka.producer.ProducerConfig;
-
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 public class KafkaProducerServiceImpl implements KafkaProducerService {
 
@@ -32,7 +30,6 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
      */
     @Override
     public void send(Message kafkaMessage) {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
         
         kafkaMessage.setTopic(BRIS_INCOMING_TOPIC);
         log.debug("Sending kafka message value " + kafkaMessage + " to topic " + kafkaMessage.getTopic(), new HashMap<String, Object>());
@@ -41,7 +38,6 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     
     @PreDestroy
     public void close() {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
         
         log.debug("Closing kafka producer", new HashMap<String, Object>());
         producer.close();

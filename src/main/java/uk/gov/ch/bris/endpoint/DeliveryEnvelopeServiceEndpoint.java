@@ -20,7 +20,6 @@ import eu.domibus.plugin.bris.jaxb.delivery.DeliveryMessageInfoType;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 /**
  * Endpoint Controller class which handles all Business Register requests from ECP.
@@ -48,8 +47,6 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
      */
     @Override
     public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
-        
         log.debug("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID(), new HashMap<String, Object>());
 
         messageProcessor.processIncomingMessage(deliveryBody);
@@ -69,9 +66,8 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
      * @return
      */
     private XMLGregorianCalendar getXMLGregorianCalendarNow() {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
-        
         XMLGregorianCalendar now=null;
+        
         try {
             GregorianCalendar gregorianCalendar = new GregorianCalendar();
             DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();

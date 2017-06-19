@@ -11,10 +11,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import uk.gov.ch.bris.service.KafkaProducerService;
 import uk.gov.ch.bris.transformer.IncomingMessage;
 import uk.gov.companieshouse.kafka.message.Message;
-
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 public class SenderImpl implements Sender {
 
@@ -40,7 +38,7 @@ public class SenderImpl implements Sender {
             kafkaProducerService.send(kafkaMessage);
             successful=true;
         } catch (JsonProcessingException jpe) {
-            ((StructuredLogger) log).setNamespace("bris.incoming.controller");
+            
             Map<String, Object> data = new HashMap<String, Object>();
             
             data.put("message", "Unable to create kafka message id " + messageId);

@@ -9,10 +9,8 @@ import org.springframework.stereotype.Service;
 
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.repository.BRISIncomingMessageRepository;
-
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 /**
  * Service for the BRISIncomingMessage entity.
@@ -46,8 +44,6 @@ public class BRISIncomingMessageService {
      * Saves single BRISIncomingMessage entity from database.
      */
     public BRISIncomingMessage save(BRISIncomingMessage brisIncomingMessage) {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
-        
         log.debug("Saving incoming message " + brisIncomingMessage, new HashMap<String, Object>());
         return brisIncomingMessageRepository.save(brisIncomingMessage);
     }

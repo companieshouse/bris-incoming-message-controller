@@ -45,7 +45,6 @@ import uk.gov.ch.bris.producer.SenderImpl;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
@@ -73,7 +72,6 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @throws FaultResponse
      */
     public void processIncomingMessage(DeliveryBody deliveryBody) throws FaultResponse {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
         
         BRISIncomingMessage message = saveIncomingMessage(deliveryBody);
 
@@ -103,7 +101,6 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      */
     private BRISIncomingMessage saveIncomingMessage(DeliveryBody deliveryBody) throws FaultResponse {
         
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
         BRISIncomingMessage brisIncomingMessage;
 
         try {
@@ -151,8 +148,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @return brisIncomingMessage
      */
     private BRISIncomingMessage attachBinary(BRISIncomingMessage brisIncomingMessage, DeliveryBody deliveryBody) {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
-
+        
         if ((BRRetrieveDocumentResponse.class.getSimpleName().equals(brisIncomingMessage.getMessageType()))){
 
             try {
@@ -214,7 +210,6 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @throws JAXBException
      */
     private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse,JAXBException {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
         
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         FaultDetail faultDetail = new FaultDetail();
@@ -276,7 +271,6 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      */
 
     private void validateMessageID(MessageObjectType messageObjectType) throws FaultResponse {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
         
         if(messageObjectType.getMessageHeader().getMessageID().getValue()!=null){
 
