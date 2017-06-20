@@ -61,7 +61,7 @@ public class BRISIncomingMessage implements Serializable {
     private String message;
 
     @Field("invalid_message")
-    private String invalid_message;
+    private String invalidMessage;
 
     @Field("status")
     private String status;
@@ -105,11 +105,11 @@ public class BRISIncomingMessage implements Serializable {
     }
 
     public String getInvalidMessage() {
-        return invalid_message;
+        return invalidMessage;
     }
 
-    public void setInvalidMessage(String invalid_message_xml) {
-        this.invalid_message = invalid_message_xml;
+    public void setInvalidMessage(String invalid_message) {
+        this.invalidMessage = invalid_message;
     }
 
     public String getStatus() {
