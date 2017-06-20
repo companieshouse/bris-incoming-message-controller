@@ -108,8 +108,8 @@ public class BRISIncomingMessage implements Serializable {
         return invalidMessage;
     }
 
-    public void setInvalidMessage(String invalid_message) {
-        this.invalidMessage = invalid_message;
+    public void setInvalidMessage(String invalidMessage) {
+        this.invalidMessage = invalidMessage;
     }
 
     public String getStatus() {
