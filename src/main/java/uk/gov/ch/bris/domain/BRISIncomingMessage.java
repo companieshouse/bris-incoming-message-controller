@@ -15,27 +15,27 @@ import org.springframework.data.mongodb.core.mapping.Field;
 @ComponentScan
 @Document(collection = "incoming_messages")
 public class BRISIncomingMessage implements Serializable {
-    
+
     private static final long serialVersionUID = 1L;
-    
+
     /** No-args constructor */
     public BRISIncomingMessage() {
     }
-    
+
     /** Constructor */
     public BRISIncomingMessage(String messageId, String correlationId, String message) {
         this.messageId = messageId;
         this.correlationId = correlationId;
         this.message = message;
     }
-    
+
     public BRISIncomingMessage(String messageId, String correlationId, String message, String status) {
         this.messageId = messageId;
         this.correlationId = correlationId;
         this.message = message;
         this.status = status;
     }
-    
+
     public BRISIncomingMessage(String messageId, String correlationId, String message, String status, DateTime timestamp) {
         this.messageId = messageId;
         this.correlationId = correlationId;
@@ -43,7 +43,7 @@ public class BRISIncomingMessage implements Serializable {
         this.status = status;
         this.createdOn = timestamp;
     }
-    
+
     @Id
     private String id;
 
@@ -53,22 +53,25 @@ public class BRISIncomingMessage implements Serializable {
 
     @Field("correlation_id")
     private String correlationId;
-    
+
     @Field("message_type")
     private String messageType;
-    
+
     @Field("message")
     private String message;
-    
+
+    @Field("invalid_message")
+    private String invalid_message;
+
     @Field("status")
     private String status;
-    
+
     @Field("created_on")
     private DateTime createdOn;
-    
+
     @Field("binary_attachment")
     private Binary data;
-    
+
     public String getId() {
         return id;
     }
@@ -92,7 +95,7 @@ public class BRISIncomingMessage implements Serializable {
     public void setCorrelationId(String correlationId) {
         this.correlationId = correlationId;
     }
-    
+
     public String getMessage() {
         return message;
     }
@@ -100,15 +103,23 @@ public class BRISIncomingMessage implements Serializable {
     public void setMessage(String message) {
         this.message = message;
     }
-    
+
+    public String getInvalidMessage() {
+        return invalid_message;
+    }
+
+    public void setInvalidMessage(String invalid_message_xml) {
+        this.invalid_message = invalid_message_xml;
+    }
+
     public String getStatus() {
         return status;
     }
 
     public void setStatus(String status) {
         this.status = status;
-    }    
-    
+    }
+
     public DateTime getCreatedOn() {
         return createdOn;
     }
@@ -116,7 +127,7 @@ public class BRISIncomingMessage implements Serializable {
     public void setCreatedOn(DateTime createdOn) {
         this.createdOn = createdOn;
     }
-    
+
     public String getMessageType() {
         return messageType;
     }
@@ -124,7 +135,7 @@ public class BRISIncomingMessage implements Serializable {
     public void setMessageType(String messageType) {
         this.messageType = messageType;
     }
-    
+
     public Binary getData() {
         return data;
     }
