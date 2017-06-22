@@ -109,8 +109,10 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             // validate xmlMessage with the schema
             BrisMessageType brisMessageType = validateSchema(message);
 
+            String invalidMessage = null;
             //Incase of validation ERROR
             if (brisMessageType.getValidationXML() != null) {
+                invalidMessage = message; // keep track of original message if its invalid so we can still store in mongodb
                 message = brisMessageType.getValidationXML();
             }
 
@@ -120,6 +122,12 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
             // create brisIncomingMessage Object
             brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, MongoStatus.PENDING);
+
+            // keep a record of the invalid xml in mongodb if we have a validation error
+            if (invalidMessage != null) {
+                LOGGER.info("Validation error occurred, storing original message as invalid_message field for message with messageId=" + messageId);
+                brisIncomingMessage.setInvalidMessage(invalidMessage);
+            }
 
             // save brisIncomingMessage Object in Mongo DB
             brisIncomingMessage.setMessageType(brisMessageType.getClassName());
