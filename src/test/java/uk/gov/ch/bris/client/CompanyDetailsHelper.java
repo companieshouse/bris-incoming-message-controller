@@ -1,9 +1,6 @@
 
 package uk.gov.ch.bris.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
@@ -16,8 +13,6 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
 public class CompanyDetailsHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(CompanyDetailsHelper.class);
 
     /* ---- Constants ---- */
 

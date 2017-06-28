@@ -7,9 +7,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
 import eu.europa.ec.bris.v140.jaxb.br.led.full.BRFullUpdateLEDAcknowledgment;
@@ -24,8 +21,6 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
 public class FullUpdateLEDAckDetailsHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(FullUpdateLEDAckDetailsHelper.class);
-
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -36,7 +31,7 @@ public class FullUpdateLEDAckDetailsHelper {
 
     public static BRFullUpdateLEDAcknowledgment newInstance(String correlationId, String messageId,
             String companyRegistrationNumber, String businessRegisterId, String countryCode)
-            throws DatatypeConfigurationException {
+                    throws DatatypeConfigurationException {
 
         BRFullUpdateLEDAcknowledgment request = new BRFullUpdateLEDAcknowledgment();
 

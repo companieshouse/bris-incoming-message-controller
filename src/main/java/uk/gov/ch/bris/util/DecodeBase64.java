@@ -1,26 +1,38 @@
 package uk.gov.ch.bris.util;
 
+import java.util.HashMap;
+
 import org.apache.commons.codec.binary.Base64;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+
+import uk.gov.ch.bris.constants.ServiceConstants;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
+
+
 
 public class DecodeBase64 {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DecodeBase64.class);
-    
-	public static String decodeInput(String encodedString) {
-		
-		// Get bytes from string
-		byte[] byteArray = Base64.decodeBase64(encodedString.getBytes());
-		
-		// Print the decoded string
-		String decodedString = new String(byteArray);
-		
-		// Print the decoded String
-		LOGGER.info(encodedString + " = ");
-		
-		return decodedString;
-	}
+    private final static Logger LOGGER = LoggerFactory.getLogger();
+
+    static {
+        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
+    }
+
+    public static String decodeInput(String encodedString) {
+
+        // Get bytes from string
+        byte[] byteArray = Base64.decodeBase64(encodedString.getBytes());
+
+        // Print the decoded string
+        String decodedString = new String(byteArray);
+
+        // Print the decoded String
+        LOGGER.debug(encodedString + " = " + encodedString, new HashMap<String, Object>());
+        LOGGER.debug(decodedString + " = " + decodedString, new HashMap<String, Object>());
+
+        return decodedString;
+    }
 
 
 }

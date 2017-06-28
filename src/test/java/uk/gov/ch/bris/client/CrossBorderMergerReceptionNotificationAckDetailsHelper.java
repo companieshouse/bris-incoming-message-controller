@@ -7,9 +7,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
 import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotificationAcknowledgement;
@@ -24,8 +21,6 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
 public class CrossBorderMergerReceptionNotificationAckDetailsHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CrossBorderMergerReceptionNotificationAckDetailsHelper.class);
-
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */
@@ -36,9 +31,9 @@ public class CrossBorderMergerReceptionNotificationAckDetailsHelper {
 
     public static BRCrossBorderMergerReceptionNotificationAcknowledgement newInstance(String correlationId,
             String messageId, String companyRegistrationNumber, String businessRegisterId, String countryCode) throws DatatypeConfigurationException {
-        
+
         BRCrossBorderMergerReceptionNotificationAcknowledgement request = new BRCrossBorderMergerReceptionNotificationAcknowledgement();
-        
+
         // Current Time
         GregorianCalendar gregorianCalendar = new GregorianCalendar();
         DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();

@@ -1,15 +1,18 @@
 package uk.gov.ch.bris.service;
 
+import java.util.HashMap;
 import java.util.List;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 
+import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.repository.BRISIncomingMessageRepository;
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
 
 /**
  * Service for the BRISIncomingMessage entity.
@@ -18,10 +21,14 @@ import uk.gov.ch.bris.repository.BRISIncomingMessageRepository;
 @Service
 public class BRISIncomingMessageService {
 
-    final Logger logger = LoggerFactory.getLogger(BRISIncomingMessageService.class);
-
     @Autowired
     private BRISIncomingMessageRepository brisIncomingMessageRepository;
+
+    final static Logger LOGGER = LoggerFactory.getLogger();
+
+    static {
+        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
+    }
 
     /**
      * Find all BRISIncomingMessage entities from database.
@@ -30,7 +37,7 @@ public class BRISIncomingMessageService {
         List<BRISIncomingMessage> brisIncomingMessageEntries = brisIncomingMessageRepository.findAll();
         return brisIncomingMessageEntries;
     }
-    
+
     /**
      * Find one BRISIncomingMessage entity from database using the id
      */
@@ -42,7 +49,7 @@ public class BRISIncomingMessageService {
      * Saves single BRISIncomingMessage entity from database.
      */
     public BRISIncomingMessage save(BRISIncomingMessage brisIncomingMessage) {
-        logger.info("Saving incoming message " + brisIncomingMessage);
+        LOGGER.debug("Saving incoming message " + brisIncomingMessage, new HashMap<String, Object>());
         return brisIncomingMessageRepository.save(brisIncomingMessage);
     }
 
@@ -59,14 +66,14 @@ public class BRISIncomingMessageService {
     public void deleteAll() {
         brisIncomingMessageRepository.deleteAll();
     }
-    
+
     /**
      * Find one BRISIncomingMessage entity from database using the messageId
      */
     public BRISIncomingMessage findByMessageId(String messageId) {
         return brisIncomingMessageRepository.findOneByMessageId(messageId);
     }
-    
-    
+
+
 
 }

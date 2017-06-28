@@ -2,13 +2,13 @@ package uk.gov.ch.bris.endpoint;
 
 
 import java.util.GregorianCalendar;
+import java.util.HashMap;
+import java.util.Map;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import eu.domibus.plugin.bris.endpoint.delivery.DeliveryEnvelopeInterface;
@@ -17,8 +17,11 @@ import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryMessageInfoType;
+import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
-
+import uk.gov.companieshouse.logging.Logger;
+import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
 
 /**
  * Endpoint Controller class which handles all Business Register requests from ECP.
@@ -31,7 +34,11 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
     /*
         logger instance for debug/log any messages.
      */
-    private final Logger LOGGER = LoggerFactory.getLogger(DeliveryEnvelopeServiceEndpoint.class);
+    private final static Logger LOGGER = LoggerFactory.getLogger();
+
+    static {
+        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
+    }
 
     @Autowired
     private IncomingMessageProcessor messageProcessor;
@@ -46,8 +53,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
      */
     @Override
     public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
-        
-        LOGGER.info("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID());
+        LOGGER.debug("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID(), new HashMap<String, Object>());
 
         messageProcessor.processIncomingMessage(deliveryBody);
         Acknowledgement acknowledgement = new Acknowledgement();
@@ -67,14 +73,18 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
      */
     private XMLGregorianCalendar getXMLGregorianCalendarNow() {
         XMLGregorianCalendar now=null;
+
         try {
             GregorianCalendar gregorianCalendar = new GregorianCalendar();
             DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
             now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
 
         } catch (DatatypeConfigurationException exception) {
+            Map<String, Object> data = new HashMap<String, Object>();
 
-            exception.printStackTrace();
+            data.put("message", "Datatype Configuration Exception: unable to create new XML Gregorian Calendar instance");
+
+            LOGGER.error(exception, data);
         }
         return now;
     }

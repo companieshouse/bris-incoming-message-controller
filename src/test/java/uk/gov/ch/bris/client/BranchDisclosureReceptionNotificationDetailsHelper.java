@@ -6,9 +6,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotification;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
@@ -42,8 +39,6 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.PostalCodeType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.ProceedingType;
 
 public class BranchDisclosureReceptionNotificationDetailsHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(BranchDisclosureReceptionNotificationDetailsHelper.class);
 
     /* ---- Constants ---- */
 
@@ -287,16 +282,15 @@ public class BranchDisclosureReceptionNotificationDetailsHelper {
     /* ---- Getters and Setters ---- */
 
     private static XMLGregorianCalendar getXMLGregorianCalendarNow() {
+
         XMLGregorianCalendar now = null;
         try {
             GregorianCalendar gregorianCalendar = new GregorianCalendar();
             DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
             now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
 
-            LOGGER.info("XML Gregorian Calendar instance " + now);
         } catch (DatatypeConfigurationException exception) {
-            LOGGER.error("unable to create new XML Gregorian Calendar instance", "Datatype Configuration Exception",
-                    exception);
+            throw new RuntimeException(exception);
         }
 
         return now;

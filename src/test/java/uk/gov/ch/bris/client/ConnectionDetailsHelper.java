@@ -7,9 +7,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.connection.BRConnectivityRequest;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
@@ -23,8 +20,6 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.DateTimeType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
 public class ConnectionDetailsHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(ConnectionDetailsHelper.class);
 
     /* ---- Constants ---- */
 

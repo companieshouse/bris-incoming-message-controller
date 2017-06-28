@@ -1,9 +1,6 @@
 
 package uk.gov.ch.bris.client;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
@@ -17,8 +14,6 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.DocumentIDType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
 
 public class RetrieveDocumentResponseHelper {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(RetrieveDocumentResponseHelper.class);
 
     /* ---- Constants ---- */
 
