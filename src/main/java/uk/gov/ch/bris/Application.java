@@ -20,13 +20,13 @@ import uk.gov.companieshouse.logging.StructuredLogger;
 @SpringBootApplication(scanBasePackages={"uk.gov.ch.bris"})
 public class Application {
     
-    private final static Logger log = LoggerFactory.getLogger();
+    private final static Logger LOGGER = LoggerFactory.getLogger();
 
 	public static void main(String[] args) {
 		// needed for streaming, see https://java.net/jira/browse/SAAJ-31
 		System.setProperty("saaj.use.mimepull", "true");
 		
-		((StructuredLogger) log).setNamespace("bris.incoming.controller");
+		((StructuredLogger) LOGGER).setNamespace("bris.incoming.controller");
 				
 		SpringApplication.run(Application.class, args);
 	}

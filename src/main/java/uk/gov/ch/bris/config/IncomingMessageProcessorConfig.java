@@ -37,7 +37,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 @Configuration
 public class IncomingMessageProcessorConfig {
 
-    private static final Logger log = LoggerFactory.getLogger();
+    private static final Logger LOGGER = LoggerFactory.getLogger();
     
     /**
      * Bean config for incoming message processor
@@ -92,7 +92,7 @@ public class IncomingMessageProcessorConfig {
         businessRegisterClassMap.put(BRUpdateLEDRequest.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_REQUEST_SCHEMA));
         businessRegisterClassMap.put(BRUpdateLEDStatus.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_RESPONSE_SCHEMA));
 
-        log.debug("Creating class map for BR Messages types: " + businessRegisterClassMap, new HashMap<String, Object>());
+        LOGGER.debug("Creating class map for BR Messages types: " + businessRegisterClassMap, new HashMap<String, Object>());
         
         return new IncomingMessageProcessorImpl(businessRegisterClassMap);
     }

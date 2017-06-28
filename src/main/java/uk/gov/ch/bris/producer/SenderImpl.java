@@ -16,7 +16,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 
 public class SenderImpl implements Sender {
 
-    private final static Logger log = LoggerFactory.getLogger();
+    private final static Logger LOGGER = LoggerFactory.getLogger();
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
@@ -43,7 +43,7 @@ public class SenderImpl implements Sender {
             
             data.put("message", "Unable to create kafka message id " + messageId);
             
-            log.error(jpe, data);
+            LOGGER.error(jpe, data);
 
         }
 

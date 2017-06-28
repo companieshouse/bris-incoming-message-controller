@@ -7,9 +7,6 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
 import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
 import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
@@ -30,10 +27,8 @@ import uk.gov.ch.bris.error.ErrorCode;
 
 public class BusinessErrorDetailsHelper {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BusinessErrorDetailsHelper.class);
-    
     /* ---- Constants ---- */
-    
+
     /* ---- Instance Variables ---- */
 
     /* ---- Constructors ---- */
@@ -41,48 +36,48 @@ public class BusinessErrorDetailsHelper {
     /* ---- Business Methods ---- */
 
     public static BRBusinessError newInstance(
-        String correlationId,
-        String messageId,
-        String companyRegistrationNumber,
-        String businessRegisterId,
-        String countryCode,
-        String strErrorCode) throws DatatypeConfigurationException   {
+            String correlationId,
+            String messageId,
+            String companyRegistrationNumber,
+            String businessRegisterId,
+            String countryCode,
+            String strErrorCode) throws DatatypeConfigurationException   {
 
         BRBusinessError request = new BRBusinessError();
-   
-          //Current Time
-            GregorianCalendar gregorianCalendar = new GregorianCalendar();
-            DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
-            XMLGregorianCalendar now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
-            
-            DateTimeType dateTimeType = new DateTimeType();
-            dateTimeType.setValue(now);
-            
-            request = new BRBusinessError();
-        	request.setMessageHeader(getMessageHeader(correlationId, messageId));
-        	
-            ErrorCode errorCode = ErrorCode.valueOf(strErrorCode);
-            BusinessError businessError = new BusinessError(errorCode);
-            
-        	FaultErrorType errorType = new FaultErrorType();
-            FaultErrorCodeType faultErrorCodeType = new FaultErrorCodeType();
-            FaultErrorDescriptionType faultErrorDescriptionType = new FaultErrorDescriptionType();
-            FaultErrorSourceType faultErrorSourceType = new FaultErrorSourceType();
-            
-            faultErrorCodeType.setValue(businessError.getErrorCode().name());
-            errorType.setFaultErrorCode(faultErrorCodeType);
-            
-            faultErrorDescriptionType.setValue(businessError.getErrorCode().getDescription());
-            errorType.setFaultErrorDescription(faultErrorDescriptionType);
-            
-            faultErrorSourceType.setValue("BR");
-            errorType.setFaultErrorSource(faultErrorSourceType);
-            
-            request.getFaultError().add(errorType);
-            
-       
-        
-    	return request;
+
+        //Current Time
+        GregorianCalendar gregorianCalendar = new GregorianCalendar();
+        DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
+        XMLGregorianCalendar now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
+
+        DateTimeType dateTimeType = new DateTimeType();
+        dateTimeType.setValue(now);
+
+        request = new BRBusinessError();
+        request.setMessageHeader(getMessageHeader(correlationId, messageId));
+
+        ErrorCode errorCode = ErrorCode.valueOf(strErrorCode);
+        BusinessError businessError = new BusinessError(errorCode);
+
+        FaultErrorType errorType = new FaultErrorType();
+        FaultErrorCodeType faultErrorCodeType = new FaultErrorCodeType();
+        FaultErrorDescriptionType faultErrorDescriptionType = new FaultErrorDescriptionType();
+        FaultErrorSourceType faultErrorSourceType = new FaultErrorSourceType();
+
+        faultErrorCodeType.setValue(businessError.getErrorCode().name());
+        errorType.setFaultErrorCode(faultErrorCodeType);
+
+        faultErrorDescriptionType.setValue(businessError.getErrorCode().getDescription());
+        errorType.setFaultErrorDescription(faultErrorDescriptionType);
+
+        faultErrorSourceType.setValue("BR");
+        errorType.setFaultErrorSource(faultErrorSourceType);
+
+        request.getFaultError().add(errorType);
+
+
+
+        return request;
     }
 
     public static BRBusinessError newInstance(
@@ -102,56 +97,56 @@ public class BusinessErrorDetailsHelper {
         MessageIDType messageIDType = new MessageIDType();
         messageIDType.setValue(messageId);
         messageHeaderType.setMessageID(messageIDType);
-        
+
         //***** START --BusinessRegisterReference *******************//
         BusinessRegisterReferenceType businessRegisterReferenceType=new BusinessRegisterReferenceType();
         BusinessRegisterNameType businessRegisterNameType=new BusinessRegisterNameType();
         businessRegisterNameType.setValue("Companies House");
-        
+
         BusinessRegisterIDType businessRegisterIDType=new BusinessRegisterIDType();
-        
+
         //BusinessRegisterID
         businessRegisterIDType.setValue("EW");
-        
+
         //BusinessRegisterCountry Country
         CountryType countryType=new CountryType();
         countryType.setValue("UK");
-        
+
         //set BusinessRegisterID
         businessRegisterReferenceType.setBusinessRegisterID(businessRegisterIDType);
-        
+
         // set BusinessRegisterCountry
         businessRegisterReferenceType.setBusinessRegisterCountry(countryType);
         // TODO BusinessRegisterName??
-        
+
         // set BusinessRegisterReference to CompanyDetailsResponse
         messageHeaderType.setBusinessRegisterReference(businessRegisterReferenceType);
         return messageHeaderType;
     }
 
     private static BusinessRegisterReferenceType businessRegisterReference(String countryCode, String businessRegisterId) {
-    	BusinessRegisterReferenceType businessRegisterReference = new BusinessRegisterReferenceType();
-    	businessRegisterReference.setBusinessRegisterCountry(country(countryCode));
-    	businessRegisterReference.setBusinessRegisterID(businessRegisterId(businessRegisterId));
-    	return businessRegisterReference;
+        BusinessRegisterReferenceType businessRegisterReference = new BusinessRegisterReferenceType();
+        businessRegisterReference.setBusinessRegisterCountry(country(countryCode));
+        businessRegisterReference.setBusinessRegisterID(businessRegisterId(businessRegisterId));
+        return businessRegisterReference;
     }
 
     private static CompanyRegistrationNumberType companyRegistrationNumber(String companyRegNumber) {
-    	CompanyRegistrationNumberType companyRegistrationNumber = new CompanyRegistrationNumberType();
-    	companyRegistrationNumber.setValue(companyRegNumber);
-    	return companyRegistrationNumber;
+        CompanyRegistrationNumberType companyRegistrationNumber = new CompanyRegistrationNumberType();
+        companyRegistrationNumber.setValue(companyRegNumber);
+        return companyRegistrationNumber;
     }
 
     private static CountryType country(String countryCode) {
-    	CountryType country = new CountryType();
-    	country.setValue(countryCode);
-    	return country;
+        CountryType country = new CountryType();
+        country.setValue(countryCode);
+        return country;
     }
 
     private static BusinessRegisterIDType businessRegisterId(String identifier) {
-    	BusinessRegisterIDType businessRegisterId = new BusinessRegisterIDType();
-    	businessRegisterId.setValue(identifier);
-    	return businessRegisterId;
+        BusinessRegisterIDType businessRegisterId = new BusinessRegisterIDType();
+        businessRegisterId.setValue(identifier);
+        return businessRegisterId;
     }
 
     /* ---- Getters and Setters ---- */

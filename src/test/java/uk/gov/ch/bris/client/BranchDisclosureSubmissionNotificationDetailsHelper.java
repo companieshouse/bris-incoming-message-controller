@@ -1,8 +1,6 @@
 package uk.gov.ch.bris.client;
 
 import java.util.GregorianCalendar;
-import java.util.HashMap;
-import java.util.Map;
 
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
@@ -40,13 +38,7 @@ import eu.europa.ec.bris.v140.jaxb.components.basic.PaymentReferenceType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.PostalCodeType;
 import eu.europa.ec.bris.v140.jaxb.components.basic.ProceedingType;
 
-import uk.gov.companieshouse.logging.Logger;
-import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
-
 public class BranchDisclosureSubmissionNotificationDetailsHelper {
-
-    private final static Logger log = LoggerFactory.getLogger();
 
     /* ---- Constants ---- */
 
@@ -278,21 +270,15 @@ public class BranchDisclosureSubmissionNotificationDetailsHelper {
     /* ---- Getters and Setters ---- */
 
     private static XMLGregorianCalendar getXMLGregorianCalendarNow() {
-        ((StructuredLogger) log).setNamespace("bris.incoming.controller");
-        
+
         XMLGregorianCalendar now = null;
         try {
             GregorianCalendar gregorianCalendar = new GregorianCalendar();
             DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
             now = datatypeFactory.newXMLGregorianCalendar(gregorianCalendar);
 
-            log.debug("XML Gregorian Calendar instance " + now, new HashMap<String, Object>());
         } catch (DatatypeConfigurationException exception) {
-            Map<String, Object> data = new HashMap<String, Object>();
-            
-            data.put("message", "Datatype Configuration Exception: unable to create new XML Gregorian Calendar instance");
-            
-            log.error(exception, data);
+            throw new RuntimeException(exception);
         }
 
         return now;

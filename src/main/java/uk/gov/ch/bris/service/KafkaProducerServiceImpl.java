@@ -15,7 +15,7 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     private CHKafkaProducer producer; 
 
     private static final String BRIS_INCOMING_TOPIC = System.getenv("BRIS_INCOMING_TOPIC");
-    private final static Logger log = LoggerFactory.getLogger();  
+    private final static Logger LOGGER = LoggerFactory.getLogger();  
 
     /**
      * 
@@ -32,14 +32,14 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
     public void send(Message kafkaMessage) {
         
         kafkaMessage.setTopic(BRIS_INCOMING_TOPIC);
-        log.debug("Sending kafka message value " + kafkaMessage + " to topic " + kafkaMessage.getTopic(), new HashMap<String, Object>());
+        LOGGER.debug("Sending kafka message value " + kafkaMessage + " to topic " + kafkaMessage.getTopic(), new HashMap<String, Object>());
         producer.send(kafkaMessage);
     }
     
     @PreDestroy
     public void close() {
         
-        log.debug("Closing kafka producer", new HashMap<String, Object>());
+        LOGGER.debug("Closing kafka producer", new HashMap<String, Object>());
         producer.close();
     }
 

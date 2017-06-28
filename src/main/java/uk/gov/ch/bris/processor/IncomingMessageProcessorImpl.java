@@ -48,7 +48,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
-    private final static Logger log = LoggerFactory.getLogger();
+    private final static Logger LOGGER = LoggerFactory.getLogger();
 
     @Inject
     private BRISIncomingMessageService brisIncomingMessageService;
@@ -72,12 +72,12 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @throws FaultResponse
      */
     public void processIncomingMessage(DeliveryBody deliveryBody) throws FaultResponse {
-        
+
         BRISIncomingMessage message = saveIncomingMessage(deliveryBody);
 
         if (!kafkaProducer.sendMessage(message.getId())) {
-            log.debug("Could not send message to kafka. Setting status to " + MongoStatus.FAILED + " for message with id " + message.getId(), new HashMap<String, Object>());
-            
+            LOGGER.debug("Could not send message to kafka. Setting status to " + MongoStatus.FAILED + " for message with id " + message.getId(), new HashMap<String, Object>());
+
             try {
                 // Set status to FAILED in MongoDB so that the message will be processed manually
                 message.setStatus(MongoStatus.FAILED);
@@ -86,8 +86,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("id", message.getId());
                 data.put("message", "Exception caught updating status to FAILED for message with id" + message.getId());
-                
-                log.error(exc, data);
+
+                LOGGER.error(exc, data);
             }
         }
     }
@@ -100,7 +100,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @throws FaultResponse
      */
     private BRISIncomingMessage saveIncomingMessage(DeliveryBody deliveryBody) throws FaultResponse {
-        
+
         BRISIncomingMessage brisIncomingMessage;
 
         try {
@@ -125,7 +125,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
             // keep a record of the invalid xml in mongodb if we have a validation error
             if (invalidMessage != null) {
-                LOGGER.info("Validation error occurred, storing original message as invalid_message field for message with messageId=" + messageId);
+                Map<String, Object> data = new HashMap<String, Object>();
+                LOGGER.debug("Validation error occurred, storing original message as invalid_message field for message with messageId=" + messageId, data);
                 brisIncomingMessage.setInvalidMessage(invalidMessage);
             }
 
@@ -141,8 +142,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         } catch (Exception e) {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("message", "Exception : Sending FaultResponse");
-            
-            log.error(e, data);
+
+            LOGGER.error(e, data);
             throw new FaultResponse("Exception" + e.getMessage(), new FaultDetail(), e);
         }
 
@@ -156,7 +157,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @return brisIncomingMessage
      */
     private BRISIncomingMessage attachBinary(BRISIncomingMessage brisIncomingMessage, DeliveryBody deliveryBody) {
-        
+
         if ((BRRetrieveDocumentResponse.class.getSimpleName().equals(brisIncomingMessage.getMessageType()))){
 
             try {
@@ -167,13 +168,13 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             } catch (IOException e) {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("message", "IOException ... Unable to Extract binary data from DeliveryBody");
-                
-                log.error(e, data);
+
+                LOGGER.error(e, data);
             } catch (Exception e) {
                 Map<String, Object> data = new HashMap<String, Object>();
                 data.put("message", "Exception   ... Unable to Extract binary data from DeliveryBody");
-                
-                log.error(e, data);
+
+                LOGGER.error(e, data);
             }
         }
         return brisIncomingMessage;
@@ -218,13 +219,13 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @throws JAXBException
      */
     private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse,JAXBException {
-        
+
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
         FaultDetail faultDetail = new FaultDetail();
         BrisMessageType brisMessageType = null;
-        
+
         try {
-            log.debug("Validating schema for xml message " + xmlMessage, new HashMap<String, Object>());
+            LOGGER.debug("Validating schema for xml message " + xmlMessage, new HashMap<String, Object>());
             brisMessageType = getSchema(xmlMessage);
 
             Schema schema = factory.newSchema(brisMessageType.getUrl());
@@ -233,23 +234,23 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         } catch (SAXException e) {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("message", "XSD Validation Error caught validating schema brisMessageType=" + brisMessageType);
-            
-            log.error(e, data);
-            
+
+            LOGGER.error(e, data);
+
             brisMessageType.setClassName(ValidationError.class.getSimpleName());
             brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageObjectType()));
-            
+
         } catch (JAXBException e) {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("message", "JAXBException caught validating schema. FaultResponse will be thrown");
-            
-            log.error(e, data);
+
+            LOGGER.error(e, data);
             throw new FaultResponse("JAXBException", faultDetail, e);
         } catch (IOException e) {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("message", "IOException caught validating schema. FaultResponse will be thrown");
-            
-            log.error(e, data);
+
+            LOGGER.error(e, data);
             throw new FaultResponse("IO exception", faultDetail, e);
         }
 
@@ -279,12 +280,12 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      */
 
     private void validateMessageID(MessageObjectType messageObjectType) throws FaultResponse {
-        
+
         if(messageObjectType.getMessageHeader().getMessageID().getValue()!=null){
 
             int messageLength=messageObjectType.getMessageHeader().getMessageID().getValue().length();
             if(messageLength < 1 || messageLength > 64 ){
-                log.debug("Invalid messageLength for messageId. messageLength=" + messageLength + ", messageId=" + messageObjectType.getMessageHeader().getMessageID().getValue(), new HashMap<String, Object>());
+                LOGGER.debug("Invalid messageLength for messageId. messageLength=" + messageLength + ", messageId=" + messageObjectType.getMessageHeader().getMessageID().getValue(), new HashMap<String, Object>());
                 FaultDetail faultDetail = new FaultDetail();
                 faultDetail.setResponseCode("GEN000");
                 faultDetail.setMessage("Validation error: Error while processing messageID ");

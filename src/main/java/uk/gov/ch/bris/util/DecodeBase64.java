@@ -11,7 +11,7 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 
 public class DecodeBase64 {
 
-    private final static Logger log = LoggerFactory.getLogger();
+    private final static Logger LOGGER = LoggerFactory.getLogger();
     
 	public static String decodeInput(String encodedString) {
 	    
@@ -22,8 +22,8 @@ public class DecodeBase64 {
 		String decodedString = new String(byteArray);
 		
 		// Print the decoded String
-		log.debug(encodedString + " = " + encodedString, new HashMap<String, Object>());
-		log.debug(decodedString + " = " + decodedString, new HashMap<String, Object>());
+		LOGGER.debug(encodedString + " = " + encodedString, new HashMap<String, Object>());
+		LOGGER.debug(decodedString + " = " + decodedString, new HashMap<String, Object>());
 		
 		return decodedString;
 	}

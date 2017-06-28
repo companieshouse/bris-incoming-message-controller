@@ -32,7 +32,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
     /*
         logger instance for debug/log any messages.
      */
-    private final static Logger log = LoggerFactory.getLogger();
+    private final static Logger LOGGER = LoggerFactory.getLogger();
 
     @Autowired
     private IncomingMessageProcessor messageProcessor;
@@ -47,7 +47,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
      */
     @Override
     public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
-        log.debug("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID(), new HashMap<String, Object>());
+        LOGGER.debug("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID(), new HashMap<String, Object>());
 
         messageProcessor.processIncomingMessage(deliveryBody);
         Acknowledgement acknowledgement = new Acknowledgement();
@@ -78,7 +78,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
             
             data.put("message", "Datatype Configuration Exception: unable to create new XML Gregorian Calendar instance");
             
-            log.error(exception, data);
+            LOGGER.error(exception, data);
         }
         return now;
     }

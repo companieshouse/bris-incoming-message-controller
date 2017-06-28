@@ -19,9 +19,8 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 @Service
 public class BRISIncomingMessageService {
 
-    //final Logger logger = LoggerFactory.getLogger(BRISIncomingMessageService.class);
-    final static Logger log = LoggerFactory.getLogger();
-    
+    final static Logger LOGGER = LoggerFactory.getLogger();
+
     @Autowired
     private BRISIncomingMessageRepository brisIncomingMessageRepository;
 
@@ -32,7 +31,7 @@ public class BRISIncomingMessageService {
         List<BRISIncomingMessage> brisIncomingMessageEntries = brisIncomingMessageRepository.findAll();
         return brisIncomingMessageEntries;
     }
-    
+
     /**
      * Find one BRISIncomingMessage entity from database using the id
      */
@@ -44,7 +43,7 @@ public class BRISIncomingMessageService {
      * Saves single BRISIncomingMessage entity from database.
      */
     public BRISIncomingMessage save(BRISIncomingMessage brisIncomingMessage) {
-        log.debug("Saving incoming message " + brisIncomingMessage, new HashMap<String, Object>());
+        LOGGER.debug("Saving incoming message " + brisIncomingMessage, new HashMap<String, Object>());
         return brisIncomingMessageRepository.save(brisIncomingMessage);
     }
 
@@ -61,14 +60,14 @@ public class BRISIncomingMessageService {
     public void deleteAll() {
         brisIncomingMessageRepository.deleteAll();
     }
-    
+
     /**
      * Find one BRISIncomingMessage entity from database using the messageId
      */
     public BRISIncomingMessage findByMessageId(String messageId) {
         return brisIncomingMessageRepository.findOneByMessageId(messageId);
     }
-    
-    
+
+
 
 }
