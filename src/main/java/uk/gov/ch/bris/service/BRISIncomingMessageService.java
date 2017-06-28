@@ -7,10 +7,12 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.ComponentScan;
 import org.springframework.stereotype.Service;
 
+import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.repository.BRISIncomingMessageRepository;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
 
 /**
  * Service for the BRISIncomingMessage entity.
@@ -19,10 +21,14 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 @Service
 public class BRISIncomingMessageService {
 
-    final static Logger LOGGER = LoggerFactory.getLogger();
-
     @Autowired
     private BRISIncomingMessageRepository brisIncomingMessageRepository;
+
+    final static Logger LOGGER = LoggerFactory.getLogger();
+
+    static {
+        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
+    }
 
     /**
      * Find all BRISIncomingMessage entities from database.

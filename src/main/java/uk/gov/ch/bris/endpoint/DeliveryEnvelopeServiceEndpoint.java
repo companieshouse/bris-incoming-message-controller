@@ -17,9 +17,11 @@ import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryMessageInfoType;
+import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
 
 /**
  * Endpoint Controller class which handles all Business Register requests from ECP.
@@ -33,6 +35,10 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
         logger instance for debug/log any messages.
      */
     private final static Logger LOGGER = LoggerFactory.getLogger();
+
+    static {
+        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
+    }
 
     @Autowired
     private IncomingMessageProcessor messageProcessor;
@@ -67,7 +73,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
      */
     private XMLGregorianCalendar getXMLGregorianCalendarNow() {
         XMLGregorianCalendar now=null;
-        
+
         try {
             GregorianCalendar gregorianCalendar = new GregorianCalendar();
             DatatypeFactory datatypeFactory = DatatypeFactory.newInstance();
@@ -75,9 +81,9 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
 
         } catch (DatatypeConfigurationException exception) {
             Map<String, Object> data = new HashMap<String, Object>();
-            
+
             data.put("message", "Datatype Configuration Exception: unable to create new XML Gregorian Calendar instance");
-            
+
             LOGGER.error(exception, data);
         }
         return now;

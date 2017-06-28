@@ -38,6 +38,7 @@ import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
 import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
 import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
 import uk.gov.ch.bris.constants.MongoStatus;
+import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.domain.BrisMessageType;
 import uk.gov.ch.bris.domain.ValidationError;
@@ -45,10 +46,15 @@ import uk.gov.ch.bris.producer.SenderImpl;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
 
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger();
+
+    static {
+        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
+    }
 
     @Inject
     private BRISIncomingMessageService brisIncomingMessageService;

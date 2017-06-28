@@ -8,15 +8,21 @@ import org.springframework.beans.factory.annotation.Autowired;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.service.KafkaProducerService;
 import uk.gov.ch.bris.transformer.IncomingMessage;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
+import uk.gov.companieshouse.logging.StructuredLogger;
 
 public class SenderImpl implements Sender {
 
     private final static Logger LOGGER = LoggerFactory.getLogger();
+
+    static {
+        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
+    }
 
     @Autowired
     private KafkaProducerService kafkaProducerService;
@@ -38,11 +44,11 @@ public class SenderImpl implements Sender {
             kafkaProducerService.send(kafkaMessage);
             successful=true;
         } catch (JsonProcessingException jpe) {
-            
+
             Map<String, Object> data = new HashMap<String, Object>();
-            
+
             data.put("message", "Unable to create kafka message id " + messageId);
-            
+
             LOGGER.error(jpe, data);
 
         }
