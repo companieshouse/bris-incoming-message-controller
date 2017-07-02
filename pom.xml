@@ -24,7 +24,7 @@
 		<domibus.bris.jaxb.version>1.0.0-SNAPSHOT</domibus.bris.jaxb.version>
 		<ecp.br.jaxb.version>1.1.0</ecp.br.jaxb.version>
 		<ch.kafka.version>fe0d287</ch.kafka.version>
-        <structured-logging.version>1.0.0-rc1</structured-logging.version>
+        <structured-logging.version>1.1.0-rc1</structured-logging.version>
 	</properties>
 
 	<dependencies>
