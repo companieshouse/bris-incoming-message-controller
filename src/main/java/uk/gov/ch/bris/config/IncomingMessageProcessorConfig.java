@@ -34,16 +34,11 @@ import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 import uk.gov.ch.bris.processor.IncomingMessageProcessorImpl;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 @Configuration
 public class IncomingMessageProcessorConfig {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger();
-
-    static {
-        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
-    }
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceConstants.LOGGER_SERVICE_NAME);
 
     /**
      * Bean config for incoming message processor
@@ -98,7 +93,7 @@ public class IncomingMessageProcessorConfig {
         businessRegisterClassMap.put(BRUpdateLEDRequest.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_REQUEST_SCHEMA));
         businessRegisterClassMap.put(BRUpdateLEDStatus.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_RESPONSE_SCHEMA));
 
-        LOGGER.debug("Creating class map for BR Messages types: " + businessRegisterClassMap, new HashMap<String, Object>());
+        LOGGER.debug("Creating class map for BR Messages types: " + businessRegisterClassMap);
 
         return new IncomingMessageProcessorImpl(businessRegisterClassMap);
     }
