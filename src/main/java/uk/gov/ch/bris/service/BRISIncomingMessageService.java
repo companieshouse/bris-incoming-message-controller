@@ -1,6 +1,5 @@
 package uk.gov.ch.bris.service;
 
-import java.util.HashMap;
 import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -12,7 +11,6 @@ import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.repository.BRISIncomingMessageRepository;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 /**
  * Service for the BRISIncomingMessage entity.
@@ -24,11 +22,7 @@ public class BRISIncomingMessageService {
     @Autowired
     private BRISIncomingMessageRepository brisIncomingMessageRepository;
 
-    final static Logger LOGGER = LoggerFactory.getLogger();
-
-    static {
-        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
-    }
+    final static Logger LOGGER = LoggerFactory.getLogger(ServiceConstants.LOGGER_SERVICE_NAME);
 
     /**
      * Find all BRISIncomingMessage entities from database.
@@ -49,7 +43,7 @@ public class BRISIncomingMessageService {
      * Saves single BRISIncomingMessage entity from database.
      */
     public BRISIncomingMessage save(BRISIncomingMessage brisIncomingMessage) {
-        LOGGER.debug("Saving incoming message " + brisIncomingMessage, new HashMap<String, Object>());
+        LOGGER.debug("Saving incoming message " + brisIncomingMessage);
         return brisIncomingMessageRepository.save(brisIncomingMessage);
     }
 

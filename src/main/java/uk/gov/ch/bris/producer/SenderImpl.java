@@ -14,15 +14,10 @@ import uk.gov.ch.bris.transformer.IncomingMessage;
 import uk.gov.companieshouse.kafka.message.Message;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 public class SenderImpl implements Sender {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger();
-
-    static {
-        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
-    }
+    private final static Logger LOGGER = LoggerFactory.getLogger(ServiceConstants.LOGGER_SERVICE_NAME);
 
     @Autowired
     private KafkaProducerService kafkaProducerService;

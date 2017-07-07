@@ -46,15 +46,10 @@ import uk.gov.ch.bris.producer.SenderImpl;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger();
-
-    static {
-        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
-    }
+    private final static Logger LOGGER = LoggerFactory.getLogger(ServiceConstants.LOGGER_SERVICE_NAME);
 
     @Inject
     private BRISIncomingMessageService brisIncomingMessageService;
@@ -82,7 +77,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         BRISIncomingMessage message = saveIncomingMessage(deliveryBody);
 
         if (!kafkaProducer.sendMessage(message.getId())) {
-            LOGGER.debug("Could not send message to kafka. Setting status to " + MongoStatus.FAILED + " for message with id " + message.getId(), new HashMap<String, Object>());
+            LOGGER.debug("Could not send message to kafka. Setting status to " + MongoStatus.FAILED + " for message with id " + message.getId());
 
             try {
                 // Set status to FAILED in MongoDB so that the message will be processed manually
@@ -231,7 +226,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         BrisMessageType brisMessageType = null;
 
         try {
-            LOGGER.debug("Validating schema for xml message " + xmlMessage, new HashMap<String, Object>());
+            LOGGER.debug("Validating schema for xml message " + xmlMessage);
             brisMessageType = getSchema(xmlMessage);
 
             Schema schema = factory.newSchema(brisMessageType.getUrl());
@@ -291,7 +286,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
             int messageLength=messageObjectType.getMessageHeader().getMessageID().getValue().length();
             if(messageLength < 1 || messageLength > 64 ){
-                LOGGER.debug("Invalid messageLength for messageId. messageLength=" + messageLength + ", messageId=" + messageObjectType.getMessageHeader().getMessageID().getValue(), new HashMap<String, Object>());
+                LOGGER.debug("Invalid messageLength for messageId. messageLength=" + messageLength + ", messageId=" + messageObjectType.getMessageHeader().getMessageID().getValue());
                 FaultDetail faultDetail = new FaultDetail();
                 faultDetail.setResponseCode("GEN000");
                 faultDetail.setMessage("Validation error: Error while processing messageID ");

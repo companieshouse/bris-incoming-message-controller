@@ -21,7 +21,6 @@ import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
-import uk.gov.companieshouse.logging.StructuredLogger;
 
 /**
  * Endpoint Controller class which handles all Business Register requests from ECP.
@@ -34,11 +33,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
     /*
         logger instance for debug/log any messages.
      */
-    private final static Logger LOGGER = LoggerFactory.getLogger();
-
-    static {
-        ((StructuredLogger) LOGGER).setNamespace(ServiceConstants.LOGGER_SERVICE_NAME);
-    }
+    private final static Logger LOGGER = LoggerFactory.getLogger(ServiceConstants.LOGGER_SERVICE_NAME);
 
     @Autowired
     private IncomingMessageProcessor messageProcessor;
@@ -53,7 +48,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
      */
     @Override
     public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
-        LOGGER.debug("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID(), new HashMap<String, Object>());
+        LOGGER.debug("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID());
 
         messageProcessor.processIncomingMessage(deliveryBody);
         Acknowledgement acknowledgement = new Acknowledgement();
