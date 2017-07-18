@@ -23,7 +23,7 @@
 		<logback.version>1.1.6</logback.version>
 		<domibus.bris.jaxb.version>1.0.0-SNAPSHOT</domibus.bris.jaxb.version>
 		<ecp.br.jaxb.version>1.1.0</ecp.br.jaxb.version>
-		<ch.kafka.version>fe0d287</ch.kafka.version>
+		<ch.kafka.version>1.0.2-rc1</ch.kafka.version>
         <structured-logging.version>1.2.0-rc1</structured-logging.version>
 	</properties>
 

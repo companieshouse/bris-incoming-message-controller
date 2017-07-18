@@ -2,6 +2,7 @@ package uk.gov.ch.bris.producer;
 
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 
 import org.springframework.beans.factory.annotation.Autowired;
 
@@ -38,13 +39,13 @@ public class SenderImpl implements Sender {
             kafkaMessage.setValue(value);
             kafkaProducerService.send(kafkaMessage);
             successful=true;
-        } catch (JsonProcessingException jpe) {
+        } catch (JsonProcessingException|InterruptedException|ExecutionException exc) {
 
             Map<String, Object> data = new HashMap<String, Object>();
 
             data.put("message", "Unable to create kafka message id " + messageId);
 
-            LOGGER.error(jpe, data);
+            LOGGER.error(exc, data);
 
         }
 
