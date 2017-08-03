@@ -26,7 +26,7 @@ import uk.gov.ch.bris.error.ErrorCode;
 
 
 public class BusinessErrorDetailsHelper {
-
+ 
     /* ---- Constants ---- */
 
     /* ---- Instance Variables ---- */

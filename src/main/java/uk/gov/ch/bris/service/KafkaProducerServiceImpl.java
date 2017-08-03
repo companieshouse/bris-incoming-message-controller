@@ -1,5 +1,7 @@
 package uk.gov.ch.bris.service;
 
+import java.util.concurrent.ExecutionException;
+
 import javax.annotation.PreDestroy;
 
 import uk.gov.ch.bris.constants.ServiceConstants;
@@ -26,9 +28,11 @@ public class KafkaProducerServiceImpl implements KafkaProducerService {
 
     /**
      * {@inheritDoc}
+     * @throws InterruptedException
+     * @throws ExecutionException
      */
     @Override
-    public void send(Message kafkaMessage) {
+    public void send(Message kafkaMessage) throws ExecutionException, InterruptedException {
 
         kafkaMessage.setTopic(BRIS_INCOMING_TOPIC);
         LOGGER.debug("Sending kafka message value " + kafkaMessage + " to topic " + kafkaMessage.getTopic());
