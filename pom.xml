@@ -111,6 +111,10 @@
 			<id>joinup-releases</id>
 			<url>https://joinup.ec.europa.eu/nexus/content/repositories/releases/</url>
 		</repository>
+        <repository>
+            <id>cefdigital-releases</id>
+            <url>https://ec.europa.eu/cefdigital/artifact/content/repositories/public/</url>
+        </repository>
 		<repository>
 			<id>artifactory-releases</id>
 			<url>http://ch-jenkins-2k8.internal.ch:8081/artifactory/libs-release-local</url>
