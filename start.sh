@@ -24,5 +24,4 @@ else
     source "${APP_DIR}/app_env"
 fi
 
-exec java -jar -Dserver.port="${PORT}" "${APP_DIR}/bris-incoming-message-controller.jar"
-
+exec java ${JAVA_MEM_ARGS} -jar -Dserver.port="${PORT}" "${APP_DIR}/bris-incoming-message-controller.jar"
