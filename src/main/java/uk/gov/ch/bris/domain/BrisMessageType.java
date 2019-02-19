@@ -2,7 +2,7 @@ package uk.gov.ch.bris.domain;
 
 import java.net.URL;
 
-import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
+import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageObjectType;
 
 /**
  * Created by rkumar on 21/04/2017.
