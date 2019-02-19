@@ -35,8 +35,27 @@ import org.xml.sax.SAXException;
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
 import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.request.v1_4.BRBranchDisclosureReceptionNotification;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.response.v1_4.BRBranchDisclosureReceptionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.request.v1_4.BRBranchDisclosureSubmissionNotification;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.response.v1_4.BRBranchDisclosureSubmissionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
+import eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse;
 import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageObjectType;
+import eu.europa.ec.bris.jaxb.br.connection.request.v1_4.BRConnectivityRequest;
+import eu.europa.ec.bris.jaxb.br.connection.response.v1_4.BRConnectivityResponse;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.reception.request.v1_4.BRCrossBorderMergerReceptionNotification;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.reception.response.v1_4.BRCrossBorderMergerReceptionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.request.v1_4.BRCrossBorderMergerSubmissionNotification;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.response.v1_4.BRCrossBorderMergerSubmissionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.document.retrieval.request.v1_4.BRRetrieveDocumentRequest;
 import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocumentResponse;
+import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
+import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
+import eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest;
+import eu.europa.ec.bris.jaxb.br.led.update.response.v1_4.BRUpdateLEDStatus;
+import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
+import eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus;
 import uk.gov.ch.bris.constants.MongoStatus;
 import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
@@ -204,7 +223,18 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     public JAXBContext getJaxbContext() {
         JAXBContext context = null;
         try {
-            context = JAXBContext.newInstance(MessageObjectType.class,ValidationError.class);
+            context = JAXBContext.newInstance(BRBranchDisclosureReceptionNotification.class,
+                    BRBranchDisclosureReceptionNotificationAcknowledgement.class,
+                    BRBranchDisclosureSubmissionNotification.class,
+                    BRBranchDisclosureSubmissionNotificationAcknowledgement.class, BRCompanyDetailsRequest.class,
+                    BRCompanyDetailsResponse.class, BRConnectivityRequest.class, BRConnectivityResponse.class,
+                    BRCrossBorderMergerReceptionNotification.class,
+                    BRCrossBorderMergerReceptionNotificationAcknowledgement.class,
+                    BRCrossBorderMergerSubmissionNotification.class,
+                    BRCrossBorderMergerSubmissionNotificationAcknowledgement.class, BRRetrieveDocumentRequest.class,
+                    BRRetrieveDocumentResponse.class, BRFullUpdateLEDRequest.class, BRFullUpdateLEDAcknowledgment.class,
+                    BRUpdateLEDRequest.class, BRUpdateLEDStatus.class, BRManageSubscriptionRequest.class,
+                    BRManageSubscriptionStatus.class, ValidationError.class);
         } catch (JAXBException exception) {
             exception.printStackTrace();
         }
