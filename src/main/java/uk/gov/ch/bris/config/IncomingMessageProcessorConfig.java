@@ -104,10 +104,10 @@ public class IncomingMessageProcessorConfig {
      * @param schemaName
      * @return URL
      */
-    private URL getURL(ClassLoader classLoader, final String schemaName) {
-        URL url = classLoader.getResource(ResourcePathConstants.XSD_PATH + schemaName);
+    private URL getURL(ClassLoader classLoader, final String schemaPath) {
+        URL url = classLoader.getResource(schemaPath);
         if (url == null) {
-            throw new RuntimeException("Unable to find schema " + ResourcePathConstants.XSD_PATH + schemaName);
+            throw new RuntimeException("Unable to find schema " + schemaPath);
         }
         return url;
     }
