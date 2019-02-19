@@ -1,16 +1,16 @@
 
 package uk.gov.ch.bris.client;
 
-import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
-import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
-import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyRegistrationNumberType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.CorrelationIDType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
+import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
+import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageHeaderType;
+import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
+import eu.europa.ec.bris.jaxb.components.aggregate.v1_4.BusinessRegisterReferenceType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterIDType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterNameType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CompanyRegistrationNumberType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CorrelationIDType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CountryType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.MessageIDType;
 
 public class CompanyDetailsHelper {
 
