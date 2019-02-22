@@ -2,8 +2,6 @@ package uk.gov.ch.bris.domain;
 
 import java.net.URL;
 
-import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageObjectType;
-
 /**
  * Created by rkumar on 21/04/2017.
  */
@@ -11,7 +9,7 @@ public class BrisMessageType {
 
     private URL url;
     private String className;
-    private MessageObjectType messageObjectType;
+    private BrisMessageHeaderType messageHeader;
     private String validationXML;
 
     public URL getUrl() {
@@ -30,12 +28,12 @@ public class BrisMessageType {
         this.className = className;
     }
 
-    public MessageObjectType getMessageObjectType() {
-        return messageObjectType;
+    public BrisMessageHeaderType getMessageHeader() {
+        return messageHeader;
     }
-
-    public void setMessageObjectType(MessageObjectType messageObjectType) {
-        this.messageObjectType = messageObjectType;
+    
+    public void setMessageHeader(BrisMessageHeaderType messageHeader) {
+        this.messageHeader = messageHeader;
     }
 
     public String getValidationXML() {
@@ -51,7 +49,7 @@ public class BrisMessageType {
         return "BrisMessageType{" +
                 "url=" + url +
                 ", className='" + className + '\'' +
-                ", messageObjectType=" + messageObjectType +
+                ", messageHeader=" + messageHeader +
                 ", validationXML='" + validationXML + '\'' +
                 '}';
     }
