@@ -22,6 +22,8 @@ import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.resp
 import eu.europa.ec.bris.jaxb.br.document.retrieval.request.v1_4.BRRetrieveDocumentRequest;
 import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocumentResponse;
 import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.RemoveBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
 import eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest;
@@ -93,6 +95,10 @@ public class IncomingMessageProcessorConfig {
         businessRegisterClassMap.put(BRUpdateLEDRequest.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_REQUEST_SCHEMA));
         businessRegisterClassMap.put(BRUpdateLEDStatus.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_RESPONSE_SCHEMA));
 
+        //Notifications
+        businessRegisterClassMap.put(AddBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_BR_NOTIFICATION_SCHEMA));
+        businessRegisterClassMap.put(RemoveBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_BR_NOTIFICATION_SCHEMA));
+        
         LOGGER.debug("Creating class map for BR Messages types: " + businessRegisterClassMap);
 
         return new IncomingMessageProcessorImpl(businessRegisterClassMap);

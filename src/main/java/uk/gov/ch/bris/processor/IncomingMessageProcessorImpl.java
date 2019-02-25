@@ -50,6 +50,7 @@ import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.requ
 import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.response.v1_4.BRCrossBorderMergerSubmissionNotificationAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.document.retrieval.request.v1_4.BRRetrieveDocumentRequest;
 import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocumentResponse;
+import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
 import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
 import eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest;
@@ -301,25 +302,25 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     private BrisMessageType getSchema(String xmlMessage) throws FaultResponse, JAXBException {
         StringReader reader = new StringReader(xmlMessage);
         Object messageObject = getJaxbContext().createUnmarshaller().unmarshal(reader);
-        
-        BrisMessageHeaderType header;
-        if (messageObject instanceof MessageContainer) {
-            header = createBrisMessageHeaderType((MessageContainer) messageObject);
-        } else if (messageObject instanceof MessageObjectType) {
-            header = createBrisMessageHeaderType((MessageObjectType) messageObject);
-        } else {
-            final String errorMessage = "Error unmarshalling xml message. Unexpected object found "
-                    + messageObject.getClass().getName();
-            Map<String, Object> data = new HashMap<>();
-            data.put("message", errorMessage + ". FaultResponse will be thrown");
 
-            LOGGER.error("Unexpected object found", data);
-            throw new FaultResponse("Unexpected object found", new FaultDetail());
+        if (messageObject instanceof MessageContainer) {
+            return validateCreateBrisMessageType((MessageContainer) messageObject);
         }
-        validateMessageID(header.getMessageId());
-        
-        return createBrisMessageType(messageObject, header);
+
+        if (messageObject instanceof MessageObjectType) {
+            return validateCreateBrisMessageType((MessageObjectType) messageObject);
+        }
+
+        final String errorMessage = "Error unmarshalling xml message. Unexpected object found "
+                + messageObject.getClass().getName();
+        Map<String, Object> data = new HashMap<>();
+        data.put("message", errorMessage + ". FaultResponse will be thrown");
+
+        LOGGER.error("Unexpected object found", data);
+        throw new FaultResponse("Unexpected object found", new FaultDetail());
     }
+    
+    
 
     /**
      * Validates for message id in message header
@@ -341,14 +342,67 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             }
         }
     }
+    
+    /**
+     * Validate message and create BrisMessageType for v1.4 messages
+     * @param messageObject
+     * @return
+     * @throws FaultResponse 
+     */
+    private BrisMessageType validateCreateBrisMessageType(MessageObjectType messageObject) throws FaultResponse {
+        BrisMessageHeaderType header = createBrisMessageHeaderType(messageObject);
+        validateMessageID(header.getMessageId());
+        
+        BrisMessageType brisMessageType = createBrisMessageType(messageObject);
+        brisMessageType.setMessageHeader(header);
+        return brisMessageType;
+    }
+    
+    /**
+     * Validate message and create BrisMessageType for v2.0 messages
+     * @param messageObject
+     * @return
+     * @throws FaultResponse 
+     */
+    private BrisMessageType validateCreateBrisMessageType(MessageContainer messageContainer) throws FaultResponse {
+        BrisMessageHeaderType header = createBrisMessageHeaderType(messageContainer);
+        validateMessageID(header.getMessageId());
+        
+        Object messageObject;
+        Object messageContent;
+        try {
+            messageContent = messageContainer.getContainerBody().getMessageContent().getValue().getContent();
+        } catch (IOException e) {
+            Map<String, Object> data = new HashMap<>();
+            data.put("message", "Error reading MessageContent");
+            LOGGER.error(e, data);
+            
+            throw new FaultResponse("Unexpected object found", new FaultDetail(), e);
+        }
+        if (messageContent instanceof BRNotification) {
+            BRNotification notification = (BRNotification) messageContent;
+            messageObject = notification.getNotificationTemplate().getValue();
+        } else {
+            final String errorMessage = "Unrecognised message content: "
+                    + messageContent.getClass().getName();
+            Map<String, Object> data = new HashMap<>();
+            data.put("message", errorMessage + ". FaultResponse will be thrown");
+
+            LOGGER.error("Unexpected object found", data);
+            throw new FaultResponse("Unexpected object found", new FaultDetail());
+        }
+        
+        BrisMessageType brisMessageType = createBrisMessageType(messageObject);
+        brisMessageType.setMessageHeader(header);
+        return brisMessageType;
+    }
 
 
-    private BrisMessageType createBrisMessageType(Object messageObject, BrisMessageHeaderType header) {
+    private BrisMessageType createBrisMessageType(Object messageObject) {
         Class<?> clazz = messageObject.getClass();
         BrisMessageType brisMessageType = new BrisMessageType();
         brisMessageType.setUrl(businessRegisterClassMap.get(clazz));
         brisMessageType.setClassName(clazz.getSimpleName());
-        brisMessageType.setMessageHeader(header);
         return brisMessageType;
     }
     
