@@ -36,8 +36,8 @@ public class ResourcePathConstants {
     public static final String UPDATE_LED_REQUEST_SCHEMA = "xsd/bris/br/led/update/v1_4_1/BR-UpdateLEDRequest.xsd";
     public static final String UPDATE_LED_RESPONSE_SCHEMA = "xsd/bris/br/led/update/v1_4_1/BR-UpdateLEDResponse.xsd";
     //Notification
-    public static final String ADD_BR_NOTIFICATION_SCHEMA = "/xsd/bris/br/generic/notification/v2_0_0/BR-AddBusinessRegisterNotificationTemplate.xsd";
-    public static final String REMOVE_BR_NOTIFICATION_SCHEMA ="/xsd/bris/br/generic/notification/v2_0_0/BR-RemoveBusinessRegisterNotificationTemplate.xsd";
+    public static final String ADD_BR_NOTIFICATION_SCHEMA = "xsd/bris/br/generic/notification/v2_0_0/BR-AddBusinessRegisterNotificationTemplate.xsd";
+    public static final String REMOVE_BR_NOTIFICATION_SCHEMA ="xsd/bris/br/generic/notification/v2_0_0/BR-RemoveBusinessRegisterNotificationTemplate.xsd";
     
     private ResourcePathConstants() {
         // Hide constructor for utility class
