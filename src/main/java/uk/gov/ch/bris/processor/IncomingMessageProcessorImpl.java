@@ -228,7 +228,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     public JAXBContext getJaxbContext() {
         JAXBContext context = null;
         try {
-            context = JAXBContext.newInstance(BRBranchDisclosureReceptionNotification.class,
+            context = JAXBContext.newInstance(MessageContainer.class, BRBranchDisclosureReceptionNotification.class,
                     BRBranchDisclosureReceptionNotificationAcknowledgement.class,
                     BRBranchDisclosureSubmissionNotification.class,
                     BRBranchDisclosureSubmissionNotificationAcknowledgement.class, BRCompanyDetailsRequest.class,
