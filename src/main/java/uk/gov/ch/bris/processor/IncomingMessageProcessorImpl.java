@@ -74,6 +74,8 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ServiceConstants.LOGGER_SERVICE_NAME);
+    
+    private static final String UNEXPECTED_OBJECT = "Unexpected object found";
 
     @Inject
     private BRISIncomingMessageService brisIncomingMessageService;
@@ -316,8 +318,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         Map<String, Object> data = new HashMap<>();
         data.put("message", errorMessage + ". FaultResponse will be thrown");
 
-        LOGGER.error("Unexpected object found", data);
-        throw new FaultResponse("Unexpected object found", new FaultDetail());
+        LOGGER.error(UNEXPECTED_OBJECT, data);
+        throw new FaultResponse(UNEXPECTED_OBJECT, new FaultDetail());
     }
     
     
@@ -346,7 +348,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     /**
      * Validate message and create BrisMessageType for v1.4 messages
      * @param messageObject
-     * @return
+     * @return BrisMessageType
      * @throws FaultResponse 
      */
     private BrisMessageType validateCreateBrisMessageType(MessageObjectType messageObject) throws FaultResponse {
@@ -360,8 +362,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     
     /**
      * Validate message and create BrisMessageType for v2.0 messages
-     * @param messageObject
-     * @return
+     * @param messageContainer
+     * @return BrisMessageType
      * @throws FaultResponse 
      */
     private BrisMessageType validateCreateBrisMessageType(MessageContainer messageContainer) throws FaultResponse {
@@ -377,7 +379,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             data.put("message", "Error reading MessageContent");
             LOGGER.error(e, data);
             
-            throw new FaultResponse("Unexpected object found", new FaultDetail(), e);
+            throw new FaultResponse(UNEXPECTED_OBJECT, new FaultDetail(), e);
         }
         if (messageContent instanceof BRNotification) {
             BRNotification notification = (BRNotification) messageContent;
@@ -388,8 +390,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             Map<String, Object> data = new HashMap<>();
             data.put("message", errorMessage + ". FaultResponse will be thrown");
 
-            LOGGER.error("Unexpected object found", data);
-            throw new FaultResponse("Unexpected object found", new FaultDetail());
+            LOGGER.error(UNEXPECTED_OBJECT, data);
+            throw new FaultResponse(UNEXPECTED_OBJECT, new FaultDetail());
         }
         
         BrisMessageType brisMessageType = createBrisMessageType(messageObject);
