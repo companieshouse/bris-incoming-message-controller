@@ -38,6 +38,7 @@ package:
 
 .PHONY: dist
 dist: clean build package
+	cp $(artifact_name)-$(version).zip $(artifact_name)-test-$(version).zip
 
 .PHONY: sonar
 sonar:
