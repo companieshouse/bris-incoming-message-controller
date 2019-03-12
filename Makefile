@@ -38,7 +38,10 @@ package:
 
 .PHONY: dist
 dist: clean build package
-	cp $(artifact_name)-$(version).zip $(artifact_name)-test-$(version).zip
+
+.PHONY: dist-ecp
+dist-ecp: dist
+	mv $(artifact_name)-$(version).zip $(artifact_name).ecp-$(version).zip
 
 .PHONY: sonar
 sonar:
