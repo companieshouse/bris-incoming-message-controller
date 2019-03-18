@@ -418,11 +418,13 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                 messageContainer.getContainerHeader().getAddressInfo().getSender().getCountryCode());
         
         MessageInfo.TestData testData = messageContainer.getContainerHeader().getMessageInfo().getTestData();
-        header.getTestData().setCaseId(testData.getTestCaseID());
-        header.getTestData().setConditionId(testData.getTestStepID());
-        header.getTestData().setExecutionId(testData.getTestExecutionID());
-        header.getTestData().setPackageId(testData.getTestPackageID());
-        header.getTestData().setSessionId(testData.getTestSessionID());
+        if (testData != null) {
+            header.getTestData().setCaseId(testData.getTestCaseID());
+            header.getTestData().setConditionId(testData.getTestStepID());
+            header.getTestData().setExecutionId(testData.getTestExecutionID());
+            header.getTestData().setPackageId(testData.getTestPackageID());
+            header.getTestData().setSessionId(testData.getTestSessionID());
+        }
         
         return header;
     }
@@ -435,11 +437,13 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         header.setBusinessRegisterCountry(messageObjectType.getMessageHeader().getBusinessRegisterReference().getBusinessRegisterCountry().getValue());
         
         TestDataType testData = messageObjectType.getMessageHeader().getTestData();
-        header.getTestData().setCaseId(testData.getTestCaseID().getValue());
-        header.getTestData().setConditionId(testData.getTestConditionID().getValue());
-        header.getTestData().setExecutionId(testData.getTestExecutionID().getValue());
-        header.getTestData().setPackageId(testData.getTestPackageID().getValue());
-        header.getTestData().setSessionId(testData.getTestSessionID().getValue());
+        if (testData != null) {
+            header.getTestData().setCaseId(testData.getTestCaseID().getValue());
+            header.getTestData().setConditionId(testData.getTestConditionID().getValue());
+            header.getTestData().setExecutionId(testData.getTestExecutionID().getValue());
+            header.getTestData().setPackageId(testData.getTestPackageID().getValue());
+            header.getTestData().setSessionId(testData.getTestSessionID().getValue());
+        }
         
         return header;
     }
