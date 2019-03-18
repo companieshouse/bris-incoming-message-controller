@@ -40,7 +40,7 @@ import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.respon
 import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.request.v1_4.BRBranchDisclosureSubmissionNotification;
 import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.response.v1_4.BRBranchDisclosureSubmissionNotificationAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
-import eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse;
+import eu.europa.ec.bris.jaxb.br.company.details.response.v2_0.BRCompanyDetailsResponse;
 import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageObjectType;
 import eu.europa.ec.bris.jaxb.br.connection.request.v1_4.BRConnectivityRequest;
 import eu.europa.ec.bris.jaxb.br.connection.response.v1_4.BRConnectivityResponse;
