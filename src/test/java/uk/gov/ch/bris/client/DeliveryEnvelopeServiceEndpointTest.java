@@ -41,7 +41,6 @@ import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.reque
 import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.response.v1_4.BRBranchDisclosureSubmissionNotificationAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse;
-import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageObjectType;
 import eu.europa.ec.bris.jaxb.br.connection.request.v1_4.BRConnectivityRequest;
 import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.reception.request.v1_4.BRCrossBorderMergerReceptionNotification;
 import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.reception.response.v1_4.BRCrossBorderMergerReceptionNotificationAcknowledgement;
@@ -55,6 +54,7 @@ import eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.response.v1_4.BRUpdateLEDStatus;
 import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
 import eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus;
+import eu.europa.ec.digit.message.container.jaxb.v1_0.MessageContainer;
 import uk.gov.ch.bris.endpoint.DeliveryEnvelopeServiceEndpoint;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 
@@ -85,7 +85,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
 
         BRRetrieveDocumentRequest request = RetrieveDocumentDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -108,7 +108,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         attachment.setValue(fileDataHandler);
         body.setAttachment(attachment);
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -122,7 +122,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
 
         BRCompanyDetailsRequest request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
                 "UK");
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -135,7 +135,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         DeliveryBody body = new DeliveryBody();
         BRCompanyDetailsRequest request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "", "EW",
                 "UK");
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -148,7 +148,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         DeliveryBody body = new DeliveryBody();
         BRCompanyDetailsRequest request = CompanyDetailsHelper.newInstance(CORRELATION_ID, null, "0006400", "EW",
                 "UK");
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertNull(ack.getDeliveryMessageInfo().getMessageID());
@@ -163,7 +163,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         BRConnectivityRequest request = ConnectionDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902",
                 "EW", "UK");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -178,7 +178,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         BRBranchDisclosureReceptionNotification request = BranchDisclosureReceptionNotificationDetailsHelper
                 .newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -194,7 +194,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         BRBranchDisclosureSubmissionNotification request = BranchDisclosureSubmissionNotificationDetailsHelper
                 .newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -210,7 +210,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         BRFullUpdateLEDAcknowledgment request = FullUpdateLEDAckDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID,
                 "03977902", "EW", "UK");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -225,7 +225,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         BRUpdateLEDStatus request = UpdateLEDStatusHelper.newInstance(CORRELATION_ID, MESSAGE_ID,
                 "03977902", "EW", "UK");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -240,7 +240,21 @@ public class DeliveryEnvelopeServiceEndpointTest {
         BRBusinessError request = BusinessErrorDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
                 "UK", "ERR_BR_0100");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request);
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+
+        assertNotNull(ack);
+        assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
+        assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
+        verify(messageProcessor).processIncomingMessage(body);
+    }
+    
+    @Test
+    public void sendMessageContainer() throws Exception {
+        DeliveryBody body = new DeliveryBody();
+
+        MessageContainer request = MessageContainerHelper.newAddBRNotification(CORRELATION_ID, MESSAGE_ID, "new-register", "ES");
+
+        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getContainerHeader().getMessageInfo().getMessageID());
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
@@ -248,7 +262,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
         verify(messageProcessor).processIncomingMessage(body);
     }
 
-    private Acknowledgement callDeliveryEnvelopeService(DeliveryBody body, MessageObjectType request) {
+    private Acknowledgement callDeliveryEnvelopeService(DeliveryBody body, Object request, String messageId) {
         Acknowledgement ack = null;
         try (Reader requestStream = marshal(request).getReader()) {
             String xmlMessage = IOUtils.toString(requestStream);
@@ -258,12 +272,6 @@ public class DeliveryEnvelopeServiceEndpointTest {
             message.setValue(dataHandler);
 
             body.setMessageContent(message);
-            
-            String messageId = null;
-            
-            if (request.getMessageHeader().getMessageID() != null) {
-                messageId = request.getMessageHeader().getMessageID().getValue();
-            }
             
             // method under test
             DeliveryHeader deliveryHeader = new DeliveryHeader();
@@ -297,7 +305,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
                 BRCrossBorderMergerSubmissionNotificationAcknowledgement.class, BRManageSubscriptionRequest.class,
                 BRManageSubscriptionStatus.class, BRRetrieveDocumentRequest.class, BRRetrieveDocumentResponse.class,
                 BRUpdateLEDRequest.class, BRUpdateLEDStatus.class, BRFullUpdateLEDAcknowledgment.class, Acknowledgement.class, DeliveryBody.class,
-                SubmissionBody.class, SubmissionHeader.class);
+                SubmissionBody.class, SubmissionHeader.class, MessageContainer.class);
     }
 
 }
