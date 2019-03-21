@@ -258,7 +258,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @throws FaultResponse
      * @throws JAXBException
      */
-    protected BrisMessageType validateSchema(String xmlMessage) throws FaultResponse,JAXBException {
+    private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse,JAXBException {
         URL catalogURL = getClass().getResource("/catalog/bris-uri-catalog.xml");
         XMLCatalogResolver resolver = new XMLCatalogResolver(new String[] {catalogURL.toString()});
         
