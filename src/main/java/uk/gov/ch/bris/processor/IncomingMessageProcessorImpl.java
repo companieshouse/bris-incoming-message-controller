@@ -23,6 +23,7 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.io.IOUtils;
+import org.apache.xerces.util.XMLCatalogResolver;
 import org.bson.types.Binary;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
@@ -258,8 +259,12 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @throws JAXBException
      */
     private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse,JAXBException {
-
+        URL catalogURL = getClass().getResource("/catalog/bris-uri-catalog.xml");
+        XMLCatalogResolver resolver = new XMLCatalogResolver(new String[] {catalogURL.toString()});
+        
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
+        factory.setResourceResolver(resolver);
+        
         BrisMessageType brisMessageType = null;
 
         try {
