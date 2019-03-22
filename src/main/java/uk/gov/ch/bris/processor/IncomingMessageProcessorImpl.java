@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -379,18 +380,24 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         Object messageObject;
         Object messageContent;
         try {
-            messageContent = messageContainer.getContainerBody().getMessageContent().getValue().getContent();
-        } catch (IOException e) {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            messageContainer.getContainerBody().getMessageContent().getValue().writeTo(output);
+            String xmlMessage = new String(output.toByteArray(), StandardCharsets.UTF_8);
+            messageContent = JAXBContext.newInstance(BRNotification.class).createUnmarshaller().unmarshal(new StringReader(xmlMessage));
+        } catch (Exception e) {
             Map<String, Object> data = new HashMap<>();
             data.put("message", "Error reading MessageContent");
             LOGGER.error(e, data);
             
             throw new FaultResponse(UNEXPECTED_OBJECT, new FaultDetail(), e);
         }
+        
         if (messageContent instanceof BRNotification) {
             BRNotification notification = (BRNotification) messageContent;
             messageObject = notification.getNotificationTemplate().getValue();
         } else {
+            // Should never happen as the jaxbcontext only recognises
+            // BRNotification and it would throw an exception when unmarsalling
             final String errorMessage = "Unrecognised message content: "
                     + messageContent.getClass().getName();
             Map<String, Object> data = new HashMap<>();
@@ -404,7 +411,6 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         brisMessageType.setMessageHeader(header);
         return brisMessageType;
     }
-
 
     private BrisMessageType createBrisMessageType(Object messageObject) {
         Class<?> clazz = messageObject.getClass();
