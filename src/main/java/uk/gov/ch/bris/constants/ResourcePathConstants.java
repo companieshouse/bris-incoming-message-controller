@@ -14,7 +14,7 @@ public class ResourcePathConstants {
     public static final String BUSINESS_ERROR_SCHEMA = "xsd/bris/br/error/v1_4_1/BR-BusinessError.xsd";
     //Company details
     public static final String COMPANY_DETAILS_REQUEST_SCHEMA =  "xsd/bris/br/company/details/v1_4_1/BR-CompanyDetailsRequest.xsd";
-    public static final String COMPANY_DETAILS_RESPONSE_SCHEMA = "xsd/bris/br/company/details/v1_4_1/BR-CompanyDetailsResponse.xsd";
+    public static final String COMPANY_DETAILS_RESPONSE_SCHEMA = "xsd/bris/br/company/details/v2_0_0/BR-CompanyDetailsResponse.xsd";
     //Connectivity
     public static final String CONNECTION_REQUEST_SCHEMA = "xsd/bris/br/connection/v1_4_1/BR-ConnectionRequest.xsd";
     public static final String CONNECTION_RESPONSE_SCHEMA = "xsd/bris/br/connection/v1_4_1/BR-ConnectionResponse.xsd";

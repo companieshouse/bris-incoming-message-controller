@@ -274,7 +274,13 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
             Schema schema = factory.newSchema(brisMessageType.getUrl());
             Validator validator = schema.newValidator();
-            validator.validate(new StreamSource(new StringReader(xmlMessage)));
+            
+            String messageToValidate = xmlMessage;
+            if (brisMessageType.getContentString() != null) {
+                // When it the message comes in a MessageContainer, we need to validate its content
+                messageToValidate = brisMessageType.getContentString();
+            }
+            validator.validate(new StreamSource(new StringReader(messageToValidate)));
         } catch (SAXException e) {
             Map<String, Object> data = new HashMap<>();
             data.put("message", "XSD Validation Error caught validating schema brisMessageType=" + brisMessageType);
@@ -379,10 +385,11 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         
         Object messageObject;
         Object messageContent;
+        String xmlMessage;
         try {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             messageContainer.getContainerBody().getMessageContent().getValue().writeTo(output);
-            String xmlMessage = new String(output.toByteArray(), StandardCharsets.UTF_8);
+            xmlMessage = new String(output.toByteArray(), StandardCharsets.UTF_8);
             messageContent = JAXBContext.newInstance(BRNotification.class, BRCompanyDetailsResponse.class).createUnmarshaller().unmarshal(new StringReader(xmlMessage));
         } catch (Exception e) {
             Map<String, Object> data = new HashMap<>();
@@ -402,6 +409,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         
         BrisMessageType brisMessageType = createBrisMessageType(messageObject);
         brisMessageType.setMessageHeader(header);
+        brisMessageType.setContentString(xmlMessage);
         return brisMessageType;
     }
 

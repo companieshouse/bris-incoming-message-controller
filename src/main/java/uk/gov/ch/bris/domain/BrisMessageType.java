@@ -11,6 +11,8 @@ public class BrisMessageType {
     private String className;
     private BrisMessageHeaderType messageHeader;
     private String validationXML;
+    // XML string of the message content - used when content in MessageContainer
+    private String contentString;
 
     public URL getUrl() {
         return url;
@@ -43,6 +45,14 @@ public class BrisMessageType {
     public void setValidationXML(String validationXML) {
         this.validationXML = validationXML;
     }
+    
+    public String getContentString() {
+        return contentString;
+    }
+    
+    public void setContentString(String contentString) {
+        this.contentString = contentString;
+    }
 
     @Override
     public String toString() {
@@ -51,6 +61,7 @@ public class BrisMessageType {
                 ", className='" + className + '\'' +
                 ", messageHeader=" + messageHeader +
                 ", validationXML='" + validationXML + '\'' +
+                ", contentString='" + contentString + '\'' +
                 '}';
     }
 }
