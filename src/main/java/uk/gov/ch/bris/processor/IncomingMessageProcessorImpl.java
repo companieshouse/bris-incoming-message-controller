@@ -383,7 +383,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             messageContainer.getContainerBody().getMessageContent().getValue().writeTo(output);
             String xmlMessage = new String(output.toByteArray(), StandardCharsets.UTF_8);
-            messageContent = JAXBContext.newInstance(BRNotification.class).createUnmarshaller().unmarshal(new StringReader(xmlMessage));
+            messageContent = JAXBContext.newInstance(BRNotification.class, BRCompanyDetailsResponse.class).createUnmarshaller().unmarshal(new StringReader(xmlMessage));
         } catch (Exception e) {
             Map<String, Object> data = new HashMap<>();
             data.put("message", "Error reading MessageContent");
@@ -393,18 +393,11 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         }
         
         if (messageContent instanceof BRNotification) {
+            // Use the template for notification objects
             BRNotification notification = (BRNotification) messageContent;
             messageObject = notification.getNotificationTemplate().getValue();
         } else {
-            // Should never happen as the jaxbcontext only recognises
-            // BRNotification and it would throw an exception when unmarsalling
-            final String errorMessage = "Unrecognised message content: "
-                    + messageContent.getClass().getName();
-            Map<String, Object> data = new HashMap<>();
-            data.put("message", errorMessage + ". FaultResponse will be thrown");
-
-            LOGGER.error(UNEXPECTED_OBJECT, data);
-            throw new FaultResponse(UNEXPECTED_OBJECT, new FaultDetail());
+            messageObject = messageContent;
         }
         
         BrisMessageType brisMessageType = createBrisMessageType(messageObject);
