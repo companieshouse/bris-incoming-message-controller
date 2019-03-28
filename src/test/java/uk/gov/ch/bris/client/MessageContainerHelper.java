@@ -8,16 +8,18 @@ import java.util.GregorianCalendar;
 import javax.activation.DataHandler;
 import javax.mail.util.ByteArrayDataSource;
 import javax.xml.bind.JAXBContext;
+import javax.xml.bind.JAXBElement;
 import javax.xml.bind.JAXBException;
 import javax.xml.bind.Marshaller;
 import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
-import eu.europa.ec.bris.jaxb.br.company.details.response.v2_0.BRCompanyDetailsResponse;
-import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.BRAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
-import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.RemoveBusinessRegisterNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
+import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.NotificationTemplateType;
+import eu.europa.ec.bris.jaxb.components.aggregate.v1_5.BusinessRegisterReference;
 import eu.europa.ec.bris.jaxb.components.aggregate.v1_5.BusinessRegisterType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterCodeType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.CountryType;
@@ -40,7 +42,7 @@ public class MessageContainerHelper {
 
         XMLGregorianCalendar now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
 
-        ObjectFactory factory = new ObjectFactory();
+        eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory factory = new eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory();
         AddBusinessRegisterNotificationTemplateType template = factory.createAddBusinessRegisterNotificationTemplateType();
 
         DateTimeType notificationDate = new DateTimeType();
@@ -56,7 +58,40 @@ public class MessageContainerHelper {
         br.setBusinessRegisterCountry(brCountry);
         template.setBusinessRegister(br);
 
-        return createMessageContainer(correlationId, messageId, now, factory.createAddBusinessRegisterNotificationTemplate(template));
+        return createMessageContainer(correlationId, messageId, now, createNotification(factory.createAddBusinessRegisterNotificationTemplate(template)));
+    }
+    
+    public static MessageContainer newRemoveBRNotification(
+            String correlationId,
+            String messageId,
+            String businessRegisterId,
+            String countryCode) throws Exception {
+
+        XMLGregorianCalendar now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+
+        eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.ObjectFactory factory = new eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.ObjectFactory();
+        RemoveBusinessRegisterNotificationTemplateType template = factory.createRemoveBusinessRegisterNotificationTemplateType();
+
+        DateTimeType notificationDate = new DateTimeType();
+        notificationDate.setValue(now);
+        template.setNotificationDateTime(notificationDate);
+        
+        BusinessRegisterReference br = new BusinessRegisterReference();
+        BusinessRegisterCodeType brCode = new BusinessRegisterCodeType();
+        brCode.setValue(businessRegisterId);
+        br.setBusinessRegisterCode(brCode );
+        CountryType brCountry = new CountryType();
+        brCountry.setValue(countryCode);
+        br.setBusinessRegisterCountry(brCountry);
+        template.setBusinessRegisterReference(br);
+
+        return createMessageContainer(correlationId, messageId, now, createNotification(factory.createRemoveBusinessRegisterNotificationTemplate(template)));
+    }
+    
+    private static BRNotification createNotification(JAXBElement<? extends NotificationTemplateType> template) {
+        BRNotification notification = new BRNotification();
+        notification.setNotificationTemplate(template);
+        return notification;
     }
     
     private static MessageContainer createMessageContainer(String correlationId, String messageId,
@@ -110,7 +145,7 @@ public class MessageContainerHelper {
     private static String marshalToString(Object object) throws JAXBException {
         StringWriter writer = new StringWriter();
 
-        JAXBContext jaxbContext = JAXBContext.newInstance(MessageContainer.class, AddBusinessRegisterNotificationTemplateType.class);
+        JAXBContext jaxbContext = JAXBContext.newInstance(MessageContainer.class, BRNotification.class);
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.marshal(object, writer);
 
