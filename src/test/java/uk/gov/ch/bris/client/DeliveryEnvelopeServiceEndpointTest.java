@@ -1,8 +1,8 @@
 package uk.gov.ch.bris.client;
 
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.assertNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.mockito.Mockito.verify;
 
 import java.io.Reader;
@@ -18,12 +18,12 @@ import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.cxf.helpers.IOUtils;
-import org.junit.Before;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
-import org.mockito.runners.MockitoJUnitRunner;
+import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.beans.factory.annotation.Autowired;
 
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
@@ -58,7 +58,7 @@ import eu.europa.ec.digit.message.container.jaxb.v1_0.MessageContainer;
 import uk.gov.ch.bris.endpoint.DeliveryEnvelopeServiceEndpoint;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
 
-@RunWith(MockitoJUnitRunner.class)
+@ExtendWith(MockitoExtension.class)
 public class DeliveryEnvelopeServiceEndpointTest {
 
     public static String MESSAGE_ID = UUID.randomUUID().toString();
@@ -74,7 +74,7 @@ public class DeliveryEnvelopeServiceEndpointTest {
     @Autowired
     protected Marshaller marshaller;
 
-    @Before
+    @BeforeEach
     public void setup() throws JAXBException {
         marshaller = jaxbContext().createMarshaller();
     }
