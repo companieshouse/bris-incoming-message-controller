@@ -93,7 +93,7 @@ public class IncomingMessageProcessorImplTest {
         final String country = "UK";
         final String xmlMessage = marshal(
                 CompanyDetailsHelper.newInstance(correlationId, messageId, coNum, registerId, country));
-        DeliveryBody deliveryBody = crateDeliveryBody(xmlMessage);
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
 
         when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
 
@@ -127,7 +127,7 @@ public class IncomingMessageProcessorImplTest {
         final String countryCode = "ES";
         final String xmlMessage = marshal(MessageContainerHelper.newAddBRNotification(correlationId, messageId,
                 businessRegisterId, businessRegisterName, countryCode));
-        DeliveryBody deliveryBody = crateDeliveryBody(xmlMessage);
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
 
         when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
 
@@ -171,7 +171,7 @@ public class IncomingMessageProcessorImplTest {
                 "        <testData/>\n" + 
                 "    </header>\n" + 
                 "</validationError>\n";
-        DeliveryBody deliveryBody = crateDeliveryBody(xmlMessage);
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
 
         when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
 
@@ -205,7 +205,7 @@ public class IncomingMessageProcessorImplTest {
         final String country = "UK";
         final String xmlMessage = marshal(
                 CompanyDetailsHelper.newInstance(correlationId, messageId, coNum, registerId, country));
-        DeliveryBody deliveryBody = crateDeliveryBody(xmlMessage);
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
 
         when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(false);
 
@@ -233,7 +233,7 @@ public class IncomingMessageProcessorImplTest {
     @Test
     public void testProcessIncomingMessageFaultResponse() throws Exception{
         final String xmlMessage =  "Invalid message";
-        DeliveryBody deliveryBody = crateDeliveryBody(xmlMessage);
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
 
         assertThrows(FaultResponse.class, () -> processor.processIncomingMessage(deliveryHeader, deliveryBody));
 
@@ -256,7 +256,7 @@ public class IncomingMessageProcessorImplTest {
         return header;
     }
 
-    private static DeliveryBody crateDeliveryBody(String xmlMessage) throws IOException {
+    private static DeliveryBody createDeliveryBody(String xmlMessage) throws IOException {
         MessageContentType content = new MessageContentType();
         content.setValue(new DataHandler(new ByteArrayDataSource(xmlMessage, "text/plain; charset=UTF-8")));
 
