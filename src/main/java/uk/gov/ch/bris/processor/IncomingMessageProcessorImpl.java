@@ -390,7 +390,11 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             ByteArrayOutputStream output = new ByteArrayOutputStream();
             messageContainer.getContainerBody().getMessageContent().getValue().writeTo(output);
             xmlMessage = new String(output.toByteArray(), StandardCharsets.UTF_8);
-            messageContent = JAXBContext.newInstance(BRNotification.class, BRCompanyDetailsResponse.class).createUnmarshaller().unmarshal(new StringReader(xmlMessage));
+            JAXBContext jaxbContext = JAXBContext.newInstance(BRNotification.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.ObjectFactory.class,
+                    BRCompanyDetailsResponse.class);
+            messageContent = jaxbContext.createUnmarshaller().unmarshal(new StringReader(xmlMessage));
         } catch (Exception e) {
             Map<String, Object> data = new HashMap<>();
             data.put("message", "Error reading MessageContent");
