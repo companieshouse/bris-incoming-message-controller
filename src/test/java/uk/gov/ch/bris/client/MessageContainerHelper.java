@@ -24,6 +24,7 @@ import eu.europa.ec.bris.jaxb.components.aggregate.v1_5.BusinessRegisterType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterCodeType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.CountryType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.DateTimeType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.LanguageCodeType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.LocalisedBusinessRegisterNameType;
 import eu.europa.ec.digit.message.container.jaxb.v1_0.ContainerBody;
 import eu.europa.ec.digit.message.container.jaxb.v1_0.ContainerHeader;
@@ -59,7 +60,7 @@ public class MessageContainerHelper {
         brCountry.setValue(countryCode);
         br.setBusinessRegisterCountry(brCountry);
         LocalisedBusinessRegisterNameType brName = new LocalisedBusinessRegisterNameType();
-        brName.setLanguageID("EN");
+        brName.setLanguageID(LanguageCodeType.EN.value());
         brName.setValue(businessRegisterName);
         br.getLocalisedBusinessRegisterName().add(brName);
         template.setBusinessRegister(br);
