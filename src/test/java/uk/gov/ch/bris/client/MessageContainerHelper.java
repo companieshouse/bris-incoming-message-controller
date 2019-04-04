@@ -24,6 +24,7 @@ import eu.europa.ec.bris.jaxb.components.aggregate.v1_5.BusinessRegisterType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterCodeType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.CountryType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.DateTimeType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.LocalisedBusinessRegisterNameType;
 import eu.europa.ec.digit.message.container.jaxb.v1_0.ContainerBody;
 import eu.europa.ec.digit.message.container.jaxb.v1_0.ContainerHeader;
 import eu.europa.ec.digit.message.container.jaxb.v1_0.ContainerHeader.AddressInfo;
@@ -38,6 +39,7 @@ public class MessageContainerHelper {
             String correlationId,
             String messageId,
             String businessRegisterId,
+            String businessRegisterName,
             String countryCode) throws Exception {
 
         XMLGregorianCalendar now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
@@ -52,10 +54,14 @@ public class MessageContainerHelper {
         BusinessRegisterType br = new BusinessRegisterType();
         BusinessRegisterCodeType brCode = new BusinessRegisterCodeType();
         brCode.setValue(businessRegisterId);
-        br.setBusinessRegisterCode(brCode );
+        br.setBusinessRegisterCode(brCode);
         CountryType brCountry = new CountryType();
         brCountry.setValue(countryCode);
         br.setBusinessRegisterCountry(brCountry);
+        LocalisedBusinessRegisterNameType brName = new LocalisedBusinessRegisterNameType();
+        brName.setLanguageID("EN");
+        brName.setValue(businessRegisterName);
+        br.getLocalisedBusinessRegisterName().add(brName);
         template.setBusinessRegister(br);
 
         return createMessageContainer(correlationId, messageId, now, createNotification(factory.createAddBusinessRegisterNotificationTemplate(template)));
@@ -110,11 +116,16 @@ public class MessageContainerHelper {
         messageInfo.setTimestamp(timestamp);
         header.setMessageInfo(messageInfo);
         
-        AddressInfo addressInfo = new AddressInfo();
         PartyType receiver = new PartyType();
         receiver.setCountryCode("UK");
         receiver.setCode("EW");
+        PartyType sender = new PartyType();
+        sender.setCountryCode("EU");
+        sender.setCode("BRIS");
+        
+        AddressInfo addressInfo = new AddressInfo();
         addressInfo.setReceiver(receiver);
+        addressInfo.setSender(sender);
         header.setAddressInfo(addressInfo);
         return header;
     }

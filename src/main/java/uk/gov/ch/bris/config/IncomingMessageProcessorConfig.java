@@ -50,6 +50,14 @@ public class IncomingMessageProcessorConfig {
     @Bean
     public IncomingMessageProcessor messageProcessor() {
 
+        Map<Class<?>, URL> businessRegisterClassMap = getBusinessRegisterClassMap();
+        
+        LOGGER.debug("Creating class map for BR Messages types: " + businessRegisterClassMap);
+
+        return new IncomingMessageProcessorImpl(businessRegisterClassMap);
+    }
+    
+    public Map<Class<?>, URL> getBusinessRegisterClassMap() {
         Map<Class<?>, URL>businessRegisterClassMap = new HashMap<>();
 
         ClassLoader classLoader = getClass().getClassLoader();
@@ -99,9 +107,7 @@ public class IncomingMessageProcessorConfig {
         businessRegisterClassMap.put(AddBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_BR_NOTIFICATION_SCHEMA));
         businessRegisterClassMap.put(RemoveBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_BR_NOTIFICATION_SCHEMA));
         
-        LOGGER.debug("Creating class map for BR Messages types: " + businessRegisterClassMap);
-
-        return new IncomingMessageProcessorImpl(businessRegisterClassMap);
+        return businessRegisterClassMap;
     }
 
     /**

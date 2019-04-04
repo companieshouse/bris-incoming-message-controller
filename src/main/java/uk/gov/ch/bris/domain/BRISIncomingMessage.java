@@ -24,23 +24,19 @@ public class BRISIncomingMessage implements Serializable {
 
     /** Constructor */
     public BRISIncomingMessage(String messageId, String correlationId, String message) {
+        this();
         this.messageId = messageId;
         this.correlationId = correlationId;
         this.message = message;
     }
 
     public BRISIncomingMessage(String messageId, String correlationId, String message, String status) {
-        this.messageId = messageId;
-        this.correlationId = correlationId;
-        this.message = message;
+        this(messageId, correlationId, message);
         this.status = status;
     }
 
     public BRISIncomingMessage(String messageId, String correlationId, String message, String status, DateTime timestamp) {
-        this.messageId = messageId;
-        this.correlationId = correlationId;
-        this.message = message;
-        this.status = status;
+        this(messageId, correlationId, message, status);
         this.createdOn = timestamp;
     }
 
@@ -53,6 +49,12 @@ public class BRISIncomingMessage implements Serializable {
 
     @Field("correlation_id")
     private String correlationId;
+    
+    @Field("sender")
+    private String sender;
+    
+    @Field("receiver")
+    private String receiver;
 
     @Field("message_type")
     private String messageType;
@@ -94,6 +96,22 @@ public class BRISIncomingMessage implements Serializable {
 
     public void setCorrelationId(String correlationId) {
         this.correlationId = correlationId;
+    }
+
+    public String getSender() {
+        return sender;
+    }
+
+    public void setSender(String sender) {
+        this.sender = sender;
+    }
+
+    public String getReceiver() {
+        return receiver;
+    }
+
+    public void setReceiver(String receiver) {
+        this.receiver = receiver;
     }
 
     public String getMessage() {
@@ -171,6 +189,8 @@ public class BRISIncomingMessage implements Serializable {
                 "_id=" + id +
                 ", messageId='" + messageId + "'" +
                 ", correlationId='" + correlationId + "'" +
+                ", sender='" + sender + "'" +
+                ", receiver='" + receiver + "'" +
                 ", messageType='" + messageType + "'" +
                 ", message='" + message + "'" +
                 ", status='" + status + "'" +

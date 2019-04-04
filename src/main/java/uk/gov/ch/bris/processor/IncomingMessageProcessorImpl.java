@@ -29,13 +29,13 @@ import org.bson.types.Binary;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.xml.sax.SAXException;
 
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
 import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
 import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.request.v1_4.BRBranchDisclosureReceptionNotification;
 import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.response.v1_4.BRBranchDisclosureReceptionNotificationAcknowledgement;
@@ -69,7 +69,7 @@ import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.domain.BrisMessageHeaderType;
 import uk.gov.ch.bris.domain.BrisMessageType;
 import uk.gov.ch.bris.domain.ValidationError;
-import uk.gov.ch.bris.producer.SenderImpl;
+import uk.gov.ch.bris.producer.Sender;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -86,8 +86,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     @Value("${TEST_MODE}")
     private static int TEST_MODE;
 
-    @Autowired
-    private SenderImpl kafkaProducer;
+    @Inject
+    private Sender kafkaProducer;
 
     private Map<Class<?>, URL> businessRegisterClassMap;
 
@@ -98,12 +98,14 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     /**
      * Save incoming message to mongoDB
      * Send relevant messageId to kafka incoming topic
+     * @param deliveryHeader
      * @param deliveryBody
      * @throws FaultResponse
      */
-    public void processIncomingMessage(DeliveryBody deliveryBody) throws FaultResponse {
+    @Override
+    public void processIncomingMessage(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
 
-        BRISIncomingMessage message = saveIncomingMessage(deliveryBody);
+        BRISIncomingMessage message = saveIncomingMessage(deliveryHeader, deliveryBody);
 
         if (!kafkaProducer.sendMessage(message.getId())) {
             LOGGER.debug("Could not send message to kafka. Setting status to " + MongoStatus.FAILED + " for message with id " + message.getId());
@@ -125,11 +127,12 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
     /**
      * Save incoming message to mongoDB
+     * @param deliveryHeader
      * @param deliveryBody
      * @return BRISIncomingMessage
      * @throws FaultResponse
      */
-    private BRISIncomingMessage saveIncomingMessage(DeliveryBody deliveryBody) throws FaultResponse {
+    private BRISIncomingMessage saveIncomingMessage(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
 
         BRISIncomingMessage brisIncomingMessage;
 
@@ -152,6 +155,9 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
             // create brisIncomingMessage Object
             brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, MongoStatus.PENDING);
+            
+            brisIncomingMessage.setSender(deliveryHeader.getAddressInfo().getSender().getId());
+            brisIncomingMessage.setReceiver(deliveryHeader.getAddressInfo().getReceiver().getId());
 
             // keep a record of the invalid xml in mongodb if we have a validation error
             if (invalidMessage != null) {
@@ -214,7 +220,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * Generate DateTime in ISO-8601 string format
      * @return DateTime
      */
-    public DateTime getDateTime() {
+    protected DateTime getDateTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         Date dt = new Date();
         String strDt = sdf.format(dt);
@@ -506,5 +512,21 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         StringWriter sw = new StringWriter();
         jaxbMarshaller.marshal(validationError, sw);
         return sw.toString();
+    }
+
+    protected BRISIncomingMessageService getBrisIncomingMessageService() {
+        return brisIncomingMessageService;
+    }
+
+    protected void setBrisIncomingMessageService(BRISIncomingMessageService brisIncomingMessageService) {
+        this.brisIncomingMessageService = brisIncomingMessageService;
+    }
+
+    protected Sender getKafkaProducer() {
+        return kafkaProducer;
+    }
+
+    protected void setKafkaProducer(Sender kafkaProducer) {
+        this.kafkaProducer = kafkaProducer;
     }
 }
