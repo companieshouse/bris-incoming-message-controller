@@ -426,7 +426,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
         header.setMessageId(messageContainer.getContainerHeader().getMessageInfo().getMessageID());
         header.setCorrelationId(messageContainer.getContainerHeader().getMessageInfo().getCorrelationID());
-        header.setBusinessRegisterId(messageContainer.getContainerHeader().getAddressInfo().getSender().getId());
+        header.setBusinessRegisterId(messageContainer.getContainerHeader().getAddressInfo().getSender().getCode());
         header.setBusinessRegisterCountry(
                 messageContainer.getContainerHeader().getAddressInfo().getSender().getCountryCode());
         
