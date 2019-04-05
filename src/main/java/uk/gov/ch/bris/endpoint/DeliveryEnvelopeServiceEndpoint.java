@@ -50,7 +50,7 @@ public class DeliveryEnvelopeServiceEndpoint implements DeliveryEnvelopeInterfac
     public Acknowledgement submit(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
         LOGGER.debug("deliveryHeader.getDeliveryMessageInfo().getMessageID() :"+deliveryHeader.getDeliveryMessageInfo().getMessageID());
 
-        messageProcessor.processIncomingMessage(deliveryBody);
+        messageProcessor.processIncomingMessage(deliveryHeader, deliveryBody);
         Acknowledgement acknowledgement = new Acknowledgement();
         DeliveryMessageInfoType messageInfo = new DeliveryMessageInfoType();
         messageInfo.setMessageID(deliveryHeader.getDeliveryMessageInfo().getMessageID());

@@ -13,20 +13,17 @@ import javax.activation.DataHandler;
 import javax.mail.util.ByteArrayDataSource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
-import javax.xml.bind.Marshaller;
 import javax.xml.transform.stream.StreamSource;
 
 import org.apache.commons.io.output.StringBuilderWriter;
 import org.apache.cxf.helpers.IOUtils;
-import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.beans.factory.annotation.Autowired;
 
-import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
 import eu.domibus.plugin.bris.jaxb.aggregate.AttachmentType;
 import eu.domibus.plugin.bris.jaxb.aggregate.MessageContentType;
 import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
@@ -71,31 +68,32 @@ public class DeliveryEnvelopeServiceEndpointTest {
     @InjectMocks
     protected DeliveryEnvelopeServiceEndpoint deliveryEnvelopeServiceEndpoint;
     
-    @Autowired
-    protected Marshaller marshaller;
+    protected static JAXBContext jaxbContext;
 
-    @BeforeEach
-    public void setup() throws JAXBException {
-        marshaller = jaxbContext().createMarshaller();
+    @BeforeAll
+    public static void setup() throws JAXBException {
+        jaxbContext = jaxbContext();
     }
     
     @Test
     public void sendDocumentDetailsRequestMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRRetrieveDocumentRequest request = RetrieveDocumentDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
 
     @Test
     public void sendDocumentDetailsResponseMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRRetrieveDocumentResponse request = RetrieveDocumentResponseHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902",
                 "EW", "UK", DOC_ID);
@@ -108,162 +106,171 @@ public class DeliveryEnvelopeServiceEndpointTest {
         attachment.setValue(fileDataHandler);
         body.setAttachment(attachment);
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
 
     @Test
     public void sendCompanyDetailsRequestMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRCompanyDetailsRequest request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
                 "UK");
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
     
     @Test
-    public void sendCompanyDetailsRequestMessageWithNOCompanyReg() throws FaultResponse {
+    public void sendCompanyDetailsRequestMessageWithNOCompanyReg() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
         BRCompanyDetailsRequest request = CompanyDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "", "EW",
                 "UK");
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
 
     @Test
-    public void sendMesssageWithoutMessageId() throws FaultResponse {
+    public void sendMesssageWithoutMessageId() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(null);
         BRCompanyDetailsRequest request = CompanyDetailsHelper.newInstance(CORRELATION_ID, null, "0006400", "EW",
                 "UK");
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertNull(ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
 
     @Test
     public void sendConnectionDetailsRequestMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRConnectivityRequest request = ConnectionDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902",
                 "EW", "UK");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
 
     @Test
     public void sendBranchDisclosureReceptionNotificationDetailsRequestMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRBranchDisclosureReceptionNotification request = BranchDisclosureReceptionNotificationDetailsHelper
                 .newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
 
     }
 
     @Test
     public void sendBranchDisclosureSubmissionNotificationDetailsRequestMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRBranchDisclosureSubmissionNotification request = BranchDisclosureSubmissionNotificationDetailsHelper
                 .newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW", "UK", DOC_ID);
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
 
     }
 
     @Test
     public void sendFullUpdateLEDAcknowledgmentMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRFullUpdateLEDAcknowledgment request = FullUpdateLEDAckDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID,
                 "03977902", "EW", "UK");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
 
     @Test
     public void sendUpdateLEDStatusMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRUpdateLEDStatus request = UpdateLEDStatusHelper.newInstance(CORRELATION_ID, MESSAGE_ID,
                 "03977902", "EW", "UK");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
 
     @Test
     public void sendBusinessErrorMessage() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
         BRBusinessError request = BusinessErrorDetailsHelper.newInstance(CORRELATION_ID, MESSAGE_ID, "03977902", "EW",
                 "UK", "ERR_BR_0100");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getMessageHeader().getMessageID().getValue());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
     
     @Test
     public void sendMessageContainer() throws Exception {
         DeliveryBody body = new DeliveryBody();
+        DeliveryHeader header = createDeliveryHeader(MESSAGE_ID);
 
-        MessageContainer request = MessageContainerHelper.newAddBRNotification(CORRELATION_ID, MESSAGE_ID, "new-register", "ES");
+        MessageContainer request = MessageContainerHelper.newAddBRNotification(CORRELATION_ID, MESSAGE_ID, "new-register", "name", "ES");
 
-        Acknowledgement ack = callDeliveryEnvelopeService(body, request, request.getContainerHeader().getMessageInfo().getMessageID());
+        Acknowledgement ack = callDeliveryEnvelopeService(header, body, request);
 
         assertNotNull(ack);
         assertEquals(MESSAGE_ID, ack.getDeliveryMessageInfo().getMessageID());
         assertNotNull(ack.getDeliveryMessageInfo().getTimestamp());
-        verify(messageProcessor).processIncomingMessage(body);
+        verify(messageProcessor).processIncomingMessage(header, body);
     }
 
-    private Acknowledgement callDeliveryEnvelopeService(DeliveryBody body, Object request, String messageId) {
-        Acknowledgement ack = null;
+    private Acknowledgement callDeliveryEnvelopeService(DeliveryHeader header, DeliveryBody body, Object request) throws Exception {
         try (Reader requestStream = marshal(request).getReader()) {
             String xmlMessage = IOUtils.toString(requestStream);
             DataHandler dataHandler = new DataHandler(new ByteArrayDataSource(xmlMessage, "text/plain; charset=UTF-8"));
@@ -274,26 +281,25 @@ public class DeliveryEnvelopeServiceEndpointTest {
             body.setMessageContent(message);
             
             // method under test
-            DeliveryHeader deliveryHeader = new DeliveryHeader();
-            DeliveryMessageInfoType deliveryMessageInfoType = new DeliveryMessageInfoType();
-            deliveryMessageInfoType.setMessageID(messageId);
-            deliveryHeader.setDeliveryMessageInfo(deliveryMessageInfoType);
-
-            ack = deliveryEnvelopeServiceEndpoint.submit(deliveryHeader, body);
-
-        } catch (Exception exception) {
-            exception.printStackTrace();
-        }
-        return ack;
+            return deliveryEnvelopeServiceEndpoint.submit(header, body);
+        } 
+    }
+    
+    private DeliveryHeader createDeliveryHeader(String messageId) {
+        DeliveryHeader header = new DeliveryHeader();
+        DeliveryMessageInfoType deliveryMessageInfoType = new DeliveryMessageInfoType();
+        deliveryMessageInfoType.setMessageID(messageId);
+        header.setDeliveryMessageInfo(deliveryMessageInfoType);
+        return header;
     }
 
     private StreamSource marshal(Object message) throws JAXBException {
         StringBuilderWriter writer = new StringBuilderWriter();
-        marshaller.marshal(message, writer);
+        jaxbContext.createMarshaller().marshal(message, writer);
         return new StreamSource(new StringReader(writer.toString()));
     }
 
-    private JAXBContext jaxbContext() throws JAXBException {
+    private static JAXBContext jaxbContext() throws JAXBException {
         return JAXBContext.newInstance(BRBranchDisclosureReceptionNotification.class,
                 BRBranchDisclosureReceptionNotificationAcknowledgement.class,
                 BRBranchDisclosureSubmissionNotification.class,
