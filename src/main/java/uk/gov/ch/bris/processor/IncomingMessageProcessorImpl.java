@@ -53,6 +53,7 @@ import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.resp
 import eu.europa.ec.bris.jaxb.br.document.retrieval.request.v1_4.BRRetrieveDocumentRequest;
 import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocumentResponse;
 import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.BRAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
 import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
@@ -402,6 +403,9 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             JAXBContext jaxbContext = JAXBContext.newInstance(BRNotification.class,
                     eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory.class,
                     eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.ObjectFactory.class,
+                    BRAcknowledgement.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.ObjectFactory.class,
                     BRCompanyDetailsResponse.class);
             messageContent = jaxbContext.createUnmarshaller().unmarshal(new StringReader(xmlMessage));
         } catch (Exception e) {
@@ -421,6 +425,10 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             // Use the template for notification objects
             BRNotification notification = (BRNotification) messageContent;
             messageObject = notification.getNotificationTemplate().getValue();
+        } else if (messageContent instanceof BRAcknowledgement) {
+            // Use the template for notification objects
+            BRAcknowledgement ack = (BRAcknowledgement) messageContent;
+            messageObject = ack.getAcknowledgementTemplate().getValue();
         } else {
             messageObject = messageContent;
         }
