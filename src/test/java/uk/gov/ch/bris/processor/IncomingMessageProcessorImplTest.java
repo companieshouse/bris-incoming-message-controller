@@ -241,6 +241,29 @@ public class IncomingMessageProcessorImplTest {
         verify(brisIncomingMessageService, Mockito.never()).save(Mockito.any());
     }
 
+    @Test
+    public void testProcessIncomingMessageContainerEmptyContent() throws Exception{
+        final String messageId = "M-0000337385";
+        final String correlationId = "C-0000337385";
+        final String businessRegisterId = "29290";
+        final String businessRegisterName = "name";
+        final String countryCode = "ES";
+        MessageContainer messageContainer = MessageContainerHelper.newAddBRNotification(correlationId, messageId,
+                businessRegisterId, businessRegisterName, countryCode);
+        messageContainer.getContainerBody().setMessageContent(null);
+        final String xmlMessage = marshal(messageContainer);
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+
+        FaultResponse fault = assertThrows(FaultResponse.class, () -> processor.processIncomingMessage(deliveryHeader, deliveryBody));
+
+        assertNotNull(fault.getFaultInfo());
+        assertEquals("ERR_BR_5108",fault.getFaultInfo().getResponseCode());
+        assertEquals("Message Container failed validation.",fault.getFaultInfo().getMessage());
+        
+        verify(kafkaProducer, Mockito.never()).sendMessage(Mockito.any());
+        verify(brisIncomingMessageService, Mockito.never()).save(Mockito.any());
+    }
+
     private static DeliveryHeader createDeliveryHeader(String senderId, String receiverId) {
         SenderType sender = new SenderType();
         sender.setId(senderId);

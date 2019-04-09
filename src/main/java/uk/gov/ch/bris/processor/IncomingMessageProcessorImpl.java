@@ -69,6 +69,7 @@ import uk.gov.ch.bris.domain.BRISIncomingMessage;
 import uk.gov.ch.bris.domain.BrisMessageHeaderType;
 import uk.gov.ch.bris.domain.BrisMessageType;
 import uk.gov.ch.bris.domain.ValidationError;
+import uk.gov.ch.bris.error.ErrorCode;
 import uk.gov.ch.bris.producer.Sender;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
 import uk.gov.companieshouse.logging.Logger;
@@ -175,6 +176,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             }
             brisIncomingMessageService.save(brisIncomingMessage);
 
+        } catch (FaultResponse e) {
+            throw e;
         } catch (Exception e) {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("message", "Exception : Sending FaultResponse");
@@ -402,11 +405,16 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                     BRCompanyDetailsResponse.class);
             messageContent = jaxbContext.createUnmarshaller().unmarshal(new StringReader(xmlMessage));
         } catch (Exception e) {
+            ErrorCode errorCode = ErrorCode.ERR_BR_5108;
+            FaultDetail faultDetail = new FaultDetail();
+            faultDetail.setResponseCode(errorCode.name());
+            faultDetail.setMessage(errorCode.getDescription());
+            
             Map<String, Object> data = new HashMap<>();
             data.put("message", "Error reading MessageContent");
             LOGGER.error(e, data);
             
-            throw new FaultResponse(UNEXPECTED_OBJECT, new FaultDetail(), e);
+            throw new FaultResponse(UNEXPECTED_OBJECT, faultDetail, e);
         }
         
         if (messageContent instanceof BRNotification) {
