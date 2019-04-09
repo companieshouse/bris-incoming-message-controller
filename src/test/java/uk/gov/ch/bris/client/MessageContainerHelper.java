@@ -15,6 +15,10 @@ import javax.xml.datatype.DatatypeConfigurationException;
 import javax.xml.datatype.DatatypeFactory;
 import javax.xml.datatype.XMLGregorianCalendar;
 
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.AddBusinessRegisterAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.RemoveBusinessRegisterAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.AcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.BRAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.RemoveBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
@@ -94,13 +98,45 @@ public class MessageContainerHelper {
 
         return createMessageContainer(correlationId, messageId, now, createNotification(factory.createRemoveBusinessRegisterNotificationTemplate(template)));
     }
+
+    public static MessageContainer newAddBRAcknowledgment(String correlationId, String messageId) throws Exception {
+        XMLGregorianCalendar now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+
+        eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.ObjectFactory factory = new eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.ObjectFactory();
+        AddBusinessRegisterAcknowledgementTemplateType template = factory.createAddBusinessRegisterAcknowledgementTemplateType();
+
+        DateTimeType notificationDate = new DateTimeType();
+        notificationDate.setValue(now);
+        template.setSendingDateTime(notificationDate);
+
+        return createMessageContainer(correlationId, messageId, now, createAcknowledgment(factory.createAddBusinessRegisterAcknowledgementTemplate(template)));
+    }
+
+    public static MessageContainer newRemoveBRAcknowledgment(String correlationId, String messageId) throws Exception {
+        XMLGregorianCalendar now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+
+        eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.ObjectFactory factory = new eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.ObjectFactory();
+        RemoveBusinessRegisterAcknowledgementTemplateType template = factory.createRemoveBusinessRegisterAcknowledgementTemplateType();
+
+        DateTimeType notificationDate = new DateTimeType();
+        notificationDate.setValue(now);
+        template.setSendingDateTime(notificationDate);
+
+        return createMessageContainer(correlationId, messageId, now, createAcknowledgment(factory.createRemoveBusinessRegisterAcknowledgementTemplate(template)));
+    }
     
     private static BRNotification createNotification(JAXBElement<? extends NotificationTemplateType> template) {
         BRNotification notification = new BRNotification();
         notification.setNotificationTemplate(template);
         return notification;
     }
-    
+
+    private static BRAcknowledgement createAcknowledgment(JAXBElement<? extends AcknowledgementTemplateType> template) {
+        BRAcknowledgement ack = new BRAcknowledgement();
+        ack.setAcknowledgementTemplate(template);
+        return ack;
+    }
+
     private static MessageContainer createMessageContainer(String correlationId, String messageId,
             XMLGregorianCalendar timestamp, Object content) throws Exception {
         MessageContainer container = new MessageContainer();
@@ -157,7 +193,7 @@ public class MessageContainerHelper {
     private static String marshalToString(Object object) throws JAXBException {
         StringWriter writer = new StringWriter();
 
-        JAXBContext jaxbContext = JAXBContext.newInstance(MessageContainer.class, BRNotification.class);
+        JAXBContext jaxbContext = JAXBContext.newInstance(MessageContainer.class, BRNotification.class, BRAcknowledgement.class);
         Marshaller marshaller = jaxbContext.createMarshaller();
         marshaller.marshal(object, writer);
 

@@ -22,6 +22,8 @@ import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.resp
 import eu.europa.ec.bris.jaxb.br.document.retrieval.request.v1_4.BRRetrieveDocumentRequest;
 import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocumentResponse;
 import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.AddBusinessRegisterAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.RemoveBusinessRegisterAcknowledgementTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.RemoveBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
@@ -106,7 +108,11 @@ public class IncomingMessageProcessorConfig {
         //Notifications
         businessRegisterClassMap.put(AddBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_BR_NOTIFICATION_SCHEMA));
         businessRegisterClassMap.put(RemoveBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_BR_NOTIFICATION_SCHEMA));
-        
+
+        //Acknowledgment
+        businessRegisterClassMap.put(AddBusinessRegisterAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_BR_ACKNOWLEDGEMENT_SCHEMA));
+        businessRegisterClassMap.put(RemoveBusinessRegisterAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_BR_ACKNOWLEDGEMENT_SCHEMA));
+
         return businessRegisterClassMap;
     }
 
