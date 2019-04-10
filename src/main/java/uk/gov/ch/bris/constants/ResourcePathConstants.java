@@ -10,8 +10,6 @@ public class ResourcePathConstants {
     public static final String BRANCH_DISCLOSURE_RECEPTION_NOTIFICATION_RESPONSE_SCHEMA = "xsd/bris/br/branch/disclosure/v1_4_1/BR-BranchDisclosureReceptionNotificationResponse.xsd";
     public static final String BRANCH_DISCLOSURE_SUBMISSION_NOTIFICATION_REQUEST_SCHEMA = "xsd/bris/br/branch/disclosure/v1_4_1/BR-BranchDisclosureSubmissionNotificationRequest.xsd";
     public static final String BRANCH_DISCLOSURE_SUBMISSION_NOTIFICATION_RESPONSE_SCHEMA = "xsd/bris/br/branch/disclosure/v1_4_1/BR-BranchDisclosureSubmissionNotificationResponse.xsd";
-    //Business Error
-    public static final String BUSINESS_ERROR_SCHEMA = "xsd/bris/br/error/v1_4_1/BR-BusinessError.xsd";
     //Company details
     public static final String COMPANY_DETAILS_REQUEST_SCHEMA =  "xsd/bris/br/company/details/v1_4_1/BR-CompanyDetailsRequest.xsd";
     public static final String COMPANY_DETAILS_RESPONSE_SCHEMA = "xsd/bris/br/company/details/v2_0_0/BR-CompanyDetailsResponse.xsd";
