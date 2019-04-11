@@ -60,7 +60,7 @@ public class IncomingMessageProcessorConfig {
     }
     
     public Map<Class<?>, URL> getBusinessRegisterClassMap() {
-        Map<Class<?>, URL>businessRegisterClassMap = new HashMap<>();
+        Map<Class<?>, URL> businessRegisterClassMap = new HashMap<>();
 
         ClassLoader classLoader = getClass().getClassLoader();
 
@@ -72,7 +72,7 @@ public class IncomingMessageProcessorConfig {
         businessRegisterClassMap.put(BRBranchDisclosureSubmissionNotificationAcknowledgement.class, getURL(classLoader, ResourcePathConstants.BRANCH_DISCLOSURE_SUBMISSION_NOTIFICATION_RESPONSE_SCHEMA));
 
         //Business Error
-        businessRegisterClassMap.put(BRBusinessError.class, getURL(classLoader, ResourcePathConstants.BUSINESS_ERROR_SCHEMA));
+        businessRegisterClassMap.put(BRBusinessError.class, null); // No validation for BusinessError
 
         //Company details
         businessRegisterClassMap.put(BRCompanyDetailsRequest.class, getURL(classLoader, ResourcePathConstants.COMPANY_DETAILS_REQUEST_SCHEMA));

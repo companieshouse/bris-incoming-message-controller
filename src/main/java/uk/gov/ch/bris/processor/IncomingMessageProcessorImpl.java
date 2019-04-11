@@ -282,15 +282,17 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             LOGGER.debug("Validating schema for xml message " + xmlMessage);
             brisMessageType = getSchema(xmlMessage);
 
-            Schema schema = factory.newSchema(brisMessageType.getUrl());
-            Validator validator = schema.newValidator();
-            
-            String messageToValidate = xmlMessage;
-            if (brisMessageType.getContentString() != null) {
-                // When it the message comes in a MessageContainer, we need to validate its content
-                messageToValidate = brisMessageType.getContentString();
+            if (brisMessageType.getUrl() != null) {
+                Schema schema = factory.newSchema(brisMessageType.getUrl());
+                Validator validator = schema.newValidator();
+                
+                String messageToValidate = xmlMessage;
+                if (brisMessageType.getContentString() != null) {
+                    // When it the message comes in a MessageContainer, we need to validate its content
+                    messageToValidate = brisMessageType.getContentString();
+                }
+                validator.validate(new StreamSource(new StringReader(messageToValidate)));
             }
-            validator.validate(new StreamSource(new StringReader(messageToValidate)));
         } catch (SAXException e) {
             Map<String, Object> data = new HashMap<>();
             data.put("message", "XSD Validation Error caught validating schema brisMessageType=" + brisMessageType);
