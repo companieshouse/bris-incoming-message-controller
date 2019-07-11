@@ -60,7 +60,7 @@ import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAc
 import eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.response.v1_4.BRUpdateLEDStatus;
 import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
-import eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus;
+import eu.europa.ec.bris.jaxb.br.subscription.response.v2_0.BRManageSubscriptionStatus;
 import eu.europa.ec.bris.jaxb.components.aggregate.v1_4.TestDataType;
 import eu.europa.ec.digit.message.container.jaxb.v1_0.MessageContainer;
 import eu.europa.ec.digit.message.container.jaxb.v1_0.MessageInfo;
@@ -254,7 +254,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                     BRCrossBorderMergerSubmissionNotificationAcknowledgement.class, BRRetrieveDocumentRequest.class,
                     BRRetrieveDocumentResponse.class, BRFullUpdateLEDRequest.class, BRFullUpdateLEDAcknowledgment.class,
                     BRUpdateLEDRequest.class, BRUpdateLEDStatus.class, BRManageSubscriptionRequest.class,
-                    BRManageSubscriptionStatus.class, ValidationError.class, BRBusinessError.class);
+                    ValidationError.class, BRBusinessError.class);
         } catch (JAXBException exception) {
             exception.printStackTrace();
         }
@@ -408,7 +408,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                     BRAcknowledgement.class,
                     eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.ObjectFactory.class,
                     eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.ObjectFactory.class,
-                    BRCompanyDetailsResponse.class);
+                    BRCompanyDetailsResponse.class,
+                    BRManageSubscriptionStatus.class);
             messageContent = jaxbContext.createUnmarshaller().unmarshal(new StringReader(xmlMessage));
         } catch (Exception e) {
             ErrorCode errorCode = ErrorCode.ERR_BR_5108;

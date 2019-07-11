@@ -29,7 +29,7 @@ public class ResourcePathConstants {
     public static final String RETRIEVE_DOCUMENT_RESPONSE_SCHEMA = "xsd/bris/br/document/retrieval/v1_4_1/BR-RetrieveDocumentResponse.xsd";
     //Subscription
     public static final String SUBSCRIPTION_REQUEST_SCHEMA = "xsd/bris/br/subscription/v1_4_1/BR-SubscriptionRequest.xsd";
-    public static final String SUBSCRIPTION_RESPONSE_SCHEMA = "xsd/bris/br/subscription/v1_4_1/BR-SubscriptionResponse.xsd";
+    public static final String SUBSCRIPTION_RESPONSE_SCHEMA = "xsd/bris/br/subscription/v2_0_0/BR-SubscriptionResponse.xsd";
     //Full Update LED
     public static final String UPDATE_LED_REQUEST_SCHEMA = "xsd/bris/br/led/update/v1_4_1/BR-UpdateLEDRequest.xsd";
     public static final String UPDATE_LED_RESPONSE_SCHEMA = "xsd/bris/br/led/update/v1_4_1/BR-UpdateLEDResponse.xsd";
