@@ -19,11 +19,11 @@ public class ValidationError {
     }
 
     public ErrorCode getErrorCode() {
-		return errorCode;
-	}
+        return errorCode;
+    }
 
-	public void setErrorCode(ErrorCode errorCode) {
-		this.errorCode = errorCode;
-	}
+    public void setErrorCode(ErrorCode errorCode) {
+        this.errorCode = errorCode;
+    }
 
 }
