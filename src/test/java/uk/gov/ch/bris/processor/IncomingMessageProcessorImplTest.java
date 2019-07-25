@@ -198,6 +198,60 @@ public class IncomingMessageProcessorImplTest {
     }
 
     @Test
+    public void testProcessIncomingMessageContainsOldMessageVersion() throws Exception {
+        final String messageId = "f1da1193-2651-4218-a569-78a3997d5a01";
+        final String correlationId = "5d3873305c4b5b14821018a3";
+        final String xmlMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
+                "  <BR-ManageSubscriptionStatus modelVersion=\"1.4.0\" xmlns=\"http://ec.europa.eu/bris/v1_4/br/SubscriptionResponse\" xmlns:p6=\"http://ec.europa.eu/bris/v1_4/br/AggregateComponents\" xmlns:bac=\"http://ec.europa.eu/bris/v1_4/common/AggregateComponents\" xmlns:bbc=\"http://ec.europa.eu/bris/v1_4/common/BasicComponents\" xmlns:ns40=\"http://eu.europa.ec/digit/message/container/1_0\" >\n" + 
+                "        <p6:MessageHeader>\n" + 
+                "            <bbc:CorrelationID>5d3873305c4b5b14821018a3</bbc:CorrelationID>\n" + 
+                "            <bbc:MessageID>f1da1193-2651-4218-a569-78a3997d5a01</bbc:MessageID>\n" + 
+                "            <bac:BusinessRegisterReference>\n" + 
+                "                <bbc:BusinessRegisterID>EW</bbc:BusinessRegisterID>\n" + 
+                "                <bbc:BusinessRegisterCountry>UK</bbc:BusinessRegisterCountry>\n" + 
+                "            </bac:BusinessRegisterReference>\n" + 
+                "            <bac:TestData>\n" + 
+                "                <bbc:TestSessionID>f1da1193-2651-4218-a569-78a3997d5a01</bbc:TestSessionID>\n" + 
+                "                <bbc:TestPackageID>TP-003</bbc:TestPackageID>\n" + 
+                "                <bbc:TestCaseID>TC-IN-BR-SL-SBRN-001</bbc:TestCaseID>\n" + 
+                "                <bbc:TestConditionID>TC-IN-BR-SL-SBRN-001</bbc:TestConditionID>\n" + 
+                "                <bbc:TestExecutionID>f1da1193-2651-4218-a569-78a3997d5a01</bbc:TestExecutionID>\n" + 
+                "            </bac:TestData>\n" + 
+                "        </p6:MessageHeader>\n" + 
+                "        <Status>\n" + 
+                "                <bbc:ManageSubscriptionStatusCode>PROCESSED</bbc:ManageSubscriptionStatusCode>\n" + 
+                "                <bbc:SubscriptionStatusCode>SUBSCRIBED</bbc:SubscriptionStatusCode>\n" + 
+                "                <bbc:ManageSubscriptionID>1</bbc:ManageSubscriptionID>\n" + 
+                "                <bbc:ManageSubscriptionProcessedDateTime>2019-07-24T17:03:15.048+02:00</bbc:ManageSubscriptionProcessedDateTime>\n" + 
+                "                <bbc:CompanyEUID>FR1104.1234</bbc:CompanyEUID>\n" + 
+                "        </Status>\n" + 
+                "    </BR-ManageSubscriptionStatus>";
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
+
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertTrue(message.getMessage().contains("<errorCode>ERR_BR_5107</errorCode>"));
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+        assertEquals(xmlMessage, message.getInvalidMessage());
+        assertNotNull(message.getCreatedOn());
+        assertEquals(ValidationError.class.getSimpleName(), message.getMessageType());
+
+        verify(kafkaProducer).sendMessage(message.getId());
+    }
+    
+    @Test
     public void testProcessIncomingMessageContainsInvalidXMLMessage() throws Exception {
         final String messageId = "M-0000337385";
         final String correlationId = "C-0000337385";

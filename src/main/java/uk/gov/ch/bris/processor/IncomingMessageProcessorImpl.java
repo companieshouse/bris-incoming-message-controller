@@ -236,6 +236,22 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     }
 
     /**
+     * Load 1.4 version of JAXBContext
+     * @return JAXBContext
+     * @throws JAXBException 
+     */
+    private JAXBContext getOldJaxbContext() throws JAXBException {
+        JAXBContext context = null;
+       
+            context = JAXBContext.newInstance(
+                    eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse.class, 
+                    eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest.class, 
+                    eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus.class 
+    );
+        return context;
+    }
+    
+    /**
      * Load JAXBContext
      * @return JAXBContext
      */
@@ -329,7 +345,17 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      */
     private BrisMessageType getSchema(String xmlMessage) throws FaultResponse, JAXBException, IOException {
         StringReader reader = new StringReader(xmlMessage);
-        Object messageObject = getJaxbContext().createUnmarshaller().unmarshal(reader);
+        
+        Object messageObject = null;
+        
+        try {
+            messageObject = getJaxbContext().createUnmarshaller().unmarshal(reader);
+            
+        } catch (JAXBException e) { // not a valid version 2_0 message
+            
+            return checkPreviousMessageType(xmlMessage); // check if previous message
+            
+        }
 
         if (messageObject instanceof MessageContainer) {
             return validateCreateBrisMessageType((MessageContainer) messageObject);
@@ -348,7 +374,27 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         throw new FaultResponse(UNEXPECTED_OBJECT, new FaultDetail());
     }
     
-    
+    /**
+     * check if the message is a previous version
+     * 
+     * @param xmlMessage
+     * @return BrisMessageType
+     * @throws JAXBException
+     * @throws FaultResponse
+     */
+    private BrisMessageType checkPreviousMessageType(String xmlMessage) throws JAXBException, FaultResponse {
+        StringReader reader = new StringReader(xmlMessage);
+        Object messageObject = getOldJaxbContext().createUnmarshaller().unmarshal(reader);
+        BrisMessageType brisMessageType = null;
+        
+        if (messageObject instanceof MessageObjectType) {
+            brisMessageType = validateCreateBrisMessageType((MessageObjectType) messageObject);
+            brisMessageType.setClassName(ValidationError.class.getSimpleName());
+            brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageHeader(), ErrorCode.ERR_BR_5107));
+           
+        }
+        return brisMessageType;
+    }
 
     /**
      * Validates for message id in message header
@@ -416,12 +462,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                     BRCompanyDetailsResponse.class,
                     BRManageSubscriptionStatus.class);
             messageContent = jaxbContext.createUnmarshaller().unmarshal(new StringReader(xmlMessage));
-        } catch (IOException e) {
-        	Map<String, Object> data = new HashMap<>();
-        	data.put("message", "Error writing to output stream");
-        	LOGGER.error(e, data);
-        	throw new IOException();
-         } catch (Exception e) {
+         } catch (Exception e) { // if an exception is caught here we cannot get a valid message from the container
             Map<String, Object> data = new HashMap<>();
             data.put("message", "Error reading MessageContent");
             LOGGER.error(e, data);
