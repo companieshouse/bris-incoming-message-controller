@@ -388,7 +388,6 @@ public class IncomingMessageProcessorImplTest {
         final String country = "UK";
         final String xmlMessage = marshal(
                 CompanyDetailsHelper.newInstance(correlationId, messageId, coNum, registerId, country));
-
         DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
 
         when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
