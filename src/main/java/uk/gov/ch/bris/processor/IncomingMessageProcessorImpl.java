@@ -236,18 +236,18 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     }
 
     /**
-     * Load 1.4 version of JAXBContext
+     * Load 1.4 version of JAXBContext. Used to check if the message is old and invalid.
+     * 
      * @return JAXBContext
-     * @throws JAXBException 
+     * @throws JAXBException
      */
     private JAXBContext getOldJaxbContext() throws JAXBException {
         JAXBContext context = null;
-       
-            context = JAXBContext.newInstance(
-                    eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse.class, 
-                    eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest.class, 
-                    eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus.class 
-    );
+
+        context = JAXBContext.newInstance(
+                eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse.class,
+                eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest.class,
+                eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus.class);
         return context;
     }
     

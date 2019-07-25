@@ -39,6 +39,7 @@ import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
 import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
+import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
 import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.CompanyEUIDType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.DateTimeType;
@@ -247,6 +248,46 @@ public class IncomingMessageProcessorImplTest {
         assertEquals(xmlMessage, message.getInvalidMessage());
         assertNotNull(message.getCreatedOn());
         assertEquals(ValidationError.class.getSimpleName(), message.getMessageType());
+
+        verify(kafkaProducer).sendMessage(message.getId());
+    }
+    
+    @Test
+    public void testProcessIncomingMessageContainsValid_1_4_MessageVersion() throws Exception {
+        final String messageId = "M-0000323216";
+        final String correlationId = "595f97ad05969d4ea99e657e";
+        final String xmlMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
+                "<ns36:BR-FullUpdateLEDAcknowledgment xmlns:ns38=\"http://ec.europa.eu/bris/v1_4/common/BasicComponents\" xmlns:ns39=\"http://ec.europa.eu/bris/v1_4/common/AggregateComponents\" xmlns:ns36=\"http://ec.europa.eu/bris/v1_4/br/FullUpdateLEDResponse\" xmlns:ns34=\"http://ec.europa.eu/bris/v1_4/br/AggregateComponents\" xmlns:ns35=\"http://ec.europa.eu/bris/v1_4/br/FullUpdateLEDRequest\" modelVersion=\"1.4.0\">\n" + 
+                "   <ns34:MessageHeader>\n" + 
+                "      <ns38:CorrelationID>595f97ad05969d4ea99e657e</ns38:CorrelationID>\n" + 
+                "      <ns38:MessageID>M-0000323216</ns38:MessageID>\n" + 
+                "      <ns39:BusinessRegisterReference>\n" + 
+                "         <ns38:BusinessRegisterID>EW</ns38:BusinessRegisterID>\n" + 
+                "         <ns38:BusinessRegisterCountry>UK</ns38:BusinessRegisterCountry>\n" + 
+                "      </ns39:BusinessRegisterReference>\n" + 
+                "      </ns34:MessageHeader>\n" + 
+                "   <ns38:DataExtractionDateTime>2017-07-07T16:15:55.910+02:00</ns38:DataExtractionDateTime>\n" + 
+                "</ns36:BR-FullUpdateLEDAcknowledgment>";
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
+
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+        assertNull(message.getInvalidMessage());
+        assertNotNull(message.getCreatedOn());
+        assertEquals(BRFullUpdateLEDAcknowledgment.class.getSimpleName(), message.getMessageType());
 
         verify(kafkaProducer).sendMessage(message.getId());
     }
