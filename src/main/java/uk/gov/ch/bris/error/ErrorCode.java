@@ -32,6 +32,7 @@ public enum ErrorCode {
     ERR_BR_5104 ("Response message correlation error. Response message not correlated to any request.,Response message correlation error. Response message not correlated to any request.,The validation of the message failed"),
     ERR_BR_5105 ("Response/Request compliance error,The validation of the message failed"),
     ERR_BR_5106 ("BR message can not be deserialised to correct message type. ,The validation of the message failed"),
+    ERR_BR_5107 ("Message version failed validation."),
     ERR_BR_5108 ("Message Container failed validation."),
     
     ERR_BR_5200 ("The processing of the message failed"),

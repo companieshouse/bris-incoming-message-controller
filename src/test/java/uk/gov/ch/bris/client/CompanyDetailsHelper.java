@@ -4,12 +4,18 @@ package uk.gov.ch.bris.client;
 import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageHeaderType;
 import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
+import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
 import eu.europa.ec.bris.jaxb.components.aggregate.v1_4.BusinessRegisterReferenceType;
+import eu.europa.ec.bris.jaxb.components.aggregate.v1_4.ManageSubscriptionRequestType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterIDType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterNameType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CompanyEUIDType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.CompanyRegistrationNumberType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.CorrelationIDType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.CountryType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.DateTimeType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.ManageSubscriptionCodeType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.ManageSubscriptionIDType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.MessageIDType;
 
 public class CompanyDetailsHelper {
@@ -31,6 +37,20 @@ public class CompanyDetailsHelper {
         request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
         request.setCompanyRegistrationNumber(companyRegistrationNumber(companyRegistrationNumber));
 
+        return request;
+    }
+    
+    public static BRManageSubscriptionRequest newInstance(String correlationId, String messageId, CompanyEUIDType companyId,CompanyEUIDType branchId, String businessRegisterId, DateTimeType subscriptionDateTime, String countryCode, ManageSubscriptionIDType subscriptionId, ManageSubscriptionCodeType subscriptionCode) {
+        BRManageSubscriptionRequest request = new BRManageSubscriptionRequest();
+        request.setMessageHeader(getMessageHeader(correlationId, messageId));
+        request.setBusinessRegisterReference(businessRegisterReference(countryCode, businessRegisterId));
+        ManageSubscriptionRequestType manageSubscriptionRequestType = new ManageSubscriptionRequestType();
+        manageSubscriptionRequestType.setBranchEUID(branchId);
+        manageSubscriptionRequestType.setCompanyEUID(companyId);
+        manageSubscriptionRequestType.setManageSubscriptionCode(subscriptionCode);
+        manageSubscriptionRequestType.setManageSubscriptionID(subscriptionId);
+        manageSubscriptionRequestType.setManageSubscriptionSendingDateTime(subscriptionDateTime);
+        request.getAction().add(manageSubscriptionRequestType);
         return request;
     }
 

@@ -1,6 +1,7 @@
 package uk.gov.ch.bris.processor;
 
 import static org.junit.Assert.assertNull;
+import static org.junit.Assert.assertTrue;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
@@ -16,6 +17,7 @@ import javax.activation.DataHandler;
 import javax.mail.util.ByteArrayDataSource;
 import javax.xml.bind.JAXBContext;
 import javax.xml.bind.JAXBException;
+import javax.xml.datatype.DatatypeFactory;
 
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
@@ -37,6 +39,12 @@ import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
 import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
+import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
+import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CompanyEUIDType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.DateTimeType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.ManageSubscriptionCodeType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.ManageSubscriptionIDType;
 import eu.europa.ec.digit.message.container.jaxb.v1_0.MessageContainer;
 import uk.gov.ch.bris.client.CompanyDetailsHelper;
 import uk.gov.ch.bris.client.MessageContainerHelper;
@@ -72,7 +80,7 @@ public class IncomingMessageProcessorImplTest {
         
         jaxbContext = JAXBContext
                 .newInstance(BRCompanyDetailsRequest.class, MessageContainer.class, BRNotification.class,
-                        eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory.class);
+                        eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory.class, BRManageSubscriptionRequest.class);
     }
 
     @BeforeEach
@@ -119,7 +127,7 @@ public class IncomingMessageProcessorImplTest {
     }
     
     @Test
-    public void testProcessIncomingMessageContainerSuccessful() throws Exception {
+    public void testProcessIncomingMessageContainerAddBusinessRegisterNotificationSuccessful() throws Exception {
         final String messageId = "M-0000337385";
         final String correlationId = "C-0000337385";
         final String businessRegisterId = "29290";
@@ -153,6 +161,225 @@ public class IncomingMessageProcessorImplTest {
     }
     
     @Test
+    public void testProcessIncomingMessageContainerManageSubscriptionSuccessful() throws Exception {
+        final String messageId = "M-0000337385";
+        final String correlationId = "C-0000337385";
+        final String businessRegisterId = "RMC";
+        final String countryCode = "BE";
+        CompanyEUIDType companyEUIDType = new CompanyEUIDType();
+        companyEUIDType.setValue("FRIG.2010012341-00");
+        CompanyEUIDType branchId = new CompanyEUIDType();
+        branchId.setValue("FRIG.2010012341-00");
+        ManageSubscriptionCodeType subscriptionCode = new ManageSubscriptionCodeType();
+        subscriptionCode.setValue("ADD");
+        ManageSubscriptionIDType subscriptionId = new ManageSubscriptionIDType();
+        subscriptionId.setValue("002");
+        DateTimeType subscriptionDateTime = new DateTimeType();
+        subscriptionDateTime.setValue(DatatypeFactory.newInstance().newXMLGregorianCalendar());
+        final String xmlMessage = marshal(CompanyDetailsHelper.newInstance(correlationId, messageId, companyEUIDType,
+                branchId, businessRegisterId, subscriptionDateTime, countryCode, subscriptionId, subscriptionCode));
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertEquals(xmlMessage, message.getMessage());
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+        assertNull(message.getInvalidMessage());
+        assertNotNull(message.getCreatedOn());
+        assertEquals(BRManageSubscriptionRequest.class.getSimpleName(), message.getMessageType());
+
+        verify(kafkaProducer).sendMessage(message.getId());
+    }
+
+    @Test
+    public void testProcessIncomingMessageContainsOldMessageVersion() throws Exception {
+        final String messageId = "f1da1193-2651-4218-a569-78a3997d5a01";
+        final String correlationId = "5d3873305c4b5b14821018a3";
+        final String xmlMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
+                "  <BR-ManageSubscriptionStatus modelVersion=\"1.4.0\" xmlns=\"http://ec.europa.eu/bris/v1_4/br/SubscriptionResponse\" xmlns:p6=\"http://ec.europa.eu/bris/v1_4/br/AggregateComponents\" xmlns:bac=\"http://ec.europa.eu/bris/v1_4/common/AggregateComponents\" xmlns:bbc=\"http://ec.europa.eu/bris/v1_4/common/BasicComponents\" xmlns:ns40=\"http://eu.europa.ec/digit/message/container/1_0\" >\n" + 
+                "        <p6:MessageHeader>\n" + 
+                "            <bbc:CorrelationID>5d3873305c4b5b14821018a3</bbc:CorrelationID>\n" + 
+                "            <bbc:MessageID>f1da1193-2651-4218-a569-78a3997d5a01</bbc:MessageID>\n" + 
+                "            <bac:BusinessRegisterReference>\n" + 
+                "                <bbc:BusinessRegisterID>EW</bbc:BusinessRegisterID>\n" + 
+                "                <bbc:BusinessRegisterCountry>UK</bbc:BusinessRegisterCountry>\n" + 
+                "            </bac:BusinessRegisterReference>\n" + 
+                "            <bac:TestData>\n" + 
+                "                <bbc:TestSessionID>f1da1193-2651-4218-a569-78a3997d5a01</bbc:TestSessionID>\n" + 
+                "                <bbc:TestPackageID>TP-003</bbc:TestPackageID>\n" + 
+                "                <bbc:TestCaseID>TC-IN-BR-SL-SBRN-001</bbc:TestCaseID>\n" + 
+                "                <bbc:TestConditionID>TC-IN-BR-SL-SBRN-001</bbc:TestConditionID>\n" + 
+                "                <bbc:TestExecutionID>f1da1193-2651-4218-a569-78a3997d5a01</bbc:TestExecutionID>\n" + 
+                "            </bac:TestData>\n" + 
+                "        </p6:MessageHeader>\n" + 
+                "        <Status>\n" + 
+                "                <bbc:ManageSubscriptionStatusCode>PROCESSED</bbc:ManageSubscriptionStatusCode>\n" + 
+                "                <bbc:SubscriptionStatusCode>SUBSCRIBED</bbc:SubscriptionStatusCode>\n" + 
+                "                <bbc:ManageSubscriptionID>1</bbc:ManageSubscriptionID>\n" + 
+                "                <bbc:ManageSubscriptionProcessedDateTime>2019-07-24T17:03:15.048+02:00</bbc:ManageSubscriptionProcessedDateTime>\n" + 
+                "                <bbc:CompanyEUID>FR1104.1234</bbc:CompanyEUID>\n" + 
+                "        </Status>\n" + 
+                "    </BR-ManageSubscriptionStatus>";
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
+
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertTrue(message.getMessage().contains("<errorCode>ERR_BR_5107</errorCode>"));
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+        assertEquals(xmlMessage, message.getInvalidMessage());
+        assertNotNull(message.getCreatedOn());
+        assertEquals(ValidationError.class.getSimpleName(), message.getMessageType());
+
+        verify(kafkaProducer).sendMessage(message.getId());
+    }
+    
+    @Test
+    public void testProcessIncomingMessageContainsValid_1_4_MessageVersion() throws Exception {
+        final String messageId = "M-0000323216";
+        final String correlationId = "595f97ad05969d4ea99e657e";
+        final String xmlMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n" + 
+                "<ns36:BR-FullUpdateLEDAcknowledgment xmlns:ns38=\"http://ec.europa.eu/bris/v1_4/common/BasicComponents\" xmlns:ns39=\"http://ec.europa.eu/bris/v1_4/common/AggregateComponents\" xmlns:ns36=\"http://ec.europa.eu/bris/v1_4/br/FullUpdateLEDResponse\" xmlns:ns34=\"http://ec.europa.eu/bris/v1_4/br/AggregateComponents\" xmlns:ns35=\"http://ec.europa.eu/bris/v1_4/br/FullUpdateLEDRequest\" modelVersion=\"1.4.0\">\n" + 
+                "   <ns34:MessageHeader>\n" + 
+                "      <ns38:CorrelationID>595f97ad05969d4ea99e657e</ns38:CorrelationID>\n" + 
+                "      <ns38:MessageID>M-0000323216</ns38:MessageID>\n" + 
+                "      <ns39:BusinessRegisterReference>\n" + 
+                "         <ns38:BusinessRegisterID>EW</ns38:BusinessRegisterID>\n" + 
+                "         <ns38:BusinessRegisterCountry>UK</ns38:BusinessRegisterCountry>\n" + 
+                "      </ns39:BusinessRegisterReference>\n" + 
+                "      </ns34:MessageHeader>\n" + 
+                "   <ns38:DataExtractionDateTime>2017-07-07T16:15:55.910+02:00</ns38:DataExtractionDateTime>\n" + 
+                "</ns36:BR-FullUpdateLEDAcknowledgment>";
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
+
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+        assertNull(message.getInvalidMessage());
+        assertNotNull(message.getCreatedOn());
+        assertEquals(BRFullUpdateLEDAcknowledgment.class.getSimpleName(), message.getMessageType());
+
+        verify(kafkaProducer).sendMessage(message.getId());
+    }
+    
+    @Test
+    public void testProcessIncomingMessageContainsInvalidXMLMessage() throws Exception {
+        final String messageId = "M-0000337385";
+        final String correlationId = "C-0000337385";
+        final String xmlMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
+                + "    <MessageContainer xmlns=\"http://eu.europa.ec/digit/message/container/1_0\" xmlns:xmime=\"http://www.w3.org/2005/05/xmlmime\">\n"
+                + "        <ContainerHeader>\n" 
+                + "            <AddressInfo>\n" 
+                + "                <Sender>\n"
+                + "                    <Id>BRIS_EM_01_ACC_GW</Id>\n" 
+                + "                </Sender>\n"
+                + "                <Receiver>\n" 
+                + "                    <Id>BRIS_UK_01_ACC_GW</Id>\n"
+                + "                    <Code>EW</Code>\n" 
+                + "                    <CountryCode>UK</CountryCode>\n"
+                + "                </Receiver>\n" 
+                + "            </AddressInfo>\n" 
+                + "            <MessageInfo>\n"
+                + "                <Timestamp>2019-07-12T10:47:37.883+02:00</Timestamp>\n"
+                + "                <MessageID>M-0000337385</MessageID>\n"
+                + "                <CorrelationID>C-0000337385</CorrelationID>\n" 
+                + "</MessageInfo>\n" 
+                + "        </ContainerHeader>\n"
+                + "        <ContainerBody>\n" 
+                + "            <MessageContent>PEJSLU1hbmFnZVN1YnNjcmlwdGlvblN0YXR1c0pBWEIKICAgIHhtbG5zPSJodHRwOi8vZWMuZXVyb3BhLmV1L2JyaXMvdjJfMC9ici9TdWJzY3JpcHRpb25SZXNwb25zZSIKICAgIHhtbG5zOmJiYz0iaHR0cDovL2VjLmV1cm9wYS5ldS9icmlzL3YxXzQvY29tbW9uL0Jhc2ljQ29tcG9uZW50cyI+CiAgICAgICAgICAgIDxTdGF0dXM+CiAgICAgICAgICAgICAgICA8YmJjOk1hbmFnZVN1YnNjcmlwdGlvblN0YXR1c0NvZGU+UFJPQ0VTU0VEPC9iYmM6TWFuYWdlU3Vic2NyaXB0aW9uU3RhdHVzQ29kZT4KICAgICAgICAgICAgICAgIDxiYmM6TWFuYWdlU3Vic2NyaXB0aW9uSUQ+MTwvYmJjOk1hbmFnZVN1YnNjcmlwdGlvbklEPgogICAgICAgICAgICAgICAgPGJiYzpNYW5hZ2VTdWJzY3JpcHRpb25Qcm9jZXNzZWREYXRlVGltZT4yMDE5LTA3LTEyVDEwOjQ3OjM3Ljg4MyswMjowMDwvYmJjOk1hbmFnZVN1YnNjcmlwdGlvblByb2Nlc3NlZERhdGVUaW1lPgogICAgICAgICAgICAgICAgPGJiYzpDb21wYW55RVVJRD5GUjExMDQuMTIzNDwvYmJjOkNvbXBhbnlFVUlEPgogICAgICAgICAgICA8L1N0YXR1cz4KPC9CUi1NYW5hZ2VTdWJzY3JpcHRpb25TdGF0dXNKQVhCPg==</MessageContent>\n" 
+                + "        </ContainerBody>\n"
+                + "    </MessageContainer>";
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
+
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertTrue(message.getMessage().contains("<errorCode>ERR_BR_5108</errorCode>"));
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+        assertEquals(xmlMessage, message.getInvalidMessage());
+        assertNotNull(message.getCreatedOn());
+        assertEquals(ValidationError.class.getSimpleName(), message.getMessageType());
+
+        verify(kafkaProducer).sendMessage(message.getId());
+    }
+    
+    @Test
+    public void testProcessIncomingMessageManageSubsciptionStatus() throws Exception {
+        final String messageId = "720fb698-1c8e-450e-b9d4-d185350ae2f7";
+        final String correlationId = "5d35cf585c4b5b14821018a1";
+        final String xmlMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n" +
+                "    <MessageContainer xmlns=\"http://eu.europa.ec/digit/message/container/1_0\" xmlns:xmime=\"http://www.w3.org/2005/05/xmlmime\">\n" +
+                "<ContainerHeader><AddressInfo><Sender><Id>BRIS_EM_01_ACC_GW</Id></Sender><Receiver><Id>BRIS_UK_01_ACC_GW</Id><Code>EW</Code><CountryCode>UK</CountryCode></Receiver>" +
+                "</AddressInfo><MessageInfo><Timestamp>2019-07-22T16:59:38.356+02:00</Timestamp><MessageID>720fb698-1c8e-450e-b9d4-d185350ae2f7</MessageID><CorrelationID>5d35cf585c4b5b14821018a1</CorrelationID>" +
+                "<TestData><TestPackageID>TP-004</TestPackageID><TestCaseID>TC-FN-BR-SL-003_02</TestCaseID><TestStepID>TC-FN-BR-SL-003_02</TestStepID><TestExecutionID>720fb698-1c8e-450e-b9d4-d185350ae2f7</TestExecutionID><TestSessionID>720fb698-1c8e-450e-b9d4-d185350ae2f7</TestSessionID></TestData></MessageInfo>" +
+                "</ContainerHeader><ContainerBody><MessageContent>PD94bWwgdmVyc2lvbj0iMS4wIiBlbmNvZGluZz0iVVRGLTgiPz4NCjxCUi1NYW5hZ2VTdWJzY3JpcHRpb25TdGF0dXMNCiAgICB4bWxucz0iaHR0cDovL2VjLmV1cm9wYS5ldS9icmlzL3YyXzAvYnIvU3Vic2NyaXB0aW9uUmVzcG9uc2UiDQoJeG1sbnM6YmJjPSJodHRwOi8vZWMuZXVyb3BhLmV1L2JyaXMvdjFfNC9jb21tb24vQmFzaWNDb21wb25lbnRzIj4NCg0KPCEtLSBUQy1GTi1CUi1TTC0wMDNfMDItLT4NCg0KDQoNCgkJCTxTdGF0dXM+DQoJCQkJPGJiYzpNYW5hZ2VTdWJzY3JpcHRpb25TdGF0dXNDb2RlPlBST0NFU1NFRDwvYmJjOk1hbmFnZVN1YnNjcmlwdGlvblN0YXR1c0NvZGU+DQoJCQkJPGJiYzpTdWJzY3JpcHRpb25TdGF0dXNWYWx1ZT5TVUJTQ1JJQkVEPC9iYmM6U3Vic2NyaXB0aW9uU3RhdHVzVmFsdWU+DQoNCgkJCQkJPGJiYzpNYW5hZ2VTdWJzY3JpcHRpb25JRD5YPC9iYmM6TWFuYWdlU3Vic2NyaXB0aW9uSUQ+DQoNCgkJCQk8YmJjOk1hbmFnZVN1YnNjcmlwdGlvblByb2Nlc3NlZERhdGVUaW1lPjIwMTktMDctMjJUMTY6NTk6MzguMzU2KzAyOjAwPC9iYmM6TWFuYWdlU3Vic2NyaXB0aW9uUHJvY2Vzc2VkRGF0ZVRpbWU+DQoJCQkJPGJiYzpDb21wYW55RVVJRD5GUjExMDQuMTIzNDwvYmJjOkNvbXBhbnlFVUlEPg0KCQkJPC9TdGF0dXM+DQoNCjwvQlItTWFuYWdlU3Vic2NyaXB0aW9uU3RhdHVzPg0K</MessageContent>"+ 
+                "     </ContainerBody></MessageContainer>";
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
+
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+
+        assertNotNull(message.getCreatedOn());
+
+
+        verify(kafkaProducer).sendMessage(message.getId());
+    }
+    
+    @Test
     public void testProcessIncomingMessageValidationError() throws Exception {
         final String messageId = "M-0000337385";
         final String correlationId = "C-0000337385";
@@ -161,16 +388,6 @@ public class IncomingMessageProcessorImplTest {
         final String country = "UK";
         final String xmlMessage = marshal(
                 CompanyDetailsHelper.newInstance(correlationId, messageId, coNum, registerId, country));
-        final String expectedMessage = "<?xml version=\"1.0\" encoding=\"UTF-8\" standalone=\"yes\"?>\n"
-                + "<validationError xmlns:ns4=\"http://ec.europa.eu/bris/v1_4/common/AggregateComponents\" xmlns:ns3=\"http://ec.europa.eu/bris/v1_4/common/BasicComponents\" xmlns:ns6=\"http://ec.europa.eu/bris/v1_4/br/BranchDisclosureReceptionNotificationRequest\" xmlns:ns5=\"http://ec.europa.eu/bris/v1_4/br/AggregateComponents\" xmlns:ns30=\"http://ec.europa.eu/bris/v1_4/br/BusinessError\" xmlns:ns8=\"http://ec.europa.eu/bris/v1_4/br/BranchDisclosureSubmissionNotificationRequest\" xmlns:ns7=\"http://ec.europa.eu/bris/v1_4/br/BranchDisclosureReceptionNotificationResponse\" xmlns:ns13=\"http://ec.europa.eu/bris/v1_5/common/AggregateComponents/CompanyItem\" xmlns:ns9=\"http://ec.europa.eu/bris/v1_4/br/BranchDisclosureSubmissionNotificationResponse\" xmlns:ns12=\"http://ec.europa.eu/bris/v1_5/common/AggregateComponents/Addresses\" xmlns:ns11=\"http://ec.europa.eu/bris/v1_5/common/AggregateComponents/Company\" xmlns:ns10=\"http://ec.europa.eu/bris/v1_4/br/CompanyDetailsRequest\" xmlns:ns17=\"http://ec.europa.eu/bris/v1_4/br/ConnectionRequest\" xmlns:ns16=\"http://ec.europa.eu/bris/v2_0/br/CompanyDetailsResponse\" xmlns:ns15=\"http://ec.europa.eu/bris/v1_5/common/AggregateComponents/Particular\" xmlns:ns14=\"http://ec.europa.eu/bris/v1_5/common/AggregateComponents/Document\" xmlns:ns19=\"http://ec.europa.eu/bris/v1_4/br/CrossBorderMergerReceptionNotificationRequest\" xmlns:ns18=\"http://ec.europa.eu/bris/v1_4/br/ConnectionResponse\" xmlns:xmime=\"http://www.w3.org/2005/05/xmlmime\" xmlns:ns20=\"http://ec.europa.eu/bris/v1_4/br/CrossBorderMergerReceptionNotificationResponse\" xmlns:ns24=\"http://ec.europa.eu/bris/v1_4/br/RetrieveDocumentResponse\" xmlns:ns23=\"http://ec.europa.eu/bris/v1_4/br/RetrieveDocumentRequest\" xmlns:ns22=\"http://ec.europa.eu/bris/v1_4/br/CrossBorderMergerSubmissionNotificationResponse\" xmlns:ns21=\"http://ec.europa.eu/bris/v1_4/br/CrossBorderMergerSubmissionNotificationRequest\" xmlns:ns28=\"http://ec.europa.eu/bris/v1_4/br/SubscriptionRequest\" xmlns:ns27=\"http://ec.europa.eu/bris/v2_0/br/UpdateLEDRequest\" xmlns:ns26=\"http://ec.europa.eu/bris/v1_4/br/FullUpdateLEDResponse\" xmlns:ns25=\"http://ec.europa.eu/bris/v1_4/br/FullUpdateLEDRequest\" xmlns:ns29=\"http://eu.europa.ec/digit/message/container/1_0\">\n" + 
-                "    <header>\n" + 
-                "        <businessRegisterCountry>"+country+"</businessRegisterCountry>\n" + 
-                "        <businessRegisterId>"+registerId+"</businessRegisterId>\n" + 
-                "        <correlationId>"+correlationId+"</correlationId>\n" + 
-                "        <messageId>"+messageId+"</messageId>\n" + 
-                "        <testData/>\n" + 
-                "    </header>\n" + 
-                "</validationError>\n";
         DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
 
         when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
@@ -184,7 +401,7 @@ public class IncomingMessageProcessorImplTest {
 
         assertEquals(messageId, message.getMessageId());
         assertEquals(correlationId, message.getCorrelationId());
-        assertEquals(expectedMessage, message.getMessage()); // validation xml
+        assertTrue(message.getMessage().contains("<errorCode>ERR_BR_5102</errorCode>"));
         assertEquals("PENDING", message.getStatus());
         assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
         assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
@@ -254,14 +471,27 @@ public class IncomingMessageProcessorImplTest {
         final String xmlMessage = marshal(messageContainer);
         DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
 
-        FaultResponse fault = assertThrows(FaultResponse.class, () -> processor.processIncomingMessage(deliveryHeader, deliveryBody));
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
 
-        assertNotNull(fault.getFaultInfo());
-        assertEquals("ERR_BR_5108",fault.getFaultInfo().getResponseCode());
-        assertEquals("Message Container failed validation.",fault.getFaultInfo().getMessage());
-        
-        verify(kafkaProducer, Mockito.never()).sendMessage(Mockito.any());
-        verify(brisIncomingMessageService, Mockito.never()).save(Mockito.any());
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertTrue(message.getMessage().contains("<errorCode>ERR_BR_5108</errorCode>"));
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+        assertEquals(xmlMessage, message.getInvalidMessage());
+        assertNotNull(message.getCreatedOn());
+        assertEquals(ValidationError.class.getSimpleName(), message.getMessageType());
+
+        verify(kafkaProducer).sendMessage(message.getId());
     }
 
     private static DeliveryHeader createDeliveryHeader(String senderId, String receiverId) {
