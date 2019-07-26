@@ -270,7 +270,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
                     BRCrossBorderMergerSubmissionNotificationAcknowledgement.class, BRRetrieveDocumentRequest.class,
                     BRRetrieveDocumentResponse.class, BRFullUpdateLEDRequest.class, BRFullUpdateLEDAcknowledgment.class,
                     BRUpdateLEDRequest.class, BRManageSubscriptionRequest.class,
-                    ValidationError.class, BRBusinessError.class);
+                    ValidationError.class, BRBusinessError.class, BRManageSubscriptionStatus.class);
         } catch (JAXBException exception) {
             exception.printStackTrace();
         }
