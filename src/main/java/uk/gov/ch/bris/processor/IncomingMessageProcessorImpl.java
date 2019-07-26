@@ -92,6 +92,10 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     private Sender kafkaProducer;
 
     private Map<Class<?>, URL> businessRegisterClassMap;
+    
+    private JAXBContext jaxbContext;
+    private JAXBContext oldJaxbContext;
+    
 
     public IncomingMessageProcessorImpl(Map<Class<?>, URL> businessRegisterClassMap) {
         this.businessRegisterClassMap = businessRegisterClassMap;
@@ -236,46 +240,65 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     }
 
     /**
-     * Load 1.4 version of JAXBContext. Used to check if the message is old and invalid.
+     * Load 1.4 version of JAXBContext. Used to check if the message is old and
+     * invalid.
      * 
      * @return JAXBContext
-     * @throws JAXBException
+     * @throws FaultResponse
      */
-    private JAXBContext getOldJaxbContext() throws JAXBException {
-        JAXBContext context = null;
+    private JAXBContext getOldJaxbContext() throws FaultResponse {
+        if (oldJaxbContext == null) {
+            try {
+                oldJaxbContext = JAXBContext.newInstance(
+                        eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse.class,
+                        eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest.class, 
+                        eu.europa.ec.bris.jaxb.br.led.update.response.v1_4.BRUpdateLEDStatus.class,
+                        eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus.class);
+            } catch (JAXBException e) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("message", "JAXBException caught creating oldJAXBContext. FaultResponse will be thrown");
+                LOGGER.error(e, data);
+                throw new FaultResponse("JAXB exception", new FaultDetail(), e);
+            }
+        }
 
-        context = JAXBContext.newInstance(
-                eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse.class,
-                eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest.class,
-                eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus.class);
-        return context;
+        return oldJaxbContext;
     }
     
     /**
      * Load JAXBContext
+     * 
      * @return JAXBContext
+     * @throws FaultResponse
+     * 
      */
     @Bean
-    public JAXBContext getJaxbContext() {
-        JAXBContext context = null;
-        try {
-            context = JAXBContext.newInstance(MessageContainer.class, BRBranchDisclosureReceptionNotification.class,
-                    BRBranchDisclosureReceptionNotificationAcknowledgement.class,
-                    BRBranchDisclosureSubmissionNotification.class,
-                    BRBranchDisclosureSubmissionNotificationAcknowledgement.class, BRCompanyDetailsRequest.class,
-                    BRCompanyDetailsResponse.class, BRConnectivityRequest.class, BRConnectivityResponse.class,
-                    BRCrossBorderMergerReceptionNotification.class,
-                    BRCrossBorderMergerReceptionNotificationAcknowledgement.class,
-                    BRCrossBorderMergerSubmissionNotification.class,
-                    BRCrossBorderMergerSubmissionNotificationAcknowledgement.class, BRRetrieveDocumentRequest.class,
-                    BRRetrieveDocumentResponse.class, BRFullUpdateLEDRequest.class, BRFullUpdateLEDAcknowledgment.class,
-                    BRUpdateLEDRequest.class, BRManageSubscriptionRequest.class,
-                    ValidationError.class, BRBusinessError.class);
-        } catch (JAXBException exception) {
-            exception.printStackTrace();
+    public JAXBContext getJaxbContext() throws FaultResponse {
+        if (jaxbContext == null) {
+            try {
+                jaxbContext = JAXBContext.newInstance(MessageContainer.class,
+                        BRBranchDisclosureReceptionNotification.class,
+                        BRBranchDisclosureReceptionNotificationAcknowledgement.class,
+                        BRBranchDisclosureSubmissionNotification.class,
+                        BRBranchDisclosureSubmissionNotificationAcknowledgement.class, BRCompanyDetailsRequest.class,
+                        BRConnectivityRequest.class, BRConnectivityResponse.class,
+                        BRCrossBorderMergerReceptionNotification.class,
+                        BRCrossBorderMergerReceptionNotificationAcknowledgement.class,
+                        BRCrossBorderMergerSubmissionNotification.class,
+                        BRCrossBorderMergerSubmissionNotificationAcknowledgement.class, BRRetrieveDocumentRequest.class,
+                        BRRetrieveDocumentResponse.class, BRFullUpdateLEDRequest.class,
+                        BRFullUpdateLEDAcknowledgment.class, BRManageSubscriptionRequest.class, ValidationError.class,
+                        BRBusinessError.class);
+            } catch (JAXBException e) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("message", "JAXBException caught creating JAXBContext. FaultResponse will be thrown");
+
+                LOGGER.error(e, data);
+                throw new FaultResponse("JAXB exception", new FaultDetail(), e);
+            }
         }
 
-        return context;
+        return jaxbContext;
     }
 
     /**
@@ -573,13 +596,13 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @param messageHeader
      * @return String - ValidationError xml string
      * @throws JAXBException
+     * @throws FaultResponse 
      */
-    private String getXMLValidationMessage(BrisMessageHeaderType messageHeader, ErrorCode errorCode) throws JAXBException {
+    private String getXMLValidationMessage(BrisMessageHeaderType messageHeader, ErrorCode errorCode) throws JAXBException, FaultResponse {
         ValidationError validationError = new ValidationError();
         validationError.setHeader(messageHeader);
         validationError.setErrorCode(errorCode);
-        JAXBContext jaxbContext =getJaxbContext() ;
-        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        Marshaller jaxbMarshaller = getJaxbContext().createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         StringWriter sw = new StringWriter();
         jaxbMarshaller.marshal(validationError, sw);

@@ -27,12 +27,12 @@ public enum ErrorCode {
 
     ERR_BR_5100 ("The validation of the message header coming from the ECP failed"),
     ERR_BR_5101 ("The BR is not authorised to receive this type of messages "),
-    ERR_BR_5102 ("Message schema validation error ,The validation of the message failed"),
+    ERR_BR_5102 ("Message validation failed"),
     ERR_BR_5103 ("Message uniqueness error. Message ID or Correlation ID not unique (or message ID NOT equal to correlation ID for request messages),The validation of the message failed"),
     ERR_BR_5104 ("Response message correlation error. Response message not correlated to any request.,Response message correlation error. Response message not correlated to any request.,The validation of the message failed"),
     ERR_BR_5105 ("Response/Request compliance error,The validation of the message failed"),
     ERR_BR_5106 ("BR message can not be deserialised to correct message type. ,The validation of the message failed"),
-    ERR_BR_5107 ("Message version failed validation."),
+    ERR_BR_5107 ("Message validation failed"),
     ERR_BR_5108 ("Message Container failed validation."),
     
     ERR_BR_5200 ("The processing of the message failed"),
