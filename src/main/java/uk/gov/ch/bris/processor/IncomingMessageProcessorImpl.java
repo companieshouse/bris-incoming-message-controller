@@ -57,7 +57,6 @@ import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.BRAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
 import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
-import eu.europa.ec.bris.jaxb.br.led.update.request.v2_0.BRUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.response.v2_0.BRUpdateLEDStatus;
 import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
 import eu.europa.ec.bris.jaxb.br.subscription.response.v2_0.BRManageSubscriptionStatus;
@@ -373,10 +372,19 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
         
         try {
             messageObject = getJaxbContext().createUnmarshaller().unmarshal(reader);
-            
-        } catch (JAXBException e) { // not a valid version 2_0 message
-            
-            return checkPreviousMessageType(xmlMessage); // check if previous message
+        } catch (JAXBException e) { // not a valid message
+            BrisMessageHeaderType header = getPreviousMessageHeaderType(xmlMessage); // check if previous message
+            if (header != null) {
+                // The message corresponds to a previous version
+                BrisMessageType brisMessageType = new BrisMessageType();
+                brisMessageType.setClassName(ValidationError.class.getSimpleName());
+                brisMessageType.setValidationXML(getXMLValidationMessage(header, ErrorCode.ERR_BR_5107));
+                brisMessageType.setMessageHeader(header);
+                return brisMessageType;
+            } else {
+                // The message is not a previous version - let the exception go up
+                throw e;
+            }
             
         }
 
@@ -401,22 +409,19 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * check if the message is a previous version
      * 
      * @param xmlMessage
-     * @return BrisMessageType
+     * @return BrisMessageHeaderType A populated {@link BrisMessageHeaderType} object if the message corresponds to a previous version. Null if the message is not a previous version
      * @throws JAXBException
      * @throws FaultResponse
      */
-    private BrisMessageType checkPreviousMessageType(String xmlMessage) throws JAXBException, FaultResponse {
+    private BrisMessageHeaderType getPreviousMessageHeaderType(String xmlMessage) throws JAXBException, FaultResponse {
         StringReader reader = new StringReader(xmlMessage);
         Object messageObject = getOldJaxbContext().createUnmarshaller().unmarshal(reader);
-        BrisMessageType brisMessageType = null;
         
         if (messageObject instanceof MessageObjectType) {
-            brisMessageType = validateCreateBrisMessageType((MessageObjectType) messageObject);
-            brisMessageType.setClassName(ValidationError.class.getSimpleName());
-            brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageHeader(), ErrorCode.ERR_BR_5107));
-           
+            return createBrisMessageHeaderType((MessageObjectType) messageObject);
         }
-        return brisMessageType;
+        
+        return null;
     }
 
     /**
