@@ -31,7 +31,7 @@ public class ResourcePathConstants {
     public static final String SUBSCRIPTION_REQUEST_SCHEMA = "xsd/bris/br/subscription/v1_4_1/BR-SubscriptionRequest.xsd";
     public static final String SUBSCRIPTION_RESPONSE_SCHEMA = "xsd/bris/br/subscription/v2_0_0/BR-SubscriptionResponse.xsd";
     //Full Update LED
-    public static final String UPDATE_LED_REQUEST_SCHEMA = "xsd/bris/br/led/update/v1_4_1/BR-UpdateLEDRequest.xsd";
+    public static final String UPDATE_LED_REQUEST_SCHEMA = "xsd/bris/br/led/update/v2_0_0/BR-UpdateLEDRequest.xsd";
     public static final String UPDATE_LED_RESPONSE_SCHEMA = "xsd/bris/br/led/update/v2_0_0/BR-UpdateLEDResponse.xsd";
     //Notification
     public static final String ADD_BR_NOTIFICATION_SCHEMA = "xsd/bris/br/generic/notification/v2_0_0/BR-AddBusinessRegisterNotificationTemplate.xsd";
