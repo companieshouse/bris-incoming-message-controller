@@ -24,8 +24,10 @@ import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocu
 import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
 import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.AddBusinessRegisterAcknowledgementTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.RemoveBusinessRegisterAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.company.euid.change.v2_0.ChangeCompanyEUIDAcknowledgementTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.RemoveBusinessRegisterNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.company.euid.change.v2_0.ChangeCompanyEUIDNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
 import eu.europa.ec.bris.jaxb.br.led.update.request.v2_0.BRUpdateLEDRequest;
@@ -108,10 +110,12 @@ public class IncomingMessageProcessorConfig {
         //Notifications
         businessRegisterClassMap.put(AddBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_BR_NOTIFICATION_SCHEMA));
         businessRegisterClassMap.put(RemoveBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_BR_NOTIFICATION_SCHEMA));
+        businessRegisterClassMap.put(ChangeCompanyEUIDNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.CHANGE_EUID_NOTIFICATION_SCHEMA));
 
-        //Acknowledgment
+        //Acknowledgement
         businessRegisterClassMap.put(AddBusinessRegisterAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_BR_ACKNOWLEDGEMENT_SCHEMA));
         businessRegisterClassMap.put(RemoveBusinessRegisterAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_BR_ACKNOWLEDGEMENT_SCHEMA));
+        businessRegisterClassMap.put(ChangeCompanyEUIDAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.CHANGE_EUID_ACKNOWLEDGEMENT_SCHEMA));
 
         return businessRegisterClassMap;
     }

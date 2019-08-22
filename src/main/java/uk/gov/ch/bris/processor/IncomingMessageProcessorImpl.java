@@ -57,7 +57,6 @@ import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.BRAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
 import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
-import eu.europa.ec.bris.jaxb.br.led.update.request.v2_0.BRUpdateLEDRequest;
 import eu.europa.ec.bris.jaxb.br.led.update.response.v2_0.BRUpdateLEDStatus;
 import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
 import eu.europa.ec.bris.jaxb.br.subscription.response.v2_0.BRManageSubscriptionStatus;
@@ -479,9 +478,11 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             JAXBContext jaxbContext = JAXBContext.newInstance(BRNotification.class,
                     eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory.class,
                     eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.company.euid.change.v2_0.ObjectFactory.class,
                     BRAcknowledgement.class,
                     eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.ObjectFactory.class,
                     eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.company.euid.change.v2_0.ObjectFactory.class,
                     BRCompanyDetailsResponse.class,
                     BRManageSubscriptionStatus.class,
                     BRUpdateLEDStatus.class);

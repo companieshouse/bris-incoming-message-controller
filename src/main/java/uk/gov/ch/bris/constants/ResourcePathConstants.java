@@ -36,9 +36,11 @@ public class ResourcePathConstants {
     //Notification
     public static final String ADD_BR_NOTIFICATION_SCHEMA = "xsd/bris/br/generic/notification/v2_0_0/BR-AddBusinessRegisterNotificationTemplate.xsd";
     public static final String REMOVE_BR_NOTIFICATION_SCHEMA ="xsd/bris/br/generic/notification/v2_0_0/BR-RemoveBusinessRegisterNotificationTemplate.xsd";
-    //Acknowledgment
+    public static final String CHANGE_EUID_NOTIFICATION_SCHEMA ="xsd/bris/br/generic/notification/v2_0_0/BR-ChangeCompanyEUIDNotificationTemplate.xsd";
+    //Acknowledgement
     public static final String ADD_BR_ACKNOWLEDGEMENT_SCHEMA = "xsd/bris/br/generic/acknowledgement/v2_0_0/BR-AddBusinessRegisterAcknowledgementTemplate.xsd";
     public static final String REMOVE_BR_ACKNOWLEDGEMENT_SCHEMA ="xsd/bris/br/generic/acknowledgement/v2_0_0/BR-RemoveBusinessRegisterAcknowledgementTemplate.xsd";
+    public static final String CHANGE_EUID_ACKNOWLEDGEMENT_SCHEMA ="xsd/bris/br/generic/acknowledgement/v2_0_0/BR-ChangeCompanyEUIDAcknowledgementTemplate.xsd";
     
     private ResourcePathConstants() {
         // Hide constructor for utility class
