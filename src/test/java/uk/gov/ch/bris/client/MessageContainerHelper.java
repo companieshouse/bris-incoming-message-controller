@@ -21,11 +21,13 @@ import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.AcknowledgementTem
 import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.BRAcknowledgement;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.RemoveBusinessRegisterNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.company.euid.change.v2_0.ChangeCompanyEUIDNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.NotificationTemplateType;
 import eu.europa.ec.bris.jaxb.components.aggregate.v1_5.BusinessRegisterReference;
 import eu.europa.ec.bris.jaxb.components.aggregate.v1_5.BusinessRegisterType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterCodeType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CompanyEUIDType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.CountryType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.DateTimeType;
 import eu.europa.ec.bris.jaxb.components.basic.v1_4.LanguageCodeType;
@@ -70,6 +72,33 @@ public class MessageContainerHelper {
         template.setBusinessRegister(br);
 
         return createMessageContainer(correlationId, messageId, now, createNotification(factory.createAddBusinessRegisterNotificationTemplate(template)));
+    }
+    
+    public static MessageContainer newUpdateEUIDNotification(
+            String correlationId,
+            String messageId,
+            String formerCompanyEUIDString,
+            String newCompanyEUIDString) throws Exception {
+
+        XMLGregorianCalendar now = DatatypeFactory.newInstance().newXMLGregorianCalendar(new GregorianCalendar());
+
+        eu.europa.ec.bris.jaxb.br.generic.notification.template.company.euid.change.v2_0.ObjectFactory factory = new eu.europa.ec.bris.jaxb.br.generic.notification.template.company.euid.change.v2_0.ObjectFactory();
+        ChangeCompanyEUIDNotificationTemplateType template = factory.createChangeCompanyEUIDNotificationTemplateType();
+
+        DateTimeType notificationDate = new DateTimeType();
+        notificationDate.setValue(now);
+        template.setNotificationDateTime(notificationDate);
+        
+        CompanyEUIDType formerCompanyEUID = new CompanyEUIDType();
+        formerCompanyEUID.setValue(formerCompanyEUIDString);
+
+        CompanyEUIDType newCompanyEUID = new CompanyEUIDType();
+        newCompanyEUID.setValue(newCompanyEUIDString);
+
+        template.setFormerCompanyEUID(formerCompanyEUID);
+        template.setCompanyEUID(newCompanyEUID);
+
+        return createMessageContainer(correlationId, messageId, now, createNotification(factory.createChangeCompanyEUIDNotificationTemplate(template)));
     }
     
     public static MessageContainer newRemoveBRNotification(

@@ -38,6 +38,7 @@ import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
 import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
 import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.company.euid.change.v2_0.ChangeCompanyEUIDNotificationTemplateType;
 import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
 import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
 import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
@@ -156,6 +157,39 @@ public class IncomingMessageProcessorImplTest {
         assertNull(message.getInvalidMessage());
         assertNotNull(message.getCreatedOn());
         assertEquals(AddBusinessRegisterNotificationTemplateType.class.getSimpleName(), message.getMessageType());
+
+        verify(kafkaProducer).sendMessage(message.getId());
+    }
+    
+    @Test
+    public void testProcessIncomingMessageContainerUpdateEUIDNotificationSuccessful() throws Exception {
+        final String messageId = "M-0000337385";
+        final String correlationId = "C-0000337385";
+        final String formerCompanyEUIDString = "UKEW.1234";
+        final String newCompanyEUIDString = "UKEW.123456";
+        final String xmlMessage = marshal(MessageContainerHelper.newUpdateEUIDNotification(correlationId, 
+                messageId, formerCompanyEUIDString, newCompanyEUIDString));
+        DeliveryBody deliveryBody = createDeliveryBody(xmlMessage);
+
+        when(kafkaProducer.sendMessage(Mockito.any())).thenReturn(true);
+
+        processor.processIncomingMessage(deliveryHeader, deliveryBody);
+
+        verify(brisIncomingMessageService).save(messageCaptor.capture());
+
+        final BRISIncomingMessage message = messageCaptor.getValue();
+        assertNotNull(message);
+
+        assertEquals(messageId, message.getMessageId());
+        assertEquals(correlationId, message.getCorrelationId());
+        assertEquals(xmlMessage, message.getMessage());
+        assertEquals("PENDING", message.getStatus());
+        assertEquals(deliveryHeader.getAddressInfo().getSender().getId(), message.getSender());
+        assertEquals(deliveryHeader.getAddressInfo().getReceiver().getId(), message.getReceiver());
+        assertNull(message.getData()); // No binary
+        assertNull(message.getInvalidMessage());
+        assertNotNull(message.getCreatedOn());
+        assertEquals(ChangeCompanyEUIDNotificationTemplateType.class.getSimpleName(), message.getMessageType());
 
         verify(kafkaProducer).sendMessage(message.getId());
     }
