@@ -2,8 +2,6 @@ package uk.gov.ch.bris.domain;
 
 import java.net.URL;
 
-import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
-
 /**
  * Created by rkumar on 21/04/2017.
  */
@@ -11,8 +9,10 @@ public class BrisMessageType {
 
     private URL url;
     private String className;
-    private MessageObjectType messageObjectType;
+    private BrisMessageHeaderType messageHeader;
     private String validationXML;
+    // XML string of the message content - used when content in MessageContainer
+    private String contentString;
 
     public URL getUrl() {
         return url;
@@ -30,12 +30,12 @@ public class BrisMessageType {
         this.className = className;
     }
 
-    public MessageObjectType getMessageObjectType() {
-        return messageObjectType;
+    public BrisMessageHeaderType getMessageHeader() {
+        return messageHeader;
     }
-
-    public void setMessageObjectType(MessageObjectType messageObjectType) {
-        this.messageObjectType = messageObjectType;
+    
+    public void setMessageHeader(BrisMessageHeaderType messageHeader) {
+        this.messageHeader = messageHeader;
     }
 
     public String getValidationXML() {
@@ -45,14 +45,23 @@ public class BrisMessageType {
     public void setValidationXML(String validationXML) {
         this.validationXML = validationXML;
     }
+    
+    public String getContentString() {
+        return contentString;
+    }
+    
+    public void setContentString(String contentString) {
+        this.contentString = contentString;
+    }
 
     @Override
     public String toString() {
         return "BrisMessageType{" +
                 "url=" + url +
                 ", className='" + className + '\'' +
-                ", messageObjectType=" + messageObjectType +
+                ", messageHeader=" + messageHeader +
                 ", validationXML='" + validationXML + '\'' +
+                ", contentString='" + contentString + '\'' +
                 '}';
     }
 }

@@ -7,27 +7,41 @@ import java.util.Map;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 
-import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotification;
-import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureReceptionNotificationAcknowledgement;
-import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureSubmissionNotification;
-import eu.europa.ec.bris.v140.jaxb.br.branch.disclosure.BRBranchDisclosureSubmissionNotificationAcknowledgement;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsResponse;
-import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentRequest;
-import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
-import eu.europa.ec.bris.v140.jaxb.br.connection.BRConnectivityRequest;
-import eu.europa.ec.bris.v140.jaxb.br.connection.BRConnectivityResponse;
-import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
-import eu.europa.ec.bris.v140.jaxb.br.led.BRUpdateLEDRequest;
-import eu.europa.ec.bris.v140.jaxb.br.led.BRUpdateLEDStatus;
-import eu.europa.ec.bris.v140.jaxb.br.led.full.BRFullUpdateLEDAcknowledgment;
-import eu.europa.ec.bris.v140.jaxb.br.led.full.BRFullUpdateLEDRequest;
-import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotification;
-import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerReceptionNotificationAcknowledgement;
-import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerSubmissionNotification;
-import eu.europa.ec.bris.v140.jaxb.br.merger.BRCrossBorderMergerSubmissionNotificationAcknowledgement;
-import eu.europa.ec.bris.v140.jaxb.br.subscription.BRManageSubscriptionRequest;
-import eu.europa.ec.bris.v140.jaxb.br.subscription.BRManageSubscriptionStatus;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.request.v1_4.BRBranchDisclosureReceptionNotification;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.response.v1_4.BRBranchDisclosureReceptionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.request.v1_4.BRBranchDisclosureSubmissionNotification;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.response.v1_4.BRBranchDisclosureSubmissionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
+import eu.europa.ec.bris.jaxb.br.company.details.response.v2_0.BRCompanyDetailsResponse;
+import eu.europa.ec.bris.jaxb.br.connection.request.v1_4.BRConnectivityRequest;
+import eu.europa.ec.bris.jaxb.br.connection.response.v1_4.BRConnectivityResponse;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.reception.request.v1_4.BRCrossBorderMergerReceptionNotification;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.reception.response.v1_4.BRCrossBorderMergerReceptionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.request.v1_4.BRCrossBorderMergerSubmissionNotification;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.response.v1_4.BRCrossBorderMergerSubmissionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.document.retrieval.request.v1_4.BRRetrieveDocumentRequest;
+import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocumentResponse;
+import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.AddBusinessRegisterAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.RemoveBusinessRegisterAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.code.change.v2_0.ChangeBusinessRegisterCodeAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.legalform.addition.v2_0.AddLegalFormAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.legalform.removal.v2_0.RemoveLegalFormAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.legalform.change.v2_0.ChangeLegalFormAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.company.euid.change.v2_0.ChangeCompanyEUIDAcknowledgementTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.AddBusinessRegisterNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.RemoveBusinessRegisterNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.br.code.change.v2_0.ChangeBusinessRegisterCodeNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.legalform.addition.v2_0.AddLegalFormNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.legalform.removal.v2_0.RemoveLegalFormNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.legalform.change.v2_0.ChangeLegalFormNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.generic.notification.template.company.euid.change.v2_0.ChangeCompanyEUIDNotificationTemplateType;
+import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
+import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
+import eu.europa.ec.bris.jaxb.br.led.update.request.v2_0.BRUpdateLEDRequest;
+import eu.europa.ec.bris.jaxb.br.led.update.response.v2_0.BRUpdateLEDStatus;
+import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
+import eu.europa.ec.bris.jaxb.br.subscription.response.v2_0.BRManageSubscriptionStatus;
 import uk.gov.ch.bris.constants.ResourcePathConstants;
 import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.processor.IncomingMessageProcessor;
@@ -48,7 +62,15 @@ public class IncomingMessageProcessorConfig {
     @Bean
     public IncomingMessageProcessor messageProcessor() {
 
-        Map<Class<?>, URL>businessRegisterClassMap = new HashMap<>();
+        Map<Class<?>, URL> businessRegisterClassMap = getBusinessRegisterClassMap();
+        
+        LOGGER.debug("Creating class map for BR Messages types: " + businessRegisterClassMap);
+
+        return new IncomingMessageProcessorImpl(businessRegisterClassMap);
+    }
+    
+    public Map<Class<?>, URL> getBusinessRegisterClassMap() {
+        Map<Class<?>, URL> businessRegisterClassMap = new HashMap<>();
 
         ClassLoader classLoader = getClass().getClassLoader();
 
@@ -60,7 +82,7 @@ public class IncomingMessageProcessorConfig {
         businessRegisterClassMap.put(BRBranchDisclosureSubmissionNotificationAcknowledgement.class, getURL(classLoader, ResourcePathConstants.BRANCH_DISCLOSURE_SUBMISSION_NOTIFICATION_RESPONSE_SCHEMA));
 
         //Business Error
-        businessRegisterClassMap.put(BRBusinessError.class, getURL(classLoader, ResourcePathConstants.BUSINESS_ERROR_SCHEMA));
+        businessRegisterClassMap.put(BRBusinessError.class, null); // No validation for BusinessError
 
         //Company details
         businessRegisterClassMap.put(BRCompanyDetailsRequest.class, getURL(classLoader, ResourcePathConstants.COMPANY_DETAILS_REQUEST_SCHEMA));
@@ -93,9 +115,33 @@ public class IncomingMessageProcessorConfig {
         businessRegisterClassMap.put(BRUpdateLEDRequest.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_REQUEST_SCHEMA));
         businessRegisterClassMap.put(BRUpdateLEDStatus.class, getURL(classLoader, ResourcePathConstants.UPDATE_LED_RESPONSE_SCHEMA));
 
-        LOGGER.debug("Creating class map for BR Messages types: " + businessRegisterClassMap);
+        //Notifications Business Register
+        businessRegisterClassMap.put(AddBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_BR_NOTIFICATION_SCHEMA));
+        businessRegisterClassMap.put(RemoveBusinessRegisterNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_BR_NOTIFICATION_SCHEMA));
+        businessRegisterClassMap.put(ChangeBusinessRegisterCodeNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.CHANGE_BR_NOTIFICATION_SCHEMA));
 
-        return new IncomingMessageProcessorImpl(businessRegisterClassMap);
+        //Notifications Legal Form
+        businessRegisterClassMap.put(AddLegalFormNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_LEGAL_FORM_NOTIFICATION_SCHEMA));
+        businessRegisterClassMap.put(RemoveLegalFormNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_LEGAL_FORM_NOTIFICATION_SCHEMA));
+        businessRegisterClassMap.put(ChangeLegalFormNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.CHANGE_LEGAL_FORM_NOTIFICATION_SCHEMA));
+
+        //Notifications Change EUID
+        businessRegisterClassMap.put(ChangeCompanyEUIDNotificationTemplateType.class, getURL(classLoader, ResourcePathConstants.CHANGE_EUID_NOTIFICATION_SCHEMA));
+
+        //Acknowledgement Business Register
+        businessRegisterClassMap.put(AddBusinessRegisterAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_BR_ACKNOWLEDGEMENT_SCHEMA));
+        businessRegisterClassMap.put(RemoveBusinessRegisterAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_BR_ACKNOWLEDGEMENT_SCHEMA));
+        businessRegisterClassMap.put(ChangeBusinessRegisterCodeAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.CHANGE_BR_ACKNOWLEDGEMENT_SCHEMA));
+
+        //Acknowledgement Legal Form
+        businessRegisterClassMap.put(AddLegalFormAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.ADD_LEGAL_FORM_ACKNOWLEDGEMENT_SCHEMA));
+        businessRegisterClassMap.put(RemoveLegalFormAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.REMOVE_LEGAL_FORM_ACKNOWLEDGEMENT_SCHEMA));
+        businessRegisterClassMap.put(ChangeLegalFormAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.CHANGE_LEGAL_FORM_ACKNOWLEDGEMENT_SCHEMA));
+
+        //Acknowledgement Change EUID
+        businessRegisterClassMap.put(ChangeCompanyEUIDAcknowledgementTemplateType.class, getURL(classLoader, ResourcePathConstants.CHANGE_EUID_ACKNOWLEDGEMENT_SCHEMA));
+
+        return businessRegisterClassMap;
     }
 
     /**
@@ -104,10 +150,10 @@ public class IncomingMessageProcessorConfig {
      * @param schemaName
      * @return URL
      */
-    private URL getURL(ClassLoader classLoader, final String schemaName) {
-        URL url = classLoader.getResource(ResourcePathConstants.XSD_PATH + schemaName);
+    private URL getURL(ClassLoader classLoader, final String schemaPath) {
+        URL url = classLoader.getResource(schemaPath);
         if (url == null) {
-            throw new RuntimeException("Unable to find schema " + ResourcePathConstants.XSD_PATH + schemaName);
+            throw new RuntimeException("Unable to find schema " + schemaPath);
         }
         return url;
     }

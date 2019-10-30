@@ -10,9 +10,9 @@ import org.springframework.context.annotation.Configuration;
 
 import eu.domibus.plugin.bris.jaxb.delivery.Acknowledgement;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsRequest;
-import eu.europa.ec.bris.v140.jaxb.br.company.detail.BRCompanyDetailsResponse;
-import eu.europa.ec.bris.v140.jaxb.br.error.BRBusinessError;
+import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
+import eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse;
+import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
 
 @Configuration
 public class ClientConfiguration {

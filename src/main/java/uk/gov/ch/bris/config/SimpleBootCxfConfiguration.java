@@ -28,15 +28,15 @@ public class SimpleBootCxfConfiguration {
     
     @Autowired
     private SpringBus springBus;
-    
+
     @Bean
     public DeliveryEnvelopeInterface deliveryEnvelopeService() {
         return new DeliveryEnvelopeServiceEndpoint();
     }
     
     @Bean
-    public ServletRegistrationBean cxfServlet() {
-        ServletRegistrationBean servletRegistrationBean = new ServletRegistrationBean(new CXFServlet(), ServiceConstants.SERVLET_MAPPING_URL_PATH + "/*");
+    public ServletRegistrationBean<CXFServlet> cxfServlet() {
+        ServletRegistrationBean<CXFServlet> servletRegistrationBean = new ServletRegistrationBean<>(new CXFServlet(), ServiceConstants.SERVLET_MAPPING_URL_PATH + "/*");
         // If necessary add custom Title to CXF´s ServiceList
         return servletRegistrationBean;
     }

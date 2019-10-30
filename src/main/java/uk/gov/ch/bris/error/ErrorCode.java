@@ -1,5 +1,7 @@
 package uk.gov.ch.bris.error;
 
+import uk.gov.ch.bris.constants.ErrorCodeMessages;
+
 /**
  * Created by rkumar on 22/03/2017.
  */
@@ -12,29 +14,46 @@ public enum ErrorCode {
      * List of error codes as per
      * published on the BRIS collaboration space.
      */
-    ERR_BR_0100 ("Business rule violation, message not accepted"),
-    ERR_BR_0101 ("Invalid EUID,Business rule violation, message not accepted"),
-    ERR_BR_0102 ("Invalid address value, message not accepted"),
-    ERR_BR_0103 ("Invalid pair ([code, country]) , message not accepted"),
-    ERR_BR_0104 ("Invalid payment reference (reserved for validation of the payment reference), message not accepted"),
+    NO_ERROR ("NO Error"),
+    ERR_BR_0100 (ErrorCodeMessages.INVALID_MESSAGE),
+    ERR_BR_0101 (ErrorCodeMessages.INVALID_MESSAGE),
+    ERR_BR_0102 (ErrorCodeMessages.INVALID_MESSAGE),
+    ERR_BR_0103 (ErrorCodeMessages.INVALID_MESSAGE),
+    ERR_BR_0104 (ErrorCodeMessages.INVALID_MESSAGE),
 
-    ERR_BR_0300 ("Business rule violation, company details message not accepted"),
-    ERR_BR_0500 ("Business rule violation, CBM notification not accepted"),
-    ERR_BR_0600 ("Business rule violation, BD notification not accepted"),
-    ERR_BR_0700 ("Business rule violation, update LED message not accepted"),
-    ERR_BR_0800 ("Business rule violation, subscription request not accepted"),
-    ERR_BR_3000 ("Business rule violation, company details not accepted"),
+    ERR_BR_0300 ("Invalid Company Details message"),
+    ERR_BR_0500 ("Invalid Cross Border Merger message"),
+    ERR_BR_0501 (ErrorCodeMessages.INVALID_NOTIFICATION),
+    ERR_BR_0502 (ErrorCodeMessages.INVALID_NOTIFICATION),
+    ERR_BR_0503 (ErrorCodeMessages.INVALID_NOTIFICATION),
+    ERR_BR_0504 (ErrorCodeMessages.INVALID_NOTIFICATION), 
+    ERR_BR_0600 ("Invalid Branch Disclosure message"),
+    ERR_BR_0601 (ErrorCodeMessages.INVALID_NOTIFICATION),
+    ERR_BR_0602 (ErrorCodeMessages.INVALID_NOTIFICATION),
+    ERR_BR_0603 (ErrorCodeMessages.INVALID_NOTIFICATION),
+    ERR_BR_0700 ("Invalid Update LED message"),
+    ERR_BR_0701 (ErrorCodeMessages.INVALID_MESSAGE),
+    ERR_BR_0800 ("Invalid Manage Subscription message"),
+    ERR_BR_0801 (ErrorCodeMessages.INVALID_MESSAGE),
+    ERR_BR_3000 (ErrorCodeMessages.MESSAGE_PROCESSING_ERROR),
+    ERR_BR_3001 (ErrorCodeMessages.MESSAGE_PROCESSING_ERROR),
+    ERR_BR_3002 (ErrorCodeMessages.MESSAGE_PROCESSING_ERROR),
 
-    ERR_BR_5100 ("The validation of the message header coming from the ECP failed"),
-    ERR_BR_5101 ("The BR is not authorised to receive this type of messages "),
-    ERR_BR_5102 ("Message schema validation error ,The validation of the message failed"),
-    ERR_BR_5103 ("Message uniqueness error. Message ID or Correlation ID not unique (or message ID NOT equal to correlation ID for request messages),The validation of the message failed"),
-    ERR_BR_5104 ("Response message correlation error. Response message not correlated to any request.,Response message correlation error. Response message not correlated to any request.,The validation of the message failed"),
-    ERR_BR_5105 ("Response/Request compliance error,The validation of the message failed"),
-    ERR_BR_5106 ("BR message can not be deserialised to correct message type. ,The validation of the message failed"),
+    ERR_BR_5100 ("Message validation error"),
+    ERR_BR_5101 (ErrorCodeMessages.MESSAGE_VALIDATION_FAILED),
+    ERR_BR_5102 (ErrorCodeMessages.MESSAGE_VALIDATION_FAILED),
+    ERR_BR_5103 (ErrorCodeMessages.MESSAGE_VALIDATION_FAILED),
+    ERR_BR_5104 (ErrorCodeMessages.MESSAGE_VALIDATION_FAILED),
+    ERR_BR_5105 (ErrorCodeMessages.MESSAGE_VALIDATION_FAILED),
+    ERR_BR_5106 (ErrorCodeMessages.MESSAGE_VALIDATION_FAILED),
+    ERR_BR_5107 (ErrorCodeMessages.MESSAGE_VALIDATION_FAILED),
+    ERR_BR_5108 (ErrorCodeMessages.MESSAGE_VALIDATION_FAILED),
 
-    ERR_BR_5200 ("The processing of the message failed"),
-    ERR_BR_5201 ("BR unexpected internal (technical) error,The processing of the message failed (unexpected error)");
+    ERR_BR_5200 (ErrorCodeMessages.MESSAGE_PROCESSING_ERROR),
+    ERR_BR_5201 ("Message processing failed"),
+
+    ERR_BR_0901 (ErrorCodeMessages.INVALID_NOTIFICATION);
+
 
 
 	/* ---- Instance Variables ---- */

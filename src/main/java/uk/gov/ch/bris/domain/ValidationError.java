@@ -2,12 +2,28 @@ package uk.gov.ch.bris.domain;
 
 import javax.xml.bind.annotation.XmlRootElement;
 
-import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
+import uk.gov.ch.bris.error.ErrorCode;
 
-/**
- * Created by rkumar on 09/06/2017.
- */
 @XmlRootElement
-public class ValidationError extends MessageObjectType{
+public class ValidationError {
+
+    private BrisMessageHeaderType header;
+    private ErrorCode errorCode;
+    
+	public BrisMessageHeaderType getHeader() {
+        return header;
+    }
+
+    public void setHeader(BrisMessageHeaderType header) {
+        this.header = header;
+    }
+
+    public ErrorCode getErrorCode() {
+        return errorCode;
+    }
+
+    public void setErrorCode(ErrorCode errorCode) {
+        this.errorCode = errorCode;
+    }
 
 }

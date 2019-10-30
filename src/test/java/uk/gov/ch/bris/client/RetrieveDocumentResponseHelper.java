@@ -1,17 +1,17 @@
 
 package uk.gov.ch.bris.client;
 
-import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageHeaderType;
-import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
-import eu.europa.ec.bris.v140.jaxb.components.aggregate.BusinessRegisterReferenceType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.AttachmentReferenceType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterIDType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.BusinessRegisterNameType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.CompanyRegistrationNumberType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.CorrelationIDType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.CountryType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.DocumentIDType;
-import eu.europa.ec.bris.v140.jaxb.components.basic.MessageIDType;
+import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageHeaderType;
+import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocumentResponse;
+import eu.europa.ec.bris.jaxb.components.aggregate.v1_4.BusinessRegisterReferenceType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.AttachmentReferenceType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterIDType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.BusinessRegisterNameType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CompanyRegistrationNumberType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CorrelationIDType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.CountryType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.DocumentIDType;
+import eu.europa.ec.bris.jaxb.components.basic.v1_4.MessageIDType;
 
 public class RetrieveDocumentResponseHelper {
 

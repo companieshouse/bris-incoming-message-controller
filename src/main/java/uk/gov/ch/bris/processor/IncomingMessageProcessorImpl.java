@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
 import java.net.URL;
+import java.nio.charset.StandardCharsets;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashMap;
@@ -23,26 +24,54 @@ import javax.xml.validation.Validator;
 
 import org.apache.commons.codec.CharEncoding;
 import org.apache.commons.io.IOUtils;
+import org.apache.xerces.util.XMLCatalogResolver;
 import org.bson.types.Binary;
 import org.joda.time.DateTime;
 import org.joda.time.format.DateTimeFormatter;
 import org.joda.time.format.ISODateTimeFormat;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.xml.sax.SAXException;
 
 import eu.domibus.plugin.bris.endpoint.delivery.FaultResponse;
 import eu.domibus.plugin.bris.jaxb.delivery.DeliveryBody;
+import eu.domibus.plugin.bris.jaxb.delivery.DeliveryHeader;
 import eu.domibus.plugin.bris.jaxb.delivery.FaultDetail;
-import eu.europa.ec.bris.v140.jaxb.br.aggregate.MessageObjectType;
-import eu.europa.ec.bris.v140.jaxb.br.company.document.BRRetrieveDocumentResponse;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.request.v1_4.BRBranchDisclosureReceptionNotification;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.reception.response.v1_4.BRBranchDisclosureReceptionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.request.v1_4.BRBranchDisclosureSubmissionNotification;
+import eu.europa.ec.bris.jaxb.br.branch.disclosure.notification.submission.response.v1_4.BRBranchDisclosureSubmissionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.company.details.request.v1_4.BRCompanyDetailsRequest;
+import eu.europa.ec.bris.jaxb.br.company.details.response.v2_0.BRCompanyDetailsResponse;
+import eu.europa.ec.bris.jaxb.br.components.aggregate.v1_4.MessageObjectType;
+import eu.europa.ec.bris.jaxb.br.connection.request.v1_4.BRConnectivityRequest;
+import eu.europa.ec.bris.jaxb.br.connection.response.v1_4.BRConnectivityResponse;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.reception.request.v1_4.BRCrossBorderMergerReceptionNotification;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.reception.response.v1_4.BRCrossBorderMergerReceptionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.request.v1_4.BRCrossBorderMergerSubmissionNotification;
+import eu.europa.ec.bris.jaxb.br.crossborder.merger.notification.submission.response.v1_4.BRCrossBorderMergerSubmissionNotificationAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.document.retrieval.request.v1_4.BRRetrieveDocumentRequest;
+import eu.europa.ec.bris.jaxb.br.document.retrieval.response.v1_4.BRRetrieveDocumentResponse;
+import eu.europa.ec.bris.jaxb.br.error.v1_4.BRBusinessError;
+import eu.europa.ec.bris.jaxb.br.generic.acknowledgement.v2_0.BRAcknowledgement;
+import eu.europa.ec.bris.jaxb.br.generic.notification.v2_0.BRNotification;
+import eu.europa.ec.bris.jaxb.br.led.update.full.request.v1_4.BRFullUpdateLEDRequest;
+import eu.europa.ec.bris.jaxb.br.led.update.full.response.v1_4.BRFullUpdateLEDAcknowledgment;
+import eu.europa.ec.bris.jaxb.br.led.update.request.v2_0.BRUpdateLEDRequest;
+import eu.europa.ec.bris.jaxb.br.led.update.response.v2_0.BRUpdateLEDStatus;
+import eu.europa.ec.bris.jaxb.br.subscription.request.v1_4.BRManageSubscriptionRequest;
+import eu.europa.ec.bris.jaxb.br.subscription.response.v2_0.BRManageSubscriptionStatus;
+import eu.europa.ec.bris.jaxb.components.aggregate.v1_4.TestDataType;
+import eu.europa.ec.digit.message.container.jaxb.v1_0.MessageContainer;
+import eu.europa.ec.digit.message.container.jaxb.v1_0.MessageInfo;
 import uk.gov.ch.bris.constants.MongoStatus;
 import uk.gov.ch.bris.constants.ServiceConstants;
 import uk.gov.ch.bris.domain.BRISIncomingMessage;
+import uk.gov.ch.bris.domain.BrisMessageHeaderType;
 import uk.gov.ch.bris.domain.BrisMessageType;
 import uk.gov.ch.bris.domain.ValidationError;
-import uk.gov.ch.bris.producer.SenderImpl;
+import uk.gov.ch.bris.error.ErrorCode;
+import uk.gov.ch.bris.producer.Sender;
 import uk.gov.ch.bris.service.BRISIncomingMessageService;
 import uk.gov.companieshouse.logging.Logger;
 import uk.gov.companieshouse.logging.LoggerFactory;
@@ -50,6 +79,8 @@ import uk.gov.companieshouse.logging.LoggerFactory;
 public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
     private final static Logger LOGGER = LoggerFactory.getLogger(ServiceConstants.LOGGER_SERVICE_NAME);
+    
+    private static final String UNEXPECTED_OBJECT = "Unexpected object found";
 
     @Inject
     private BRISIncomingMessageService brisIncomingMessageService;
@@ -57,10 +88,14 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     @Value("${TEST_MODE}")
     private static int TEST_MODE;
 
-    @Autowired
-    private SenderImpl kafkaProducer;
+    @Inject
+    private Sender kafkaProducer;
 
     private Map<Class<?>, URL> businessRegisterClassMap;
+    
+    private JAXBContext jaxbContext;
+    private JAXBContext oldJaxbContext;
+    
 
     public IncomingMessageProcessorImpl(Map<Class<?>, URL> businessRegisterClassMap) {
         this.businessRegisterClassMap = businessRegisterClassMap;
@@ -69,12 +104,14 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     /**
      * Save incoming message to mongoDB
      * Send relevant messageId to kafka incoming topic
+     * @param deliveryHeader
      * @param deliveryBody
      * @throws FaultResponse
      */
-    public void processIncomingMessage(DeliveryBody deliveryBody) throws FaultResponse {
+    @Override
+    public void processIncomingMessage(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
 
-        BRISIncomingMessage message = saveIncomingMessage(deliveryBody);
+        BRISIncomingMessage message = saveIncomingMessage(deliveryHeader, deliveryBody);
 
         if (!kafkaProducer.sendMessage(message.getId())) {
             LOGGER.debug("Could not send message to kafka. Setting status to " + MongoStatus.FAILED + " for message with id " + message.getId());
@@ -96,11 +133,12 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
     /**
      * Save incoming message to mongoDB
+     * @param deliveryHeader
      * @param deliveryBody
      * @return BRISIncomingMessage
      * @throws FaultResponse
      */
-    private BRISIncomingMessage saveIncomingMessage(DeliveryBody deliveryBody) throws FaultResponse {
+    private BRISIncomingMessage saveIncomingMessage(DeliveryHeader deliveryHeader, DeliveryBody deliveryBody) throws FaultResponse {
 
         BRISIncomingMessage brisIncomingMessage;
 
@@ -118,11 +156,14 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             }
 
             // extract messageId from Message
-            String messageId = brisMessageType.getMessageObjectType().getMessageHeader().getMessageID().getValue();
-            String correlationId = brisMessageType.getMessageObjectType().getMessageHeader().getCorrelationID().getValue();
+            String messageId = brisMessageType.getMessageHeader().getMessageId();
+            String correlationId = brisMessageType.getMessageHeader().getCorrelationId();
 
             // create brisIncomingMessage Object
             brisIncomingMessage = new BRISIncomingMessage(messageId, correlationId, message, MongoStatus.PENDING);
+            
+            brisIncomingMessage.setSender(deliveryHeader.getAddressInfo().getSender().getId());
+            brisIncomingMessage.setReceiver(deliveryHeader.getAddressInfo().getReceiver().getId());
 
             // keep a record of the invalid xml in mongodb if we have a validation error
             if (invalidMessage != null) {
@@ -140,6 +181,8 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             }
             brisIncomingMessageService.save(brisIncomingMessage);
 
+        } catch (FaultResponse e) {
+            throw e;
         } catch (Exception e) {
             Map<String, Object> data = new HashMap<String, Object>();
             data.put("message", "Exception : Sending FaultResponse");
@@ -185,7 +228,7 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * Generate DateTime in ISO-8601 string format
      * @return DateTime
      */
-    public DateTime getDateTime() {
+    protected DateTime getDateTime() {
         SimpleDateFormat sdf = new SimpleDateFormat("yyyy-MM-dd'T'HH:mm:ss.SSS'Z'");
         Date dt = new Date();
         String strDt = sdf.format(dt);
@@ -197,19 +240,65 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
     }
 
     /**
-     * Load JAXBContext
+     * Load 1.4 version of JAXBContext. Used to check if the message is old and
+     * invalid.
+     * 
      * @return JAXBContext
+     * @throws FaultResponse
      */
-    @Bean
-    public JAXBContext getJaxbContext() {
-        JAXBContext context = null;
-        try {
-            context = JAXBContext.newInstance(MessageObjectType.class,ValidationError.class);
-        } catch (JAXBException exception) {
-            exception.printStackTrace();
+    private JAXBContext getOldJaxbContext() throws FaultResponse {
+        if (oldJaxbContext == null) {
+            try {
+                oldJaxbContext = JAXBContext.newInstance(
+                        eu.europa.ec.bris.jaxb.br.company.details.response.v1_4.BRCompanyDetailsResponse.class,
+                        eu.europa.ec.bris.jaxb.br.led.update.request.v1_4.BRUpdateLEDRequest.class, 
+                        eu.europa.ec.bris.jaxb.br.led.update.response.v1_4.BRUpdateLEDStatus.class,
+                        eu.europa.ec.bris.jaxb.br.subscription.response.v1_4.BRManageSubscriptionStatus.class);
+            } catch (JAXBException e) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("message", "JAXBException caught creating oldJAXBContext. FaultResponse will be thrown");
+                LOGGER.error(e, data);
+                throw new FaultResponse("JAXB exception", new FaultDetail(), e);
+            }
         }
 
-        return context;
+        return oldJaxbContext;
+    }
+    
+    /**
+     * Load JAXBContext
+     * 
+     * @return JAXBContext
+     * @throws FaultResponse
+     * 
+     */
+    @Bean
+    public JAXBContext getJaxbContext() throws FaultResponse {
+        if (jaxbContext == null) {
+            try {
+                jaxbContext = JAXBContext.newInstance(MessageContainer.class,
+                        BRBranchDisclosureReceptionNotification.class,
+                        BRBranchDisclosureReceptionNotificationAcknowledgement.class,
+                        BRBranchDisclosureSubmissionNotification.class,
+                        BRBranchDisclosureSubmissionNotificationAcknowledgement.class, BRCompanyDetailsRequest.class,
+                        BRConnectivityRequest.class, BRConnectivityResponse.class,
+                        BRCrossBorderMergerReceptionNotification.class,
+                        BRCrossBorderMergerReceptionNotificationAcknowledgement.class,
+                        BRCrossBorderMergerSubmissionNotification.class,
+                        BRCrossBorderMergerSubmissionNotificationAcknowledgement.class, BRRetrieveDocumentRequest.class,
+                        BRRetrieveDocumentResponse.class, BRFullUpdateLEDRequest.class,
+                        BRFullUpdateLEDAcknowledgment.class, BRManageSubscriptionRequest.class, ValidationError.class,
+                        BRBusinessError.class);
+            } catch (JAXBException e) {
+                Map<String, Object> data = new HashMap<>();
+                data.put("message", "JAXBException caught creating JAXBContext. FaultResponse will be thrown");
+
+                LOGGER.error(e, data);
+                throw new FaultResponse("JAXB exception", new FaultDetail(), e);
+            }
+        }
+
+        return jaxbContext;
     }
 
     /**
@@ -220,39 +309,50 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @throws JAXBException
      */
     private BrisMessageType validateSchema(String xmlMessage) throws FaultResponse,JAXBException {
-
+        URL catalogURL = getClass().getResource("/catalog/bris-uri-catalog.xml");
+        XMLCatalogResolver resolver = new XMLCatalogResolver(new String[] {catalogURL.toString()});
+        
         SchemaFactory factory = SchemaFactory.newInstance(XMLConstants.W3C_XML_SCHEMA_NS_URI);
-        FaultDetail faultDetail = new FaultDetail();
+        factory.setResourceResolver(resolver);
+        
         BrisMessageType brisMessageType = null;
 
         try {
             LOGGER.debug("Validating schema for xml message " + xmlMessage);
             brisMessageType = getSchema(xmlMessage);
 
-            Schema schema = factory.newSchema(brisMessageType.getUrl());
-            Validator validator = schema.newValidator();
-            validator.validate(new StreamSource(new StringReader(xmlMessage)));
+            if (brisMessageType.getUrl() != null) {
+                Schema schema = factory.newSchema(brisMessageType.getUrl());
+                Validator validator = schema.newValidator();
+                
+                String messageToValidate = xmlMessage;
+                if (brisMessageType.getContentString() != null) {
+                    // When it the message comes in a MessageContainer, we need to validate its content
+                    messageToValidate = brisMessageType.getContentString();
+                }
+                validator.validate(new StreamSource(new StringReader(messageToValidate)));
+            }
         } catch (SAXException e) {
-            Map<String, Object> data = new HashMap<String, Object>();
+            Map<String, Object> data = new HashMap<>();
             data.put("message", "XSD Validation Error caught validating schema brisMessageType=" + brisMessageType);
 
             LOGGER.error(e, data);
 
             brisMessageType.setClassName(ValidationError.class.getSimpleName());
-            brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageObjectType()));
+            brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageHeader(), ErrorCode.ERR_BR_5102));
 
         } catch (JAXBException e) {
-            Map<String, Object> data = new HashMap<String, Object>();
+            Map<String, Object> data = new HashMap<>();
             data.put("message", "JAXBException caught validating schema. FaultResponse will be thrown");
 
             LOGGER.error(e, data);
-            throw new FaultResponse("JAXBException", faultDetail, e);
+            throw new FaultResponse("JAXBException", new FaultDetail(), e);
         } catch (IOException e) {
-            Map<String, Object> data = new HashMap<String, Object>();
+            Map<String, Object> data = new HashMap<>();
             data.put("message", "IOException caught validating schema. FaultResponse will be thrown");
 
             LOGGER.error(e, data);
-            throw new FaultResponse("IO exception", faultDetail, e);
+            throw new FaultResponse("IO exception", new FaultDetail(), e);
         }
 
         return brisMessageType;
@@ -264,29 +364,80 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
      * @return BrisMessageType
      * @throws FaultResponse
      * @throws JAXBException
+     * @throws IOException 
      */
-    private BrisMessageType getSchema(String xmlMessage) throws FaultResponse, JAXBException {
+    private BrisMessageType getSchema(String xmlMessage) throws FaultResponse, JAXBException, IOException {
         StringReader reader = new StringReader(xmlMessage);
-        MessageObjectType messageObjectType = (MessageObjectType)getJaxbContext().createUnmarshaller().unmarshal(reader);
-        validateMessageID(messageObjectType);
+        
+        Object messageObject = null;
+        
+        try {
+            messageObject = getJaxbContext().createUnmarshaller().unmarshal(reader);
+        } catch (JAXBException e) { // not a valid message
+            BrisMessageHeaderType header = getPreviousMessageHeaderType(xmlMessage); // check if previous message
+            if (header != null) {
+                // The message corresponds to a previous version
+                BrisMessageType brisMessageType = new BrisMessageType();
+                brisMessageType.setClassName(ValidationError.class.getSimpleName());
+                brisMessageType.setValidationXML(getXMLValidationMessage(header, ErrorCode.ERR_BR_5107));
+                brisMessageType.setMessageHeader(header);
+                return brisMessageType;
+            } else {
+                // The message is not a previous version - let the exception go up
+                throw e;
+            }
+            
+        }
 
-        return getXSDResource(messageObjectType);
+        if (messageObject instanceof MessageContainer) {
+            return validateCreateBrisMessageType((MessageContainer) messageObject);
+        }
 
+        if (messageObject instanceof MessageObjectType) {
+            return validateCreateBrisMessageType((MessageObjectType) messageObject);
+        }
+
+        final String errorMessage = "Error unmarshalling xml message. Unexpected object found "
+                + messageObject.getClass().getName();
+        Map<String, Object> data = new HashMap<>();
+        data.put("message", errorMessage + ". FaultResponse will be thrown");
+
+        LOGGER.error(UNEXPECTED_OBJECT, data);
+        throw new FaultResponse(UNEXPECTED_OBJECT, new FaultDetail());
+    }
+    
+    /**
+     * check if the message is a previous version
+     * 
+     * @param xmlMessage
+     * @return BrisMessageHeaderType A populated {@link BrisMessageHeaderType} object if the message corresponds to a previous version. Null if the message is not a previous version
+     * @throws JAXBException
+     * @throws FaultResponse
+     */
+    private BrisMessageHeaderType getPreviousMessageHeaderType(String xmlMessage) throws JAXBException, FaultResponse {
+        StringReader reader = new StringReader(xmlMessage);
+        Object messageObject = getOldJaxbContext().createUnmarshaller().unmarshal(reader);
+        
+        if (messageObject instanceof MessageObjectType) {
+            return createBrisMessageHeaderType((MessageObjectType) messageObject);
+        }
+        
+        return null;
     }
 
     /**
      * Validates for message id in message header
-     * @param messageObjectType
+     * @param messageId
      * @throws FaultResponse
      */
 
-    private void validateMessageID(MessageObjectType messageObjectType) throws FaultResponse {
+    private void validateMessageID(String messageId) throws FaultResponse {
 
-        if(messageObjectType.getMessageHeader().getMessageID().getValue()!=null){
+        if(messageId!=null){
 
-            int messageLength=messageObjectType.getMessageHeader().getMessageID().getValue().length();
+            int messageLength=messageId.length();
             if(messageLength < 1 || messageLength > 64 ){
-                LOGGER.debug("Invalid messageLength for messageId. messageLength=" + messageLength + ", messageId=" + messageObjectType.getMessageHeader().getMessageID().getValue());
+                LOGGER.debug("Invalid messageLength for messageId. messageLength=" + messageLength + ", messageId=" + messageId);
                 FaultDetail faultDetail = new FaultDetail();
                 faultDetail.setResponseCode("GEN000");
                 faultDetail.setMessage("Validation error: Error while processing messageID ");
@@ -294,20 +445,141 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
             }
         }
     }
-
+    
     /**
-     *
-     * @param messageObjectType
-     * @return brisMessageType
+     * Validate message and create BrisMessageType for v1.4 messages
+     * @param messageObject
+     * @return BrisMessageType
+     * @throws FaultResponse 
      */
-    private BrisMessageType getXSDResource(MessageObjectType messageObjectType) {
-        Class<?> clazz = messageObjectType.getClass();
+    private BrisMessageType validateCreateBrisMessageType(MessageObjectType messageObject) throws FaultResponse {
+        BrisMessageHeaderType header = createBrisMessageHeaderType(messageObject);
+        validateMessageID(header.getMessageId());
+        
+        BrisMessageType brisMessageType = createBrisMessageType(messageObject);
+        brisMessageType.setMessageHeader(header);
+        return brisMessageType;
+    }
+    
+    /**
+     * Validate message and create BrisMessageType for v2.0 messages
+     * @param messageContainer
+     * @return BrisMessageType
+     * @throws FaultResponse 
+     * @throws JAXBException 
+     * @throws IOException 
+     */
+    private BrisMessageType validateCreateBrisMessageType(MessageContainer messageContainer) throws FaultResponse, JAXBException, IOException {
+        BrisMessageHeaderType header = createBrisMessageHeaderType(messageContainer);
+        validateMessageID(header.getMessageId());
+        
+        Object messageObject;
+        Object messageContent;
+        String xmlMessage = null;
+        try {
+            ByteArrayOutputStream output = new ByteArrayOutputStream();
+            
+            // following line throws null pointer if message content null 
+            messageContainer.getContainerBody().getMessageContent().getValue().writeTo(output);
+            xmlMessage = new String(output.toByteArray(), StandardCharsets.UTF_8);
+            JAXBContext jaxbContext = JAXBContext.newInstance(BRNotification.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.br.addition.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.br.removal.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.br.code.change.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.legalform.addition.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.legalform.removal.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.legalform.change.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.notification.template.company.euid.change.v2_0.ObjectFactory.class,
+                    BRAcknowledgement.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.addition.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.removal.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.br.code.change.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.legalform.addition.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.legalform.removal.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.legalform.change.v2_0.ObjectFactory.class,
+                    eu.europa.ec.bris.jaxb.br.generic.acknowledgement.template.company.euid.change.v2_0.ObjectFactory.class,
+                    BRCompanyDetailsResponse.class,
+                    BRManageSubscriptionStatus.class,
+                    BRUpdateLEDRequest.class,
+                    BRUpdateLEDStatus.class);
+            messageContent = jaxbContext.createUnmarshaller().unmarshal(new StringReader(xmlMessage));
+         } catch (Exception e) { // if an exception is caught here we cannot get a valid message from the container
+            Map<String, Object> data = new HashMap<>();
+            data.put("message", "Error reading MessageContent");
+            LOGGER.error(e, data);
+            
+            BrisMessageType brisMessageType = new BrisMessageType();
+            brisMessageType.setClassName(ValidationError.class.getSimpleName());
+            brisMessageType.setValidationXML(getXMLValidationMessage(brisMessageType.getMessageHeader(), ErrorCode.ERR_BR_5108));            
+            brisMessageType.setMessageHeader(header);
+            brisMessageType.setContentString(xmlMessage);
+            return brisMessageType;
+        } 
+       
+        if (messageContent instanceof BRNotification) {
+            // Use the template for notification objects
+            BRNotification notification = (BRNotification) messageContent;
+            messageObject = notification.getNotificationTemplate().getValue();
+        } else if (messageContent instanceof BRAcknowledgement) {
+            // Use the template for notification objects
+            BRAcknowledgement ack = (BRAcknowledgement) messageContent;
+            messageObject = ack.getAcknowledgementTemplate().getValue();
+        } else {
+            messageObject = messageContent;
+        }
+        
+        BrisMessageType brisMessageType = createBrisMessageType(messageObject);
+        brisMessageType.setMessageHeader(header);
+        brisMessageType.setContentString(xmlMessage);
+        return brisMessageType;
+    }
+
+    private BrisMessageType createBrisMessageType(Object messageObject) {
+        Class<?> clazz = messageObject.getClass();
         BrisMessageType brisMessageType = new BrisMessageType();
         brisMessageType.setUrl(businessRegisterClassMap.get(clazz));
         brisMessageType.setClassName(clazz.getSimpleName());
-        brisMessageType.setMessageObjectType(messageObjectType);
-
         return brisMessageType;
+    }
+    
+    private BrisMessageHeaderType createBrisMessageHeaderType(MessageContainer messageContainer) {
+        BrisMessageHeaderType header = new BrisMessageHeaderType();
+
+        header.setMessageId(messageContainer.getContainerHeader().getMessageInfo().getMessageID());
+        header.setCorrelationId(messageContainer.getContainerHeader().getMessageInfo().getCorrelationID());
+        header.setBusinessRegisterId(messageContainer.getContainerHeader().getAddressInfo().getSender().getCode());
+        header.setBusinessRegisterCountry(
+                messageContainer.getContainerHeader().getAddressInfo().getSender().getCountryCode());
+        
+        MessageInfo.TestData testData = messageContainer.getContainerHeader().getMessageInfo().getTestData();
+        if (testData != null) {
+            header.getTestData().setCaseId(testData.getTestCaseID());
+            header.getTestData().setConditionId(testData.getTestStepID());
+            header.getTestData().setExecutionId(testData.getTestExecutionID());
+            header.getTestData().setPackageId(testData.getTestPackageID());
+            header.getTestData().setSessionId(testData.getTestSessionID());
+        }
+        
+        return header;
+    }
+    
+    private BrisMessageHeaderType createBrisMessageHeaderType(MessageObjectType messageObjectType) {
+        BrisMessageHeaderType header = new BrisMessageHeaderType();
+        header.setMessageId(messageObjectType.getMessageHeader().getMessageID().getValue());
+        header.setCorrelationId(messageObjectType.getMessageHeader().getCorrelationID().getValue());
+        header.setBusinessRegisterId(messageObjectType.getMessageHeader().getBusinessRegisterReference().getBusinessRegisterID().getValue());
+        header.setBusinessRegisterCountry(messageObjectType.getMessageHeader().getBusinessRegisterReference().getBusinessRegisterCountry().getValue());
+        
+        TestDataType testData = messageObjectType.getMessageHeader().getTestData();
+        if (testData != null) {
+            header.getTestData().setCaseId(testData.getTestCaseID().getValue());
+            header.getTestData().setConditionId(testData.getTestConditionID().getValue());
+            header.getTestData().setExecutionId(testData.getTestExecutionID().getValue());
+            header.getTestData().setPackageId(testData.getTestPackageID().getValue());
+            header.getTestData().setSessionId(testData.getTestSessionID().getValue());
+        }
+        
+        return header;
     }
 
     /**
@@ -338,19 +610,35 @@ public class IncomingMessageProcessorImpl implements IncomingMessageProcessor {
 
     /**
      *  Prepares ValidationError xml string
-     * @param messageObjectType
+     * @param messageHeader
      * @return String - ValidationError xml string
      * @throws JAXBException
+     * @throws FaultResponse 
      */
-
-    private String getXMLValidationMessage(MessageObjectType messageObjectType) throws JAXBException {
+    private String getXMLValidationMessage(BrisMessageHeaderType messageHeader, ErrorCode errorCode) throws JAXBException, FaultResponse {
         ValidationError validationError = new ValidationError();
-        validationError.setMessageHeader(messageObjectType.getMessageHeader());
-        JAXBContext jaxbContext =getJaxbContext() ;
-        Marshaller jaxbMarshaller = jaxbContext.createMarshaller();
+        validationError.setHeader(messageHeader);
+        validationError.setErrorCode(errorCode);
+        Marshaller jaxbMarshaller = getJaxbContext().createMarshaller();
         jaxbMarshaller.setProperty(Marshaller.JAXB_FORMATTED_OUTPUT, true);
         StringWriter sw = new StringWriter();
         jaxbMarshaller.marshal(validationError, sw);
         return sw.toString();
+    }
+
+    protected BRISIncomingMessageService getBrisIncomingMessageService() {
+        return brisIncomingMessageService;
+    }
+
+    protected void setBrisIncomingMessageService(BRISIncomingMessageService brisIncomingMessageService) {
+        this.brisIncomingMessageService = brisIncomingMessageService;
+    }
+
+    protected Sender getKafkaProducer() {
+        return kafkaProducer;
+    }
+
+    protected void setKafkaProducer(Sender kafkaProducer) {
+        this.kafkaProducer = kafkaProducer;
     }
 }

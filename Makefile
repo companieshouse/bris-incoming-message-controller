@@ -39,6 +39,10 @@ package:
 .PHONY: dist
 dist: clean build package
 
+.PHONY: dist-ecp
+dist-ecp: dist
+	mv $(artifact_name)-$(version).zip $(artifact_name).ecp-$(version).zip
+
 .PHONY: sonar
 sonar:
 	mvn sonar:sonar
